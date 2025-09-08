@@ -1,0 +1,82 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "npmScope": "chatsuite",
+  "affected": {
+    "defaultBase": "main"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "lint", "test", "e2e"]
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "e2e": {
+      "inputs": ["default", "^production"]
+    },
+    "test": {
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+    }
+  },
+  "defaultProject": "api-customer-service",
+  "generators": {
+    "@nx/react": {
+      "application": {
+        "style": "styled-components",
+        "linter": "eslint",
+        "babel": true
+      },
+      "component": {
+        "style": "styled-components"
+      },
+      "library": {
+        "style": "styled-components",
+        "linter": "eslint"
+      }
+    }
+  },
+  "projects": {
+  },
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "sharedGlobals": [
+      "{workspaceRoot}/pnpm-workspace.yaml",
+      "{workspaceRoot}/pnpm-lock.yaml",
+      "{workspaceRoot}/babel.config.json"
+    ],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/.eslintrc.json"
+    ]
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "webpack:build",
+        "serveTargetName": "webpack:serve",
+        "previewTargetName": "preview",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "eslint:lint"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+# MCP Email Server Configuration
+# This file contains the configuration for the MCP Email Server
+#
+# Email accounts can be configured through the UI at runtime
+# or by adding them to this file manually
+
+[accounts]
+# Email accounts will be stored here
+# Example:
+# [accounts.example]
+# account_name = "example"
+# full_name = "Example User"
+# email_address = "user@example.com"
+# description = "Example email account"
+#
+# [accounts.example.incoming]
+# user_name = "user@example.com"
+# password = "your_password"
+# host = "imap.example.com"
+# port = 993
+# use_ssl = true
+# start_ssl = false
+#
+# [accounts.example.outgoing]
+# user_name = "user@example.com"
+# password = "your_password"
+# host = "smtp.example.com"
+# port = 465
+# use_ssl = true
+# start_ssl = false

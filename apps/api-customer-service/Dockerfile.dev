@@ -1,0 +1,22 @@
+FROM node:24-alpine
+RUN apk add --no-cache python3 py3-pip make g++
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+ENV PYTHON=/usr/bin/python3
+
+WORKDIR '/tmp'
+# Uncomment to install a verified version
+# COPY ./tools/dev-scripts/cmd-pnpm-install.sh ./
+# RUN chmod +x ./cmd-pnpm-install.sh && /bin/sh ./cmd-pnpm-install.sh
+RUN npm install -g pnpm
+
+WORKDIR '/usr/src/root'
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./.npmrc ./versions.json ./
+COPY ./apps/api-customer-service/package.json ./apps/api-customer-service/
+
+RUN pnpm config set store-dir ./.pnpm-store
+# AFTER  (portable everywhere, just slower on repeat builds)
+RUN pnpm install --no-frozen-lockfile
+
+COPY . .
+RUN node ./tools/dev-scripts/cmd-pre-pnpm-install.js api-customer-service
+CMD ["pnpm", "docker:api-customer-service"]

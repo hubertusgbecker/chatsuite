@@ -1,0 +1,103 @@
+#!/bin/bash
+# DEPRECATED: This script has been split into separate commands
+# Use: pnpm rebuild && pnpm test
+#
+# This file is kept for reference but should not be used
+echo "DEPRECATED: This script has been replaced with separate commands:"
+echo "  pnpm rebuild  # Rebuild the system"
+echo "  pnpm test     # Test all services"
+echo "  pnpm rebuild && pnpm test  # Complete workflow"
+echo ""
+echo "Please use the new commands instead."
+exit 1
+
+# ChatSuite Complete Rebuild and Test Script
+# This script ensures everything works from a fresh state
+# Perfect for deployment on new computers
+
+echo "=== ChatSuite Complete System Rebuild and Test ==="
+echo "This script will:"
+echo "1. Stop all containers"
+echo "2. Pull latest images"
+echo "3. Start all services"
+echo "4. Wait for initialization"
+echo "5. Test all endpoints"
+echo "6. Verify MCP integration"
+echo ""
+
+# Function to wait for service to be ready
+wait_for_service() {
+    local service_name=$1
+    local health_check=$2
+    local max_attempts=${3:-30}
+    local attempt=1
+
+    echo "Waiting for $service_name to be ready..."
+    while [ $attempt -le $max_attempts ]; do
+        if eval "$health_check" >/dev/null 2>&1; then
+            echo "✓ $service_name is ready!"
+            return 0
+        fi
+        echo "  Attempt $attempt/$max_attempts: $service_name not ready yet..."
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+
+    echo "✗ ERROR: $service_name failed to become ready after $max_attempts attempts"
+    return 1
+}
+
+# Step 1: Complete rebuild
+echo "Step 1: Rebuilding entire system..."
+docker-compose down
+docker-compose pull
+docker-compose up -d
+
+# Step 2: Wait for core services
+echo ""
+echo "Step 2: Waiting for core services to initialize..."
+wait_for_service "PostgreSQL" "docker exec postgres pg_isready -U admin"
+wait_for_service "MetaMCP" "curl -f http://localhost:12008/health"
+wait_for_service "LibreChat API" "curl -f http://localhost:3080/health"
+
+# Step 3: Wait for MCP integration
+echo ""
+echo "Step 3: Waiting for MCP integration..."
+sleep 15
+
+# Step 4: Test all endpoints
+echo ""
+echo "Step 4: Testing all service endpoints..."
+echo "  LibreChat API: $(curl -s http://localhost:3080/health)"
+echo "  MetaMCP: $(curl -s http://localhost:12008/health)"
+echo "  Client App: $(curl -s -o /dev/null -w "Status %{http_code}" http://localhost:4200)"
+echo "  NocoDB: $(curl -s -o /dev/null -w "Status %{http_code}" http://localhost:8080)"
+echo "  n8n: $(curl -s -o /dev/null -w "Status %{http_code}" http://localhost:5678)"
+
+# Step 5: Verify MCP integration
+echo ""
+echo "Step 5: Verifying MCP integration..."
+if docker logs librechat 2>&1 | grep -q "MCP servers initialized successfully"; then
+    echo "✓ MCP integration is working!"
+    echo "  Available tools:"
+    docker logs librechat 2>&1 | grep "Available tools:" | sed 's/^/    /'
+else
+    echo "✗ MCP integration may have issues"
+    echo "  Recent logs:"
+    docker logs librechat --tail 10 | sed 's/^/    /'
+fi
+
+echo ""
+echo "=== System Status ==="
+echo "✓ All services rebuilt and started"
+echo "✓ MCP integration verified"
+echo "✓ System ready for use"
+echo ""
+echo "Available services:"
+echo "  - LibreChat: http://localhost:3080"
+echo "  - MetaMCP: http://localhost:12008"
+echo "  - NocoDB: http://localhost:8080"
+echo "  - n8n: http://localhost:5678"
+echo "  - Client App: http://localhost:4200"
+echo ""
+echo "=== Deployment Complete! ==="

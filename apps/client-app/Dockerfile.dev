@@ -1,0 +1,20 @@
+FROM node:24-alpine
+RUN apk add --no-cache python3 make g++
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+WORKDIR '/tmp'
+# Uncomment to install a verified version
+# COPY ./tools/dev-scripts/cmd-pnpm-install.sh ./
+# RUN chmod +x ./cmd-pnpm-install.sh && /bin/sh ./cmd-pnpm-install.sh
+RUN npm install -g pnpm
+
+WORKDIR '/usr/src/root'
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./.npmrc ./versions.json ./
+COPY ./apps/client-app/package.json ./apps/client-app/
+
+RUN pnpm config set store-dir ./.pnpm-store
+RUN pnpm install --no-frozen-lockfile
+
+COPY . .
+RUN node ./tools/dev-scripts/cmd-pre-pnpm-install.js client-app
+CMD ["pnpm", "docker:client-app"]

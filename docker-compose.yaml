@@ -1,0 +1,283 @@
+services:
+  # Nginx
+  nginx:
+    container_name: chatsuite_nginx
+    build:
+      dockerfile: ./config/nginx/Dockerfile.dev
+    ports:
+      - '10443:10443'
+    restart: always
+    networks:
+      - gateway
+    depends_on:
+      - client-app
+      - api-customer-service
+      - n8n
+  # Postgres
+  postgres:
+    container_name: chatsuite_postgres
+    image: postgres:latest
+    #ports:
+    #  - '5432:5432'
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    networks:
+      - gateway
+      - database_pg
+  # PgAdmin
+  pgadmin:
+    container_name: chatsuite_pgadmin
+    image: dpage/pgadmin4
+    #ports:
+    #  - '8080:80'
+    volumes:
+      - ./data/pgadmin:/root/.pgadmin
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    networks:
+      - gateway
+      - database_pg
+    depends_on:
+      - postgres
+  api-customer-service:
+    container_name: chatsuite_api-customer-service
+    ports:
+      - '3333:3333'
+    build:
+      dockerfile: ./apps/api-customer-service/Dockerfile.dev
+    extends:
+      file: docker-compose.base.yaml
+      service: nx-base
+    restart: always
+    environment:
+      - NX_CLOUD_ACCESS_TOKEN=""
+      - NX_NO_CLOUD=true
+    volumes:
+      - ./apps/api-customer-service/:/usr/src/root/apps/api-customer-service
+    networks:
+      - gateway
+      - database_pg
+    depends_on:
+      - postgres
+  # Client-App: React App
+  client-app:
+    container_name: chatsuite_client-app
+    ports:
+      - '4200:4200'
+    build:
+      dockerfile: ./apps/client-app/Dockerfile.dev
+    extends:
+      file: docker-compose.base.yaml
+      service: nx-base
+    restart: always
+    environment:
+      - NX_CLOUD_ACCESS_TOKEN=""
+      - NX_NO_CLOUD=true
+    volumes:
+      - ./apps/client-app/:/usr/src/root/apps/client-app
+    networks:
+      - gateway
+    depends_on:
+      - api-customer-service
+
+  # LibreChat original services
+  librechat:
+    image: ghcr.io/danny-avila/librechat-dev-api:latest
+    container_name: chatsuite_librechat
+    ports:
+      - 3080:3080
+    restart: always
+    depends_on:
+      - mongodb
+      #- librechat_rag_api
+      - mcphub   # Add dependency on MCPHub for MCP
+      #- mindsdb  # Add dependency on MindsDB for MCP
+      #- n8n      # Add dependency on n8n for MCP
+      #- nocodb   # Add dependency on n8n for MCP
+    entrypoint: ["/usr/local/bin/docker-entrypoint-librechat.sh"]
+    command: ["node", "server/index.js"]
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3080
+      - MCP_DISABLE_OAUTH=true
+      - MCP_ALLOW_ANONYMOUS_TOOLS=true
+    volumes:
+      - type: bind
+        source: ./config/librechat/docker-entrypoint-librechat.sh
+        target: /usr/local/bin/docker-entrypoint-librechat.sh
+        read_only: true
+      - type: bind
+        source: ./config/librechat/librechat.yaml
+        target: /app/librechat.yaml
+        read_only: true
+      - type: bind
+        source: ./config/env/.env.${NX_APP_ENV:-dev}
+        target: /app/.env
+        read_only: true
+      - ./data/librechat/images:/app/client/public/images
+      - ./data/librechat/uploads:/app/uploads
+      - ./data/librechat/logs:/app/api/logs
+    networks:
+      - gateway
+    extra_hosts:
+      - "synology.local:192.168.178.3"
+  mongodb:
+    container_name: chatsuite_mongodb
+    # ports:  # Uncomment this to access mongodb from outside docker, not safe in deployment
+    #   - 27018:27017
+    image: mongo:latest
+    restart: always
+    volumes:
+      - ./data/librechat/mongodb:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=
+      - MONGO_INITDB_ROOT_PASSWORD=
+    command: ["sh", "-c", "rm -f /data/db/mongod.lock && exec mongod --noauth --bind_ip_all --dbpath /data/db"]
+    networks:
+      - gateway
+  meilisearch:
+    container_name: chatsuite_meilisearch
+    image: getmeili/meilisearch:v1.12.3
+    restart: always
+    # ports: # Uncomment this to access meilisearch from outside docker
+    #   - 7700:7700 # if exposing these ports, make sure your master key is not the default value
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    environment:
+      - MEILI_HOST=http://meilisearch:7700
+      - MEILI_NO_ANALYTICS=true
+    volumes:
+      - ./data/librechat/meilisearch:/meili_data
+    networks:
+      - gateway
+  vectordb:
+    container_name: chatsuite_vectordb
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_DB: chatsuite
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    restart: always
+    volumes:
+      - vectordb_postgres_data:/var/lib/postgresql/data
+    networks:
+      - gateway
+  #librechat_rag_api:
+  #  container_name: chatsuite_librechat_rag_api
+  #  image: ghcr.io/danny-avila/librechat-rag-api-dev-lite:latest
+  #  environment:
+  #    - DB_HOST=vectordb
+  #    - RAG_PORT=${RAG_PORT:-8000}
+  #  restart: always
+  #  depends_on:
+  #    - vectordb
+  #  env_file:
+  #    - ./config/env/.env.${NX_APP_ENV:-dev}
+  #  networks:
+  #    - gateway
+
+# MindsDB
+  mindsdb:
+    image: mindsdb/mindsdb:latest
+    container_name: chatsuite_mindsdb
+    ports:
+      - "47334:47334"  # HTTP API
+      - "47335:47335"  # MySQL API
+      - "47337:47337"  # MCP API
+      - "47338:47338"  # A2A API
+    restart: always
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    volumes:
+      - ./data/mindsdb:/root/mdb_storage
+      - ./config/mindsdb/mindsdb_config.json:/root/mindsdb_config.json:ro
+      - ./config/mindsdb/docker-entrypoint-mindsdb.sh:/docker-entrypoint-mindsdb.sh:ro
+      - ./config/mindsdb/fix-mindsdb-permissions.sh:/fix-mindsdb-permissions.sh
+    entrypoint: ["/bin/sh", "-c", "/fix-mindsdb-permissions.sh && exec /docker-entrypoint-mindsdb.sh"]
+    networks:
+      - gateway
+  # n8n Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: chatsuite_n8n
+    entrypoint: ["/entrypoint.sh"]
+    restart: always
+    ports:
+      - "5678:5678"
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./config/n8n/entrypoint.sh:/entrypoint.sh:ro
+    depends_on:
+      - postgres
+    networks:
+      - gateway
+      - database_pg
+
+  # NocoDB database GUI
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: chatsuite_nocodb
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    volumes:
+      - ./data/nocodb:/usr/app/data
+    depends_on:
+      - postgres
+    networks:
+      - gateway
+      - database_pg
+
+  # MCPHub - Unified hub for multiple MCP servers
+  mcphub:
+    image: samanhappy/mcphub:latest
+    container_name: chatsuite_mcphub
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:ro
+      - ./data/mcphub:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - mcp-email-server
+    environment:
+      NODE_ENV: production
+    networks:
+      - gateway
+
+  # MCP Email Server - IMAP and SMTP via MCP Server
+  mcp-email-server:
+    image: ghcr.io/ai-zerolab/mcp-email-server:latest
+    container_name: chatsuite_mcp-email-server
+    restart: always
+    command: ["sse", "--host", "0.0.0.0", "--port", "9557"]
+    environment:
+      - DEBUG=1
+      - MCP_EMAIL_CONFIG_PATH=/root/.config/zerolib/mcp_email_server/config.toml
+    ports:
+      - "9557:9557"  # SSE server port
+    volumes:
+      - ./config/mcp-email-server:/root/.config/zerolib/mcp_email_server:rw
+      - ./data/mcp-email-server:/app/data:rw
+    networks:
+      - gateway
+
+networks:
+  gateway: {}
+  database_pg: {}
+
+volumes:
+  vectordb_postgres_data:
+  postgres_data:
+  n8n_data:

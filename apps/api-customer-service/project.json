@@ -1,0 +1,60 @@
+{
+	"name": "api-customer-service",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "apps/api-customer-service/src",
+	"projectType": "application",
+	"targets": {
+		"build": {
+			"executor": "@nx/js:tsc",
+			"outputs": ["{options.outputPath}"],
+			"options": {
+				"outputPath": "dist/apps/api-customer-service",
+				"main": "apps/api-customer-service/src/main.ts",
+				"tsConfig": "apps/api-customer-service/tsconfig.app.json",
+				"assets": ["apps/api-customer-service/src/assets"]
+			},
+			"configurations": {
+				"production": {
+					"optimization": true,
+					"extractLicenses": true,
+					"inspect": false,
+					"fileReplacements": [
+						{
+							"replace": "apps/api-customer-service/src/environments/environment.ts",
+							"with": "apps/api-customer-service/src/environments/environment.prod.ts"
+						}
+					]
+				}
+			}
+		},
+		"serve": {
+			"executor": "@nx/js:node",
+			"dependsOn": ["build"],
+			"options": {
+				"buildTarget": "api-customer-service:build"
+			},
+			"configurations": {
+				"production": {
+					"buildTarget": "api-customer-service:build:production"
+				}
+			}
+		},
+		"lint": {
+			"executor": "@nx/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["apps/api-customer-service/**/*.ts"],
+				"ignorePath": "apps/api-customer-service/.eslintignore"
+			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/apps/api-customer-service"],
+			"options": {
+				"jestConfig": "apps/api-customer-service/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	},
+	"tags": []
+}

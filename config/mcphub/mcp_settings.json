@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "time": {
+      "command": "uvx",
+      "args": ["mcp-server-time"]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    "zerolib-email": {
+      "url": "http://chatsuite_mcp-email-server:9557/sse"
+    }
+  }
+}

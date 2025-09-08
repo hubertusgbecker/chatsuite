@@ -1,0 +1,16 @@
+FROM node:24-alpine
+
+WORKDIR '/tmp'
+COPY ./tools/dev-scripts/cmd-pnpm-install.sh ./
+RUN chmod +x ./cmd-pnpm-install.sh && /bin/sh ./cmd-pnpm-install.sh
+
+WORKDIR '/usr/src/root'
+COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./.npmrc ./
+# Look into the workspace.json file get all the projectNames and copy with a script automatically
+COPY ./apps/client-app/package.json ./apps/client-app/
+COPY ./apps/api-customer-service/package.json ./apps/api-customer-service/
+COPY ./apps/api-worker/package.json ./apps/api-worker/
+RUN pnpm config set store-dir ./.pnpm-store
+RUN pnpm install
+# @INFO: Serving the current folder only for health check purposes.
+ENTRYPOINT ["pnpm", "http-server", "-p", "8081"]

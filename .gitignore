@@ -1,0 +1,124 @@
+
+# Node
+node_modules/
+**/node_modules/
+dist/
+out-tsc/
+tmp/
+coverage/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.iml
+
+# Env & secrets
+.env*
+!.env.example
+config/env/*
+!config/env/.gitkeep
+!config/env/env.dev
+!config/env/env.host
+!config/env/env.qa
+
+# Config
+
+config/librechat/librechat.yaml
+!config/librechat/librechat.example.yaml
+
+config/mcp-email-server/config.toml
+
+
+# Data
+#data/**
+!data/**/.gitkeep
+
+!data/api-magg-mcp-user-isolation-service/.gitkeep
+data/api-magg-mcp-user-isolation-service/users/**
+!data/api-magg-mcp-user-isolation-service/users/.gitkeep
+
+!data/librechat/**
+!data/librechat/**/.gitkeep
+data/librechat/images/**
+!data/librechat/images/.gitkeep
+data/librechat/logs/**
+!data/librechat/logs/.gitkeep
+data/librechat/meilisearch/**
+!data/librechat/meilisearch/.gitkeep
+data/librechat/mongodb/**
+!data/librechat/mongodb/.gitkeep
+data/librechat/postgres/**
+!data/librechat/postgres/.gitkeep
+data/librechat/uploads/**
+!data/librechat/uploads/.gitkeep
+data/librechat/vectordb/**
+!data/librechat/vectordb/.gitkeep
+data/librechat/postgres/**
+!data/librechat/postgres/.gitkeep
+
+data/mcphub/**
+!data/mcphub/**/.gitkeep
+
+data/mindsdb/**
+!data/mindsdb/**/.gitkeep
+
+data/n8n/**
+!data/n8n/**/.gitkeep
+
+data/nocodb/**
+!data/nocodb/.gitkeep
+
+data/pgadmin/**
+!data/pgadmin/**/.gitkeep
+
+data/postgres/**
+!data/postgres/**/.gitkeep
+
+
+# Certificates
+**/certificates/*
+!**/certificates/.gitkeep
+
+# Misc
+.sass-cache
+connect.lock
+libpeerconnection.log
+testem.log
+.history/
+*.history
+
+# Typings
+typings/
+
+# Helm
+charts/**/charts/
+charts/**/tmpcharts/
+
+# Ignore lock files for other package managers if using pnpm
+yarn.lock
+package-lock.json
+
+.nx
+
+repomix-output.json
+repomix-output.xml
+repomix-output.md
+
+
