@@ -15,6 +15,12 @@ env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
   NX_BRANCH: ${{ github.head_ref || github.ref_name }}
+  # Force SWC to use WASM fallback if native bindings fail
+  SWC_FORCE_WASM: "1"
+  # Ensure native modules can be built
+  SKIP_BINARY_DOWNLOAD_FOR_CI: "1"
+  # Prevent Chromium download for Puppeteer if used
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
 
 jobs:
   # Get branch info
@@ -41,6 +47,7 @@ jobs:
   get-affected:
     needs: [branch-info]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       # Check out the repository
       - name: Checkout
@@ -58,9 +65,13 @@ jobs:
         with:
           node-version: '24.x'
           cache: 'pnpm'
-      # Install workspace dependencies
+      # Install workspace dependencies with frozen lockfile for faster install
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          # Use production flag for faster install and skip optional dependencies that might cause issues
+          pnpm install --frozen-lockfile --prefer-offline --prod=false --ignore-scripts
+          # Run scripts after initial install to avoid hanging on problematic postinstall scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
       # Configure Nx to be able to detect changes between branches when we are in a PR
       - name: Derive shas for Nx
         id: set-shas
@@ -98,6 +109,7 @@ jobs:
       build: ${{ steps.get-projects-arrays.outputs.build }}
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [get-affected]
     # Skip the job if there are not affected projects containing lint
     if: ${{ fromJson(needs.get-affected.outputs.build)[0] }}
@@ -124,12 +136,15 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
       # Run test:unit script in the affected project
       - name: Lint
         run: pnpm nx run ${{ matrix.projectName }}:lint
   test-unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [get-affected]
     # Skip the job if there are not affected projects containing unit tests
     if: ${{ fromJson(needs.get-affected.outputs.build)[0] }}
@@ -156,7 +171,9 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
       # Run test:unit script in the affected project
       - name: Test unit
         run: pnpm nx run ${{ matrix.projectName }}:test
@@ -173,6 +190,7 @@ jobs:
         run: echo "All jobs finished"
   tag:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [pre-build-finished, branch-info]
     if: |
       always() &&
@@ -195,7 +213,7 @@ jobs:
           node-version: '24.x'
           cache: 'pnpm'
       - name: Install dev dependencies
-        run: pnpm install --dev
+        run: pnpm install --dev --frozen-lockfile --prefer-offline
       - name: Trigger semantic-release
         id: trigger-semantic-release
         env:

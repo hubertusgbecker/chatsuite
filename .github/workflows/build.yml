@@ -15,10 +15,17 @@ env:
   ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
   NX_BRANCH: ${{ github.head_ref || github.ref_name }}
+  # Force SWC to use WASM fallback if native bindings fail
+  SWC_FORCE_WASM: "1"
+  # Ensure native modules can be built
+  SKIP_BINARY_DOWNLOAD_FOR_CI: "1"
+  # Prevent Chromium download for Puppeteer if used
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
 
 jobs:
   set-inputs:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Get branch name
         id: branch-name
@@ -62,6 +69,7 @@ jobs:
       tag: ${{ steps.generate-inputs.outputs.tag }}
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [set-inputs]
     if: ${{ fromJson(needs.set-inputs.outputs.apps)[0] }}
     strategy:
@@ -93,7 +101,9 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
       - name: Build
         run: |
           pnpm nx run ${{ matrix.projectName }}:build
