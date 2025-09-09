@@ -79,36 +79,54 @@ function getAffectedCommandResult(str) {
 }
 
 async function affectedProjectsContainingTask(taskName, baseBranch) {
-	// pnpm nx print-affected --target=[task] --base [base branch] --select=tasks.target.project
-	const args = [
+	// First get affected projects
+	const affectedArgs = [
 		"nx",
-		"print-affected",
-		"--target",
-		taskName,
+		"show",
+		"projects",
+		"--affected",
 		baseBranch ? "--base" : undefined,
 		baseBranch || undefined,
-		"--select=tasks.target.project",
 	].filter(Boolean);
-	return commaSeparatedListToArray(
-		getAffectedCommandResult(await pnpmRun(...args)),
-	);
+	
+	const affectedProjectsStr = await pnpmRun(...affectedArgs);
+	const affectedProjects = affectedProjectsStr.trim().split('\n')
+		.filter(line => line.trim() && !line.startsWith('>'))
+		.map(line => line.trim());
+	
+	// Then get projects with the target
+	const withTargetArgs = [
+		"nx",
+		"show", 
+		"projects",
+		"--with-target",
+		taskName,
+	];
+	
+	const projectsWithTargetStr = await pnpmRun(...withTargetArgs);
+	const projectsWithTarget = projectsWithTargetStr.trim().split('\n')
+		.filter(line => line.trim() && !line.startsWith('>'))
+		.map(line => line.trim());
+	
+	// Return intersection of affected projects and projects with target
+	return affectedProjects.filter(project => projectsWithTarget.includes(project));
 }
 
 async function allProjectsContainingTask(taskName) {
-	// pnpm nx print-affected --target=[task] --files package.json --select=tasks.target.project
-	return commaSeparatedListToArray(
-		getAffectedCommandResult(
-			await pnpmRun(
-				"nx",
-				"print-affected",
-				"--target",
-				taskName,
-				"--files",
-				"package.json",
-				"--select=tasks.target.project",
-			),
-		),
-	);
+	// pnpm nx show projects --with-target=[task]
+	const args = [
+		"nx",
+		"show",
+		"projects", 
+		"--with-target",
+		taskName,
+	];
+	
+	const projectsStr = await pnpmRun(...args);
+	// Filter out pnpm command output lines and empty lines
+	return projectsStr.trim().split('\n')
+		.filter(line => line.trim() && !line.startsWith('>'))
+		.map(line => line.trim());
 }
 
 async function printAffectedProjectsContainingTask() {

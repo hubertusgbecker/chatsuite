@@ -85,7 +85,7 @@ jobs:
         run: |
             if [[ "${{github.event.pull_request.base.ref}}" == "" ]]; then
               echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint)" >> $GITHUB_OUTPUT
-              echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test-unit)" >> $GITHUB_OUTPUT
+              echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test)" >> $GITHUB_OUTPUT
               # Running on origin/release or origin/main branch
               if [[ $IS_INDEPENDENT_BUILD_ENABLED == "true" ]]; then
                 echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build)" >> $GITHUB_OUTPUT
@@ -103,6 +103,8 @@ jobs:
           echo "Test-Unit (Affected): ${{steps.get-projects-arrays.outputs.test-unit}}"
           echo "Lint (Affected): ${{steps.get-projects-arrays.outputs.lint}}"
           echo "Build (Affected): ${{steps.get-projects-arrays.outputs.build}}"
+          echo "Test-Unit length: $(echo '${{steps.get-projects-arrays.outputs.test-unit}}' | jq '. | length')"
+          echo "Lint length: $(echo '${{steps.get-projects-arrays.outputs.lint}}' | jq '. | length')"
     outputs:
       test-unit: ${{ steps.get-projects-arrays.outputs.test-unit }}
       lint: ${{ steps.get-projects-arrays.outputs.lint }}
@@ -112,14 +114,14 @@ jobs:
     timeout-minutes: 15
     needs: [get-affected]
     # Skip the job if there are not affected projects containing lint
-    if: ${{ fromJson(needs.get-affected.outputs.build)[0] }}
+    if: ${{ needs.get-affected.outputs.lint != '[]' && needs.get-affected.outputs.lint != '' && needs.get-affected.outputs.lint != 'null' }}
     strategy:
       # Run in parallel
       max-parallel: 4
       # One job for each different project and node version
       matrix:
         node: ["24.x"]
-        projectName: ${{fromJson(needs.get-affected.outputs.build)}}
+        projectName: ${{fromJson(needs.get-affected.outputs.lint)}}
     env:
       NODE: ${{ matrix.node }}
     steps:
@@ -147,14 +149,14 @@ jobs:
     timeout-minutes: 20
     needs: [get-affected]
     # Skip the job if there are not affected projects containing unit tests
-    if: ${{ fromJson(needs.get-affected.outputs.build)[0] }}
+    if: ${{ needs.get-affected.outputs.test-unit != '[]' && needs.get-affected.outputs.test-unit != '' && needs.get-affected.outputs.test-unit != 'null' }}
     strategy:
       # Run in parallel
       max-parallel: 4
       # One job for each different project and node version
       matrix:
         node: ["24.x"]
-        projectName: ${{fromJson(needs.get-affected.outputs.build)}}
+        projectName: ${{fromJson(needs.get-affected.outputs.test-unit)}}
     env:
       NODE: ${{ matrix.node }}
     steps:
@@ -190,7 +192,7 @@ jobs:
         run: echo "All jobs finished"
   tag:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [pre-build-finished, branch-info]
     if: |
       always() &&
@@ -213,7 +215,9 @@ jobs:
           node-version: '24.x'
           cache: 'pnpm'
       - name: Install dev dependencies
-        run: pnpm install --dev --frozen-lockfile --prefer-offline
+        run: |
+          pnpm install --dev --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
       - name: Trigger semantic-release
         id: trigger-semantic-release
         env:
