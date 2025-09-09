@@ -44,17 +44,17 @@ jobs:
     steps:
       # Check out the repository
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       # Install Pnpm
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v4
         with:
-          version: "7.x"
+          version: "10.x"
       # Install Node.js
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '24.x'
           cache: 'pnpm'
@@ -113,13 +113,13 @@ jobs:
     steps:
       # Checkout and setup environment
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v4
         with:
-          version: "7.x"
+          version: "10.x"
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
@@ -145,13 +145,13 @@ jobs:
     steps:
       # Checkout and setup environment
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v4
         with:
-          version: "7.x"
+          version: "10.x"
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
@@ -181,16 +181,16 @@ jobs:
       (needs.branch-info.outputs.branch-name == 'main')
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v4
         with:
-          version: "7.x"
+          version: "10.x"
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '24.x'
           cache: 'pnpm'
@@ -225,7 +225,7 @@ jobs:
       BRANCH_NAME: ${{needs.branch-info.outputs.branch-name}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Print dispatch variables
         run: |
           echo "BRANCH_NAME=$BRANCH_NAME"

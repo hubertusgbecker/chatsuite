@@ -24,7 +24,7 @@ jobs:
         id: branch-name
         uses: tj-actions/branch-names@v6
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_WORKFLOW_TOKEN }}
           fetch-depth: 0
@@ -32,7 +32,7 @@ jobs:
         run: |
           git pull origin ${{ steps.branch-name.outputs.current_branch }}
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '24.x'
       - name: Generate inputs
@@ -76,7 +76,7 @@ jobs:
         id: branch-name
         uses: tj-actions/branch-names@v6
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_WORKFLOW_TOKEN }}
       - name: Setup git
@@ -84,11 +84,11 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+        uses: pnpm/action-setup@v4
         with:
-          version: "7.x"
+          version: "10.x"
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
