@@ -372,6 +372,11 @@ This project is licensed under the [MIT License](./LICENSE) - use it freely for 
 
 ---
 
+## Configuration Documentation
+
+All configuration and environment documentation for ChatSuite—including setup, environment management, and service-specific configuration—is centrally maintained in [`/config/README.md`](./config/README.md). This file provides a comprehensive overview and links to detailed documentation for each integrated service and environment. For any configuration or environment-related questions, always refer to `/config/README.md` first.
+
+
 
 Built with ChatSuite - The Complete AI Collaboration Platform
 
