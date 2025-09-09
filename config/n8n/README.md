@@ -1,52 +1,321 @@
-# n8n Integration in ChatSuite Monorepo
+# n8n Workflow Automation Integration
+
+This directory contains the configuration for n8n, a powerful workflow automation platform, integrated into the ChatSuite monorepo.
 
 ## Overview
 
-n8n has been fully integrated into the ChatSuite monorepo following the established patterns and conventions.
+n8n is a free and open-source workflow automation tool that allows you to connect different services and automate repetitive tasks. It provides a visual interface for creating complex workflows without coding.
 
-## Directory Structure
+## Configuration
 
+### Files Structure
+- `./config/n8n/entrypoint.sh` - Custom startup script
+- `./config/n8n/README.md` - This documentation
+- `./data/n8n/` - Persistent workflow and configuration data
+
+### Docker Service
+The service is configured in `docker-compose.yaml` as:
+- **Container**: `chatsuite_n8n`
+- **Image**: `n8nio/n8n:latest`
+- **Port**: 5678
+- **Networks**: gateway, database_pg
+- **Dependencies**: postgres
+
+## Setup Guide
+
+### 1. Start the Service
+```bash
+# Start PostgreSQL first (dependency)
+docker-compose up postgres -d
+
+# Start n8n
+docker-compose up n8n -d
+
+# Or start everything at once
+docker-compose up -d
 ```
-config/n8n/
-└── README.md                   # This documentation
+
+### 2. Access n8n
+There are two ways to access n8n:
+
+**Direct Access:**
+- URL: `http://localhost:5678`
+
+**Via Nginx Proxy (Recommended):**
+- URL: `https://localhost:10443/n8n/`
+
+### 3. First Time Setup
+1. Open n8n in your browser
+2. Create your admin account (first user becomes admin)
+3. Set up your organization and workspace
+4. Start creating workflows!
+
+## Features
+
+### Visual Workflow Builder
+- **Drag & Drop Interface**: Create workflows visually
+- **500+ Integrations**: Connect to popular services and APIs
+- **Custom Code**: Add JavaScript/Python code when needed
+- **Conditional Logic**: Create complex decision trees
+- **Error Handling**: Built-in retry and error handling
+
+### Database Integration
+n8n uses the shared PostgreSQL database with its own schema:
+- **Database**: `chatsuite`
+- **Schema**: `n8n`
+- **Tables**: Workflows, executions, credentials, settings
+
+### Key Integrations Available
+- **Email**: SMTP, IMAP, Gmail, Outlook
+- **Databases**: PostgreSQL, MySQL, MongoDB
+- **APIs**: HTTP requests, webhooks, REST APIs
+- **File Systems**: Local files, FTP, cloud storage
+- **Messaging**: Slack, Discord, Telegram
+- **CRM**: Salesforce, HubSpot, Pipedrive
+- **E-commerce**: Shopify, WooCommerce
+- **Social Media**: Twitter, LinkedIn, Facebook
+
+## Use Cases in ChatSuite
+
+### 1. Customer Service Automation
+```
+New Support Ticket → Classify Priority → Assign Agent → Send Notification
+```
+
+### 2. Email Marketing
+```
+New Customer → Add to CRM → Send Welcome Email → Schedule Follow-ups
+```
+
+### 3. Data Synchronization
+```
+Database Changes → Transform Data → Update External Systems → Log Activity
+```
+
+### 4. AI Integration
+```
+User Message → Analyze Sentiment → Route to AI → Process Response → Store Results
+```
+
+### 5. Monitoring & Alerts
+```
+System Error → Check Severity → Send Alert → Create Ticket → Update Dashboard
 ```
 
 ## Configuration
 
 ### Environment Variables
+n8n uses these key environment variables from the active environment file:
 
-The n8n service uses the following key environment variables:
-- `N8N_DB_TYPE=postgresdb` - Database type
-- `N8N_DB_POSTGRESDB_HOST=postgres` - Database host
-- `N8N_DB_POSTGRESDB_SCHEMA=n8n` - Dedicated schema
-- `N8N_SSL_KEY=/certs/localhost-key.pem` - SSL private key
-- `N8N_SSL_CERT=/certs/localhost-crt.pem` - SSL certificate
-- `N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true` - Security setting
+```bash
+# Check which environment is active
+cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
 
-### Database Integration
-n8n uses the shared PostgreSQL database with its own schema (`n8n`) for:
-- Workflow storage and execution history
-- User management and credentials
-- Settings and configuration data
+# Variables loaded from ./config/env/.env.{NX_APP_ENV}
+N8N_DB_TYPE=postgresdb
+N8N_DB_POSTGRESDB_HOST=postgres
+N8N_DB_POSTGRESDB_SCHEMA=n8n
+
+# SSL Configuration
+N8N_SSL_KEY=/certs/localhost-key.pem
+N8N_SSL_CERT=/certs/localhost-crt.pem
+
+# Security Settings
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+```
 
 ### SSL/TLS Configuration
-n8n uses SSL certificates mounted from `config/certificates/` for secure HTTPS connections.
+n8n uses SSL certificates from `./config/certificates/` for secure HTTPS connections.
 
-## Docker Integration
+### Webhook Configuration
+For webhooks and external integrations:
+```bash
+# Webhook URL format
+WEBHOOK_URL=https://localhost:10443/n8n/webhook/your-webhook-id
 
-### Official Image
-n8n uses the official Docker image (`n8nio/n8n:latest`) which provides:
-- Pre-configured n8n installation with all dependencies
-- Optimized Node.js runtime environment
-- Built-in security and performance optimizations
-- Automatic updates with latest n8n features
+# Test webhook URL format  
+WEBHOOK_TEST_URL=https://localhost:10443/n8n/webhook-test/your-webhook-id
+```
 
-### Network Configuration
-n8n is connected to both:
-- `gateway` network - for communication with other services
-- `database_pg` network - for PostgreSQL access
+## Creating Your First Workflow
 
-### Volume Mounts
+### Example: Email Notification Workflow
+1. **Trigger**: Webhook (receives data from external system)
+2. **Filter**: Check if urgent priority
+3. **Email**: Send notification to admin
+4. **Database**: Log the incident
+
+### Step-by-Step:
+1. Click "Add Workflow" in n8n interface
+2. Add "Webhook" trigger node
+3. Add "If" condition node
+4. Add "Email" action node
+5. Add "PostgreSQL" database node
+6. Connect the nodes and configure each one
+7. Test and activate the workflow
+
+## Advanced Features
+
+### Code Nodes
+Add custom JavaScript or Python code:
+```javascript
+// Example: Transform data
+return items.map(item => ({
+  ...item.json,
+  processed_at: new Date().toISOString(),
+  status: 'processed'
+}));
+```
+
+### Cron Scheduling
+Schedule workflows to run automatically:
+- **Every Hour**: `0 * * * *`
+- **Daily at 9 AM**: `0 9 * * *`
+- **Weekly on Monday**: `0 9 * * 1`
+
+### Sub-workflows
+Break complex workflows into reusable components:
+1. Create a sub-workflow
+2. Call it from main workflows
+3. Pass parameters between workflows
+
+## Integration with Other ChatSuite Services
+
+### LibreChat Integration
+Create workflows that:
+- Monitor chat conversations
+- Analyze user sentiment
+- Route complex queries to human agents
+- Generate conversation summaries
+
+### MindsDB Integration
+Use n8n to:
+- Trigger ML model training
+- Process prediction results
+- Automate data preparation
+- Send prediction alerts
+
+### Email Server Integration
+Connect with MCP Email Server:
+- Process incoming emails
+- Send automated responses
+- Manage email campaigns
+- Create email-based workflows
+
+## Troubleshooting
+
+### Common Issues
+
+1. **n8n not starting**
+   ```bash
+   # Check container logs
+   docker-compose logs n8n
+   
+   # Verify PostgreSQL connection
+   docker exec chatsuite_n8n nc -z postgres 5432
+   ```
+
+2. **Workflows not executing**
+   - Check workflow activation status
+   - Verify trigger configuration
+   - Review execution logs in n8n interface
+
+3. **Database connection errors**
+   - Ensure PostgreSQL is running
+   - Check database credentials
+   - Verify n8n schema exists
+
+4. **SSL/Certificate issues**
+   - Verify certificate files exist
+   - Check file permissions
+   - Test HTTPS access
+
+### Debug Commands
+```bash
+# Check n8n logs
+docker-compose logs n8n --tail=100
+
+# Access n8n CLI
+docker exec -it chatsuite_n8n n8n --help
+
+# Test database connection
+docker exec chatsuite_n8n nc -z postgres 5432
+
+# Check n8n version
+docker exec chatsuite_n8n n8n --version
+```
+
+## Service Status
+
+✅ **Working Components:**
+- n8n web interface on port 5678
+- PostgreSQL database integration
+- SSL certificate support
+- Nginx reverse proxy integration
+- Webhook endpoints
+- Cron job scheduling
+
+✅ **Integration Benefits:**
+- Visual workflow automation
+- 500+ service integrations
+- Database persistence
+- Secure HTTPS access
+- Integration with ChatSuite services
+- Custom code execution
+
+## Security Considerations
+
+### Development Security
+- SSL certificates for encrypted communication
+- Database credentials in environment files (per environment)
+- Network isolation through Docker networks
+- Nginx reverse proxy protection
+
+### Production Security
+1. **Change default credentials** in `./config/env/.env.host`
+2. **Enable proper authentication** (LDAP, SAML, OAuth)
+3. **Set up webhook security** with authentication
+4. **Configure firewall rules**
+5. **Enable audit logging**
+6. **Regular backups** of workflow data
+7. **Environment separation**: Use separate credentials for dev/qa/host
+
+## Performance Optimization
+
+### Workflow Best Practices
+- Use efficient nodes and avoid unnecessary loops
+- Implement proper error handling
+- Set appropriate timeouts
+- Use sub-workflows for reusable logic
+
+### Database Optimization
+- Regular cleanup of old executions
+- Index optimization for large datasets
+- Connection pooling configuration
+
+## Backup and Restore
+
+### Workflow Backup
+```bash
+# Export all workflows
+docker exec chatsuite_n8n n8n export:workflow --all --output=/tmp/workflows.json
+
+# Copy from container
+docker cp chatsuite_n8n:/tmp/workflows.json ./backup/
+```
+
+### Database Backup
+```bash
+# Backup n8n schema
+docker exec chatsuite_postgres pg_dump -U admin -d chatsuite --schema=n8n > n8n_backup.sql
+```
+
+## Repository
+
+- **n8n Documentation**: https://docs.n8n.io/
+- **GitHub**: https://github.com/n8n-io/n8n
+- **Community**: https://community.n8n.io/
+- **Workflow Templates**: https://n8n.io/workflows/
 - `./data/n8n:/data/n8n` - Persistent workflow and configuration data
 - `./config/certificates:/certs:ro` - SSL certificates (read-only)
 

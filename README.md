@@ -17,7 +17,7 @@ Built on a modern full-stack monorepo with Nx, NestJS, and React for enterprise-
 ChatSuite is a comprehensive AI collaboration platform that unifies multiple powerful tools into one cohesive workspace:
 
 **Core AI Productivity Tools:**
-- **LibreChat** - Advanced AI chat interface with multi-model support
+- **LibreChat** - Advanced AI chat interface with multi-model support 
 - **n8n** - Visual workflow automation and integration platform  
 - **MindsDB** - AI-powered database with ML capabilities
 - **NocoDB** - Smart spreadsheet interface for databases
@@ -66,7 +66,7 @@ pnpm install
 # Setup environment configuration
 cp .env.example .env
 
-# Copy environment files from templates (all environments)
+# Copy environment files from templates (all environments) and add OPENAI_API_KEY and/or other keys as needed
 cp config/env/env.dev config/env/.env.dev
 cp config/env/env.qa config/env/.env.qa
 cp config/env/env.host config/env/.env.host

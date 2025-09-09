@@ -5,80 +5,80 @@
 
 This document serves as the authoritative reference for all development, service architecture, and automation standards within the ChatSuite ecosystem. Whether you're a developer, DevOps engineer, or AI agent, this guide ensures consistent, high-quality implementations across the platform.
 
-## 🎯 Platform Overview
+## Platform Overview
 
 ChatSuite integrates multiple AI and productivity tools into a unified collaboration platform:
 
-- **🤖 LibreChat** - Multi-model AI chat interface
-- **⚡ n8n** - Visual workflow automation  
-- **🧠 MindsDB** - AI-powered database platform
-- **📊 NocoDB** - Intuitive database interface
-- **🔗 MCPHub** - Model Context Protocol orchestration
-- **📧 MCP Email** - Intelligent email processing
-- **⚛️ React Client** - Modern web interface
-- **🏗️ NestJS API** - Scalable backend services
+- **LibreChat** - Multi-model AI chat interface
+- **n8n** - Visual workflow automation  
+- **MindsDB** - AI-powered database platform
+- **NocoDB** - Intuitive database interface
+- **MCPHub** - Model Context Protocol orchestration
+- **MCP Email** - Intelligent email processing
+- **React Client** - Modern web interface
+- **NestJS API** - Scalable backend services
 
-> **🎯 Mission**: Enable seamless collaboration between AI systems, automation workflows, and human users through intelligent service orchestration and unified data access.
+> **Mission**: Enable seamless collaboration between AI systems, automation workflows, and human users through intelligent service orchestration and unified data access.
 
 
-## 🏗️ Platform Architecture & Structure
+## Platform Architecture & Structure
 
 This comprehensive guide covers every component of the ChatSuite platform. Use this as your navigation map for development, deployment, and troubleshooting.
 
-### 📁 **Repository Structure**
+### **Repository Structure**
 
 | Directory | Purpose & Contents |
 |-----------|-------------------|
-| **📱 apps/** | All deployable applications and services |
-| &nbsp;&nbsp;&nbsp;&nbsp;`api-customer-service/` | **NestJS** backend API with business logic, controllers, services, and configuration |
-| &nbsp;&nbsp;&nbsp;&nbsp;`client-app/` | **React** frontend application with components, routing, and user interface |
-| **⚙️ config/** | Centralized configuration for all platform services |
-| &nbsp;&nbsp;&nbsp;&nbsp;`env/` | Environment templates (`env.dev`, `env.host`, `env.qa`) and runtime configuration |
-| &nbsp;&nbsp;&nbsp;&nbsp;`librechat/` | LibreChat configuration including MongoDB and vector database setup |
-| &nbsp;&nbsp;&nbsp;&nbsp;`mcp-email-server/` | MCP Email Server configuration for intelligent email processing |
-| &nbsp;&nbsp;&nbsp;&nbsp;`mcphub/` | MCPHub configuration for protocol orchestration |
-| &nbsp;&nbsp;&nbsp;&nbsp;`mindsdb/` | MindsDB configuration, Docker setup, and AI database scripts |
-| &nbsp;&nbsp;&nbsp;&nbsp;`n8n/` | n8n workflow automation configuration and entrypoints |
-| &nbsp;&nbsp;&nbsp;&nbsp;`nginx/` | Nginx reverse proxy configuration for SSL and routing |
-| &nbsp;&nbsp;&nbsp;&nbsp;`nocodb/` | NocoDB database interface configuration |
-| &nbsp;&nbsp;&nbsp;&nbsp;`pnpm/` | Package manager configuration for dependency caching |
-| &nbsp;&nbsp;&nbsp;&nbsp;`postgres/` | PostgreSQL database initialization and setup scripts |
-| **💾 data/** | Persistent data volumes for all containerized services |
-| &nbsp;&nbsp;&nbsp;&nbsp;`librechat/` | LibreChat data (images, logs, search index, MongoDB, uploads) |
-| &nbsp;&nbsp;&nbsp;&nbsp;`mcp-email-server/` | Email server data and configuration |
-| &nbsp;&nbsp;&nbsp;&nbsp;`mcphub/` | MCPHub data and server configurations |
-| &nbsp;&nbsp;&nbsp;&nbsp;`mindsdb/` | MindsDB data (models, cache, logs, storage) |
-| &nbsp;&nbsp;&nbsp;&nbsp;`nocodb/` | NocoDB data and user configurations |
-| &nbsp;&nbsp;&nbsp;&nbsp;`pgadmin/` | PgAdmin data and user settings |
-| &nbsp;&nbsp;&nbsp;&nbsp;`postgres/` | PostgreSQL database files |
-| **📚 docs/** | Platform documentation, guides, and reference materials |
-| **🏛️ libs/** | Shared libraries and reusable modules (future expansion) |
-| **🗄️ schema/** | Database schemas and migration management |
-| &nbsp;&nbsp;&nbsp;&nbsp;`consumer/`, `customer/` | Prisma ORM schemas and database migrations |
-| &nbsp;&nbsp;&nbsp;&nbsp;`orchestrator/` | Master database schema and environment templates |
-| **🛠️ tools/** | Development tools, automation scripts, and CI/CD utilities |
-| &nbsp;&nbsp;&nbsp;&nbsp;`dev-scripts/` | All development scripts (prefixed with `cmd-`) |
-| &nbsp;&nbsp;&nbsp;&nbsp;`tsconfig.tools.json` | TypeScript configuration for tooling |
-| **📦 tmp/** | Temporary workspace for build artifacts and generated files |
+| **apps/** | All deployable applications and services |
+| `api-customer-service/` | **NestJS** backend API with business logic, controllers, services, and configuration |
+| `client-app/` | **React** frontend application with components, routing, and user interface |
+| **config/** | Centralized configuration for all platform services |
+| `env/` | Environment templates (`env.dev`, `env.host`, `env.qa`) and runtime configuration |
+| `librechat/` | LibreChat configuration including MongoDB and vector database setup |
+| `mcp-email-server/` | MCP Email Server configuration for intelligent email processing |
+| `mcphub/` | MCPHub configuration for protocol orchestration |
+| `mindsdb/` | MindsDB configuration, Docker setup, and AI database scripts |
+| `n8n/` | n8n workflow automation configuration and entrypoints |
+| `nginx/` | Nginx reverse proxy configuration for SSL and routing |
+| `nocodb/` | NocoDB database interface configuration |
+| `pnpm/` | Package manager configuration for dependency caching |
+| `postgres/` | PostgreSQL database initialization and setup scripts |
+| **data/** | Persistent data volumes for all containerized services |
+| `librechat/` | LibreChat data (images, logs, search index, MongoDB, uploads) |
+| `mcp-email-server/` | Email server data and configuration |
+| `mcphub/` | MCPHub data and server configurations |
+| `mindsdb/` | MindsDB data (models, cache, logs, storage) |
+| `nocodb/` | NocoDB data and user configurations |
+| `nocodb/pgadmin/` | PgAdmin data and user settings |
+| `nocodb/postgres/` | PostgreSQL database files |
+| **docs/** | Platform documentation, guides, and reference materials |
+| ** libs/** | Shared libraries and reusable modules (future expansion) |
+| **schema/** | Database schemas and migration management |
+| schema/consumer/, schema/customer/ | Prisma ORM schemas and database migrations |
+| schema/orchestrator/ | Master database schema and environment templates |
+| **tools/** | Development tools, automation scripts, and CI/CD utilities |
+| tools/dev-scripts/ | All development scripts (prefixed with `cmd-`) |
+| tools/tsconfig.tools.json | TypeScript configuration for tooling |
+| **tmp/** | Temporary workspace for build artifacts and generated files |
 
-### 🎯 **Development Standards**
+### **Development Standards**
 
-- ✅ All new applications must be created in `apps/` using Nx generators
-- ✅ All persistent data must be mapped to appropriate `data/` subdirectories  
-- ✅ All configuration and Docker assets must be placed in `config/`
-- ✅ All documentation must be stored in the `docs/` directory
-- ✅ All reusable code must be extracted to `libs/` as the codebase grows
-- ✅ All database changes must be reflected in `schema/` with proper migrations
-- ✅ All development scripts must be placed in `tools/dev-scripts/` with `cmd-` prefix
-- ⚠️ Never place production code in `tmp/` or create `external/` unless specifically required
-- 🔒 **CRITICAL**: Always verify environment configuration using `docs/environment-configuration-solution.md`
+- All new applications must be created in `apps/` using Nx generators
+- All persistent data must be mapped to appropriate `data/` subdirectories  
+- All configuration and Docker assets must be placed in `config/`
+- All documentation must be stored in the `docs/` directory
+- All reusable code must be extracted to `libs/` as the codebase grows
+- All database changes must be reflected in `schema/` with proper migrations
+- All development scripts must be placed in `tools/dev-scripts/` with `cmd-` prefix
+- Never place production code in `tmp/` or create `external/` unless specifically required
+- **CRITICAL**: Always verify environment configuration using `docs/environment-configuration-solution.md`
 
-> **📋 This document is the single source of truth for all development standards within the ChatSuite platform.**
+> **This document is the single source of truth for all development standards within the ChatSuite platform.**
 
 
-## 🚀 Quick Reference & Essential Commands
+## Quick Reference & Essential Commands
 
-### 📁 **Critical Files & Locations**
+### **Critical Files & Locations**
 - **`.github/copilot-instructions.md`** - Coding standards and communication guidelines for AI agents
 - **`repomix-output.xml`** - Machine-readable codebase summary for automated analysis
 - **`tools/dev-scripts/`** - All development automation (never place scripts elsewhere)
@@ -87,7 +87,7 @@ This comprehensive guide covers every component of the ChatSuite platform. Use t
 - **`docs/environment-configuration-solution.md`** - Environment setup and security guide
 - **`docs/environment-quick-reference.md`** - Quick environment reference
 
-### 🔐 **Security & Environment Commands**
+### **Security & Environment Commands**
 ```bash
 pnpm env:verify     # Verify security configuration
 pnpm env:show       # Display current environment  
@@ -96,7 +96,7 @@ pnpm env:set:dev    # Set development environment
 pnpm env:set:qa     # Set QA environment
 ```
 
-### 🚀 **Core Platform Operations**
+### **Core Platform Operations**
 ```bash
 pnpm start          # Launch all services
 pnpm stop           # Graceful shutdown
@@ -221,19 +221,19 @@ All ChatSuite services and applications are accessible both on their original po
 
 | Service                  | Direct Port | Unified Proxy Route (10443) | Status |
 |--------------------------|-------------|-----------------------------|---------| 
-| Client App               | 4200        | /app/                       | ✅ HTTP + HTTPS |
-| API Customer Service     | 3333        | /api/customer/              | ✅ HTTP + HTTPS |
-| LibreChat                | 3080        | /librechat/                 | ✅ HTTP + HTTPS |
-| PgAdmin                  | (internal)  | /pgadmin/                   | ✅ HTTPS Only |
-| N8N                      | 5678        | /n8n/                       | ✅ HTTP + HTTPS |
-| NocoDB                   | 8080        | /nocodb/                    | ✅ HTTP + HTTPS |
-| MCPHub                   | 3000        | /mcphub/                    | ✅ HTTP + HTTPS |
-| MCP Email Server         | 9557        | /mcp-email/                 | ✅ HTTP + HTTPS |
-| MindsDB HTTP API         | 47334       | /mindsdb/                   | ✅ HTTP + HTTPS |
-| MindsDB MySQL API        | 47335       | (MySQL protocol)            | ⚠️ MySQL Only |
-| MindsDB MCP API          | 47337       | (MCP protocol)              | ⚠️ MCP Only |
-| MindsDB A2A API          | 47338       | (A2A protocol)              | ⚠️ A2A Only |
-| Nginx Proxy              | 10443       | (All services)              | ✅ HTTPS Only |
+| Client App               | 4200        | /app/                       | HTTP + HTTPS |
+| API Customer Service     | 3333        | /api/customer/              | HTTP + HTTPS |
+| LibreChat                | 3080        | /librechat/                 | HTTP + HTTPS |
+| PgAdmin                  | (internal)  | /pgadmin/                   | HTTPS Only |
+| N8N                      | 5678        | /n8n/                       | HTTP + HTTPS |
+| NocoDB                   | 8080        | /nocodb/                    | HTTP + HTTPS |
+| MCPHub                   | 3000        | /mcphub/                    | HTTP + HTTPS |
+| MCP Email Server         | 9557        | /mcp-email/                 | HTTP + HTTPS |
+| MindsDB HTTP API         | 47334       | /mindsdb/                   | HTTP + HTTPS |
+| MindsDB MySQL API        | 47335       | (MySQL protocol)            | MySQL Only |
+| MindsDB MCP API          | 47337       | (MCP protocol)              | MCP Only |
+| MindsDB A2A API          | 47338       | (A2A protocol)              | A2A Only |
+| Nginx Proxy              | 10443       | (All services)              | HTTPS Only |
 
 > **Note:** Services with "HTTP + HTTPS" can be accessed directly on their port or via the nginx proxy. PgAdmin is only accessible through the proxy for security. All services are accessible via the unified nginx proxy on port 10443 with HTTPS.
 
