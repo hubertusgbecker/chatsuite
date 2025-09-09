@@ -88,26 +88,26 @@ async function affectedProjectsContainingTask(taskName, baseBranch) {
 		baseBranch ? "--base" : undefined,
 		baseBranch || undefined,
 	].filter(Boolean);
-	
+
 	const affectedProjectsStr = await pnpmRun(...affectedArgs);
 	const affectedProjects = affectedProjectsStr.trim().split('\n')
 		.filter(line => line.trim() && !line.startsWith('>'))
 		.map(line => line.trim());
-	
+
 	// Then get projects with the target
 	const withTargetArgs = [
 		"nx",
-		"show", 
+		"show",
 		"projects",
 		"--with-target",
 		taskName,
 	];
-	
+
 	const projectsWithTargetStr = await pnpmRun(...withTargetArgs);
 	const projectsWithTarget = projectsWithTargetStr.trim().split('\n')
 		.filter(line => line.trim() && !line.startsWith('>'))
 		.map(line => line.trim());
-	
+
 	// Return intersection of affected projects and projects with target
 	return affectedProjects.filter(project => projectsWithTarget.includes(project));
 }
@@ -117,11 +117,11 @@ async function allProjectsContainingTask(taskName) {
 	const args = [
 		"nx",
 		"show",
-		"projects", 
+		"projects",
 		"--with-target",
 		taskName,
 	];
-	
+
 	const projectsStr = await pnpmRun(...args);
 	// Filter out pnpm command output lines and empty lines
 	return projectsStr.trim().split('\n')
