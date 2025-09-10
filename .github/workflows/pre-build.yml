@@ -206,7 +206,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -221,15 +221,26 @@ jobs:
         run: |
           echo "Starting dependency installation at $(date)"
           pnpm install --dev --frozen-lockfile --prefer-offline --ignore-scripts
-          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
+          pnpm rebuild --store-dir=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
           echo "Dependency installation completed at $(date)"
       - name: Trigger semantic-release
         timeout-minutes: 8
         id: trigger-semantic-release
         env:
-           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SEMANTIC_RELEASE }}
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Starting semantic-release at $(date)"
+          echo "GITHUB_TOKEN length: ${#GITHUB_TOKEN}"
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "ERROR: GITHUB_TOKEN is empty, cannot proceed with semantic-release"
+            exit 1
+          fi
+          # Check if we can authenticate with GitHub
+          if ! git ls-remote --heads https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}.git main >/dev/null 2>&1; then
+            echo "WARNING: Cannot authenticate with GitHub, skipping semantic-release"
+            echo "tag=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           pnpm semantic-release --dry-run --branches main --no-ci
           test -e .VERSION || (echo $(git describe --abbrev=0 --tags | tr -d v) > .VERSION && touch .NORELEASE)
           echo "tag=$(cat .VERSION)" >> $GITHUB_OUTPUT
