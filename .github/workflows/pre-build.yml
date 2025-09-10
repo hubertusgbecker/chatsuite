@@ -105,6 +105,8 @@ jobs:
           echo "Build (Affected): ${{steps.get-projects-arrays.outputs.build}}"
           echo "Test-Unit length: $(echo '${{steps.get-projects-arrays.outputs.test-unit}}' | jq '. | length')"
           echo "Lint length: $(echo '${{steps.get-projects-arrays.outputs.lint}}' | jq '. | length')"
+          echo "Raw test-unit output: '${{steps.get-projects-arrays.outputs.test-unit}}'"
+          echo "Raw lint output: '${{steps.get-projects-arrays.outputs.lint}}'"
     outputs:
       test-unit: ${{ steps.get-projects-arrays.outputs.test-unit }}
       lint: ${{ steps.get-projects-arrays.outputs.lint }}
@@ -114,7 +116,7 @@ jobs:
     timeout-minutes: 15
     needs: [get-affected]
     # Skip the job if there are not affected projects containing lint
-    if: ${{ needs.get-affected.outputs.lint != '[]' && needs.get-affected.outputs.lint != '' && needs.get-affected.outputs.lint != 'null' }}
+    if: ${{ needs.get-affected.outputs.lint != '[]' && needs.get-affected.outputs.lint != '' && needs.get-affected.outputs.lint != 'null' && contains(needs.get-affected.outputs.lint, '"') }}
     strategy:
       # Run in parallel
       max-parallel: 4
@@ -149,7 +151,7 @@ jobs:
     timeout-minutes: 20
     needs: [get-affected]
     # Skip the job if there are not affected projects containing unit tests
-    if: ${{ needs.get-affected.outputs.test-unit != '[]' && needs.get-affected.outputs.test-unit != '' && needs.get-affected.outputs.test-unit != 'null' }}
+    if: ${{ needs.get-affected.outputs.test-unit != '[]' && needs.get-affected.outputs.test-unit != '' && needs.get-affected.outputs.test-unit != 'null' && contains(needs.get-affected.outputs.test-unit, '"') }}
     strategy:
       # Run in parallel
       max-parallel: 4
@@ -192,7 +194,7 @@ jobs:
         run: echo "All jobs finished"
   tag:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     needs: [pre-build-finished, branch-info]
     if: |
       always() &&
@@ -215,18 +217,25 @@ jobs:
           node-version: '24.x'
           cache: 'pnpm'
       - name: Install dev dependencies
+        timeout-minutes: 5
         run: |
+          echo "Starting dependency installation at $(date)"
           pnpm install --dev --frozen-lockfile --prefer-offline --ignore-scripts
           pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
+          echo "Dependency installation completed at $(date)"
       - name: Trigger semantic-release
+        timeout-minutes: 8
         id: trigger-semantic-release
         env:
            GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SEMANTIC_RELEASE }}
         run: |
+          echo "Starting semantic-release at $(date)"
           pnpm semantic-release --dry-run --branches main --no-ci
           test -e .VERSION || (echo $(git describe --abbrev=0 --tags | tr -d v) > .VERSION && touch .NORELEASE)
           echo "tag=$(cat .VERSION)" >> $GITHUB_OUTPUT
+          echo "Running actual semantic-release at $(date)"
           pnpm semantic-release
+          echo "Semantic-release completed at $(date)"
     outputs:
       tag: ${{ steps.trigger-semantic-release.outputs.tag }}
   dispatch-build:
