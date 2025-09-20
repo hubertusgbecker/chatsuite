@@ -72,15 +72,18 @@ function resolveNxAppEnv(fallback = 'dev') {
   const projectRoot = findProjectRoot();
   const envPath = path.join(projectRoot, '.env');
 
-  // Check process environment first (for cross-env override scenarios)
-  if (process.env.NX_APP_ENV) {
-    return process.env.NX_APP_ENV;
-  }
-
-  // Check .env file
+  // Check .env file first so an explicit project file always wins. This avoids
+  // situations where a system or sudo environment variable (e.g. NX_APP_ENV)
+  // inadvertently overrides the intended project configuration.
   const envVars = parseEnvFile(envPath);
   if (envVars.NX_APP_ENV) {
     return envVars.NX_APP_ENV;
+  }
+
+  // Fall back to process environment (used for explicit overrides like
+  // cross-env during local development).
+  if (process.env.NX_APP_ENV) {
+    return process.env.NX_APP_ENV;
   }
 
   // Use fallback
