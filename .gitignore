@@ -37,14 +37,13 @@ config/env/*
 !config/env/env.dev
 !config/env/env.host
 !config/env/env.qa
+!config/env/README.md
 
 # Config
-
 config/librechat/librechat.yaml
 !config/librechat/librechat.example.yaml
 
 config/mcp-email-server/config.toml
-
 
 # Data
 #data/**
