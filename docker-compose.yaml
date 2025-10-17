@@ -84,7 +84,7 @@ services:
     depends_on:
       - api-customer-service
 
-  # LibreChat original services
+  # LibreChat
   librechat:
     image: ghcr.io/danny-avila/librechat-dev-api:latest
     container_name: chatsuite_librechat
@@ -127,6 +127,7 @@ services:
       - gateway
     extra_hosts:
       - "synology.local:192.168.178.3"
+
   mongodb:
     container_name: chatsuite_mongodb
     # ports:  # Uncomment this to access mongodb from outside docker, not safe in deployment
@@ -141,6 +142,7 @@ services:
     command: ["sh", "-c", "rm -f /data/db/mongod.lock && exec mongod --noauth --bind_ip_all --dbpath /data/db"]
     networks:
       - gateway
+
   meilisearch:
     container_name: chatsuite_meilisearch
     image: getmeili/meilisearch:v1.12.3
@@ -202,6 +204,7 @@ services:
     entrypoint: ["/bin/sh", "-c", "/fix-mindsdb-permissions.sh && exec /docker-entrypoint-mindsdb.sh"]
     networks:
       - gateway
+
   # n8n Workflow Automation
   n8n:
     image: n8nio/n8n:latest
@@ -213,7 +216,7 @@ services:
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     volumes:
-      - n8n_data:/home/node/.n8n
+      - ./data/n8n:/home/node/.n8n
       - ./config/n8n/entrypoint.sh:/entrypoint.sh:ro
     depends_on:
       - postgres
@@ -280,4 +283,3 @@ networks:
 volumes:
   vectordb_postgres_data:
   postgres_data:
-  n8n_data:
