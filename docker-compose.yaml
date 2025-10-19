@@ -209,15 +209,16 @@ services:
   n8n:
     image: n8nio/n8n:latest
     container_name: chatsuite_n8n
-    entrypoint: ["/entrypoint.sh"]
+    entrypoint: ["/docker-entrypoint-n8n.sh"]
     restart: always
+    init: true
     ports:
       - "5678:5678"
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     volumes:
       - ./data/n8n:/home/node/.n8n
-      - ./config/n8n/entrypoint.sh:/entrypoint.sh:ro
+      - ./config/n8n/docker-entrypoint-n8n.sh:/docker-entrypoint-n8n.sh:ro
     depends_on:
       - postgres
     networks:

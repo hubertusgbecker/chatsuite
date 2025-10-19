@@ -9,7 +9,7 @@ n8n is a free and open-source workflow automation tool that allows you to connec
 ## Configuration
 
 ### Files Structure
-- `./config/n8n/entrypoint.sh` - Custom startup script
+- `./config/n8n/docker-entrypoint-n8n.sh` - Comprehensive startup script with SSL support, permission fixes, and command handling
 - `./config/n8n/README.md` - This documentation
 - `./data/n8n/` - Persistent workflow and configuration data
 
@@ -18,6 +18,17 @@ The service is configured in `docker-compose.yaml` as:
 - **Container**: `chatsuite_n8n`
 - **Image**: `n8nio/n8n:latest`
 - **Port**: 5678
+
+### Permission Management
+n8n requires proper file permissions to access its data directory. The simplified permission solution includes:
+
+1. **Automatic Comprehensive Fixes**: The entrypoint script automatically handles all permission scenarios
+2. **SSL Configuration**: Automatically detects and configures SSL certificates if available
+3. **Command Handling**: Intelligent n8n binary detection and startup
+4. **Self-Healing**: Container restart automatically fixes any permission issues
+5. **Data Directory Structure**: Creates required subdirectories (workflows, credentials, logs, nodes)
+
+**Simplified Architecture**: All permission handling is now integrated into the docker entrypoint - no external scripts needed.
 - **Networks**: gateway, database_pg
 - **Dependencies**: postgres
 
@@ -367,6 +378,95 @@ docker-compose pull n8n
 - Container logs: `pnpm docker:n8n:logs`
 - Application logs are stored in the container and accessible via Docker logs
 - Database queries are logged in PostgreSQL logs
+
+## Troubleshooting
+
+### Permission Issues
+
+**Problem**: n8n fails to start with permission errors like "EACCES: permission denied" or "cannot create directory"
+
+**Solutions**:
+1. **Self-Healing**: Simply restart the container - the entrypoint automatically fixes permissions:
+   ```bash
+   docker-compose restart n8n
+   ```
+
+2. **Complete Reset**: Stop and start fresh to ensure clean permission setup:
+   ```bash
+   docker-compose stop n8n && docker-compose up n8n -d
+   ```
+
+3. **Manual Host Fix** (if needed): Set liberal permissions on host directory:
+   ```bash
+   chmod -R 777 ./data/n8n/
+   docker-compose restart n8n
+   ```
+
+### Container Startup Issues
+
+**Problem**: n8n container exits immediately or fails to start
+
+**Debugging Steps**:
+1. Check container logs:
+   ```bash
+   pnpm docker:n8n:logs
+   ```
+
+2. Verify data directory exists and is accessible:
+   ```bash
+   ls -la ./data/n8n/
+   ```
+
+3. Test entrypoint script manually:
+   ```bash
+   docker-compose exec n8n /bin/sh
+   ```
+
+### Data Access Issues
+
+**Problem**: n8n loses workflows or credentials
+
+**Verification**:
+1. Check if data directory is properly mounted:
+   ```bash
+   docker-compose exec n8n ls -la /home/node/.n8n/
+   ```
+
+2. Verify subdirectories exist:
+   ```bash
+   ls -la ./data/n8n/
+   # Should show: credentials, logs, nodes, workflows
+   ```
+
+3. Re-run permission fix if needed:
+   ```bash
+   pnpm fix:n8n-permissions
+   docker-compose restart n8n
+   ```
+
+### Database Connection Issues
+
+**Problem**: n8n cannot connect to PostgreSQL
+
+**Check**:
+1. Verify PostgreSQL is running:
+   ```bash
+   docker-compose ps postgres
+   ```
+
+2. Check environment variables in `.env.{dev|qa|host}`
+3. Test database connection from n8n container:
+   ```bash
+   docker-compose exec n8n nc -zv postgres 5432
+   ```
+
+### Performance Issues
+
+**Solutions**:
+- Increase container memory limits in docker-compose.yaml
+- Monitor disk usage in `./data/n8n/`
+- Check PostgreSQL performance and indexes
+- Review workflow complexity and execution frequency
 
 ## Development
 
