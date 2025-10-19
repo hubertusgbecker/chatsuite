@@ -12,4 +12,12 @@
       "url": "http://chatsuite_mcp-email-server:9557/sse"
     }
   }
+  ,
+  "users": [
+    {
+      "username": "admin",
+      "password": "$2b$10$hgRExLqPPb1yRE5PaAtDguxVuZMxpIrFE3tubgoaANAlfFYo9UysW",
+      "isAdmin": true
+    }
+  ]
 }
