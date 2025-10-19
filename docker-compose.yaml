@@ -210,8 +210,8 @@ services:
 
   # n8n Workflow Automation
   n8n:
-    #image: n8nio/n8n:latest
-    image: n8nio/n8n:beta # Use the beta release of n8n. Change this tag if you prefer a specific beta version (e.g. n8nio/n8n:0.236.0-beta.1)
+    #image: n8nio/n8n:beta # Use the beta release of n8n. Change this tag if you prefer a specific beta version (e.g. n8nio/n8n:0.236.0-beta.1)
+    image: n8nio/n8n:latest
     container_name: chatsuite_n8n
     entrypoint: ["/docker-entrypoint-n8n.sh"]
     restart: always
