@@ -294,7 +294,7 @@ services:
     volumes:
       - ./data/nocodb:/usr/app/data
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
       interval: 10s
       timeout: 5s
       retries: 10
