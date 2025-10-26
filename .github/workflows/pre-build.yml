@@ -9,6 +9,11 @@ on:
   # Execute it on opening any pull request to main or release
   pull_request:
 
+permissions:
+  contents: write
+  actions: write
+  pull-requests: read
+
 env:
   # @INFO: If independent builds are enabled, only affected projects are going to be deployed.
   IS_INDEPENDENT_BUILD_ENABLED: "true"
@@ -297,7 +302,88 @@ jobs:
           echo "BRANCH_NAME=$BRANCH_NAME"
           echo "BUILD_REQUIRED_APPS=$BUILD_REQUIRED_APPS"
           echo "TAG=${{needs.tag.outputs.tag}}"
-      - name: Dispatch build
-        run: |
-          echo "Dispatching build event..."
-          gh workflow run build.yml -f apps=$BUILD_REQUIRED_APPS
+      - name: Check workflow permissions and dispatch
+        env:
+          BUILD_REQUIRED_APPS: ${{ needs.get-affected.outputs.build }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow_id = 'build.yml';
+            const ref = 'main';  // Always dispatch on main since this only runs on main
+            const inputs = {
+              apps: process.env.BUILD_REQUIRED_APPS
+            };
+
+            console.log('Repository:', context.repo.owner + '/' + context.repo.repo);
+            console.log('Target workflow:', workflow_id);
+            console.log('Target ref:', ref);
+            console.log('Inputs:', inputs);
+            console.log('Token length:', context.payload ? 'Available' : 'Not available');
+            console.log('Actor:', context.actor);
+            console.log('Event name:', context.eventName);
+
+            // First, let's check if we can list workflows to verify permissions
+            try {
+              console.log('Checking workflow permissions...');
+              const workflows = await github.rest.actions.listRepoWorkflows({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              console.log('Found', workflows.data.total_count, 'workflows');
+
+              // Find our target workflow
+              const targetWorkflow = workflows.data.workflows.find(w => w.name === 'build' || w.path.includes('build.yml'));
+              let workflowId = targetWorkflow ? targetWorkflow.id : null;
+
+              if (targetWorkflow) {
+                console.log('Target workflow found:', targetWorkflow.name, 'ID:', targetWorkflow.id);
+                console.log('Workflow path:', targetWorkflow.path);
+                console.log('Workflow state:', targetWorkflow.state);
+              } else {
+                console.log('Target workflow not found in:', workflows.data.workflows.map(w => ({ name: w.name, path: w.path })));
+              }
+            } catch (error) {
+              console.error('Failed to list workflows:', error.message);
+              console.error('This may indicate insufficient permissions');
+            }
+
+            // Now try to dispatch the workflow
+            try {
+              console.log('Dispatching workflow...');
+              const response = await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflow_id,
+                ref: ref,
+                inputs: inputs
+              });
+
+              console.log('Workflow dispatch successful. Status:', response.status);
+            } catch (error) {
+              console.error('Failed to dispatch workflow:', error.message);
+              console.error('Error status:', error.status);
+              if (error.response?.data) {
+                console.error('Error response:', JSON.stringify(error.response.data, null, 2));
+              }
+
+              // Try with workflow ID instead of filename
+              if (workflowId) {
+                try {
+                  console.log('Retrying with workflow ID:', workflowId);
+                  const retryResponse = await github.rest.actions.createWorkflowDispatch({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    workflow_id: workflowId,
+                    ref: ref,
+                    inputs: inputs
+                  });
+                  console.log('Retry successful. Status:', retryResponse.status);
+                } catch (retryError) {
+                  console.error('Retry also failed:', retryError.message);
+                  throw error; // Throw the original error
+                }
+              } else {
+                throw error;
+              }
+            }
