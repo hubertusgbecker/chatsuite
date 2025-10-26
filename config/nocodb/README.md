@@ -6,9 +6,9 @@ NocoDB has been configured with its own dedicated PostgreSQL database, completel
 
 ## Architecture
 
-- **Separate PostgreSQL Container**: `chatsuite_nocodb_postgres`
+- **Separate PostgreSQL Container**: `chatsuite_nocodb-postgres`
 - **Dedicated Network**: `nocodb_network`
-- **Data Persistence**: Docker volume `chatsuite_nocodb_postgres_data`
+- **Data Persistence**: Docker volume `nocodb_postgres_data`
 - **Database**: `nocodb` owned by `nocodb_user`
 
 ## Environment Configuration
@@ -55,7 +55,7 @@ The `docker-entrypoint-nocodb-postgres.sh` script handles:
 ## Docker Compose Configuration
 
 The `docker-compose.yaml` includes:
-- `nocodb_postgres` service with health checks
+- `nocodb-postgres` service with health checks
 - `nocodb` service depending on PostgreSQL health
 - Proper network isolation with `nocodb_network`
 - Volume mapping for data persistence
@@ -88,7 +88,7 @@ pnpm env:set:qa
 
 ```bash
 # Start NocoDB with its database
-docker-compose up -d nocodb_postgres nocodb
+docker-compose up -d nocodb-postgres nocodb
 
 # Or start all services
 docker-compose up -d
@@ -101,7 +101,7 @@ docker-compose up -d
 
 ## Data Storage
 
-- **PostgreSQL Data**: Docker volume `chatsuite_nocodb_postgres_data`
+- **PostgreSQL Data**: Docker volume `nocodb_postgres_data`
 - **NocoDB App Data**: `./data/nocodb/` directory
 - **Complete Separation**: No shared data with main ChatSuite database
 
@@ -116,12 +116,12 @@ docker-compose up -d
 
 ### Check Database Connection
 ```bash
-docker exec chatsuite_nocodb_postgres psql -U nocodb_user -d nocodb -c "\dt"
+docker exec chatsuite_nocodb-postgres psql -U nocodb_user -d nocodb -c "\dt"
 ```
 
 ### View Logs
 ```bash
-docker logs chatsuite_nocodb_postgres
+docker logs chatsuite_nocodb-postgres
 docker logs chatsuite_nocodb
 ```
 
@@ -132,7 +132,7 @@ docker-compose config | grep NC_DB
 
 ## Maintenance
 
-- **Backup**: Use standard PostgreSQL backup procedures on the `chatsuite_nocodb_postgres` container
+- **Backup**: Use standard PostgreSQL backup procedures on the `chatsuite_nocodb-postgres` container
 - **Updates**: Update the NocoDB image version in docker-compose.yaml
 - **Password Changes**: Update both template and runtime environment files
 
