@@ -31,7 +31,10 @@
 			"executor": "@nx/js:node",
 			"dependsOn": ["build"],
 			"options": {
-				"buildTarget": "api-customer-service:build"
+				"buildTarget": "api-customer-service:build",
+				"buildTargetOptions": {
+					"outputPath": "dist/apps/api-customer-service"
+				}
 			},
 			"configurations": {
 				"production": {

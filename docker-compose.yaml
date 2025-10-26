@@ -83,7 +83,7 @@ services:
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3333/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3333/api"]
       interval: 10s
       timeout: 5s
       retries: 10
