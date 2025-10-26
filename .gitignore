@@ -82,8 +82,8 @@ data/n8n/**
 !data/n8n/**/.gitkeep
 
 data/nocodb/**
-!data/nocodb/.gitkeep
-!data/nocodb/postgres/.gitkeep
+!data/nocodb/
+!data/nocodb/**/.gitkeep
 
 data/pgadmin/**
 !data/pgadmin/**/.gitkeep
