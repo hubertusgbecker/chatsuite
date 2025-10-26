@@ -53,6 +53,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
       # Install Pnpm
       - name: Install pnpm
@@ -130,6 +131,8 @@ jobs:
       # Checkout and setup environment
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -165,6 +168,8 @@ jobs:
       # Checkout and setup environment
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -205,8 +210,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -292,6 +297,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Print dispatch variables
         run: |
           echo "BRANCH_NAME=$BRANCH_NAME"
