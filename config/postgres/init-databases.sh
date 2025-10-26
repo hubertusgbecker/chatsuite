@@ -60,10 +60,6 @@ echo "Granting permissions to metamcp_user..."
 psql -U "$POSTGRES_USER" -c "GRANT ALL PRIVILEGES ON DATABASE \"metamcp_db\" TO \"metamcp_user\";"
 psql -U "$POSTGRES_USER" -d "metamcp_db" -c "GRANT ALL ON SCHEMA public TO \"metamcp_user\";"
 
-# Create NocoDB database
-echo "=== Setting up NocoDB database ==="
-create_database_if_not_exists "nocodb"
-
 # List all databases for verification
 echo "=== Database setup complete! ==="
 echo "Available databases:"

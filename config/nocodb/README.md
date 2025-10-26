@@ -1,8 +1,140 @@
-# NocoDB Database GUI Integration
-
-This directory contains the configuration for NocoDB, a smart spreadsheet interface for databases, integrated into the ChatSuite monorepo.
+# NocoDB Configuration Documentation
 
 ## Overview
+
+NocoDB has been configured with its own dedicated PostgreSQL database, completely separated from the main ChatSuite database. This ensures data isolation and follows the ChatSuite development standards.
+
+## Architecture
+
+- **Separate PostgreSQL Container**: `chatsuite_nocodb_postgres`
+- **Dedicated Network**: `nocodb_network`
+- **Data Persistence**: Docker volume `chatsuite_nocodb_postgres_data`
+- **Database**: `nocodb` owned by `nocodb_user`
+
+## Environment Configuration
+
+According to AGENTS.md standards, configuration is managed through:
+
+### Template Files (version-controlled)
+- `config/env/env.dev` - Development template
+- `config/env/env.host` - Production template  
+- `config/env/env.qa` - QA template
+
+### Runtime Files (not version-controlled, with dot prefix)
+- `config/env/.env.dev` - Development runtime configuration
+- `config/env/.env.host` - Production runtime configuration
+- `config/env/.env.qa` - QA runtime configuration
+
+## Environment Variables
+
+### Development Environment (.env.dev)
+```bash
+NOCODB_POSTGRES_PASSWORD=nocodb_password_123
+NOCODB_DB_PASSWORD=nocodb_user_pass
+```
+
+### Production Environment (.env.host)
+```bash
+NOCODB_POSTGRES_PASSWORD=nc_P9duCt10n_Adm1n_S3cur3_P4ssw0rd
+NOCODB_DB_PASSWORD=nc_P9duCt10n_Us3r_S3cur3_P4ssw0rd
+```
+
+### QA Environment (.env.qa)
+```bash
+NOCODB_POSTGRES_PASSWORD=nc_QA_Adm1n_T3st_P4ssw0rd
+NOCODB_DB_PASSWORD=nc_QA_Us3r_T3st_P4ssw0rd
+```
+
+## Database Initialization
+
+The `docker-entrypoint-nocodb-postgres.sh` script handles:
+- Creating the `nocodb_user` with appropriate permissions
+- Setting up the `nocodb` database
+- Granting necessary privileges
+
+## Docker Compose Configuration
+
+The `docker-compose.yaml` includes:
+- `nocodb_postgres` service with health checks
+- `nocodb` service depending on PostgreSQL health
+- Proper network isolation with `nocodb_network`
+- Volume mapping for data persistence
+
+## Usage
+
+### Switching Environments
+
+According to AGENTS.md, use the NX_APP_ENV variable:
+
+```bash
+# Set development environment
+export NX_APP_ENV=dev
+
+# Set production environment  
+export NX_APP_ENV=host
+
+# Set QA environment
+export NX_APP_ENV=qa
+```
+
+Or use the helper commands:
+```bash
+pnpm env:set:dev
+pnpm env:set:host
+pnpm env:set:qa
+```
+
+### Starting Services
+
+```bash
+# Start NocoDB with its database
+docker-compose up -d nocodb_postgres nocodb
+
+# Or start all services
+docker-compose up -d
+```
+
+### Accessing NocoDB
+
+- **Direct Access**: http://localhost:8080
+- **Via Nginx Proxy**: https://localhost:10443/nocodb/
+
+## Data Storage
+
+- **PostgreSQL Data**: Docker volume `chatsuite_nocodb_postgres_data`
+- **NocoDB App Data**: `./data/nocodb/` directory
+- **Complete Separation**: No shared data with main ChatSuite database
+
+## Security Notes
+
+- Production environment uses strong, unique passwords
+- Database user has minimal required permissions
+- Network isolation through dedicated Docker network
+- Data is persisted in separate volumes
+
+## Troubleshooting
+
+### Check Database Connection
+```bash
+docker exec chatsuite_nocodb_postgres psql -U nocodb_user -d nocodb -c "\dt"
+```
+
+### View Logs
+```bash
+docker logs chatsuite_nocodb_postgres
+docker logs chatsuite_nocodb
+```
+
+### Verify Environment Loading
+```bash
+docker-compose config | grep NC_DB
+```
+
+## Maintenance
+
+- **Backup**: Use standard PostgreSQL backup procedures on the `chatsuite_nocodb_postgres` container
+- **Updates**: Update the NocoDB image version in docker-compose.yaml
+- **Password Changes**: Update both template and runtime environment files
 
 NocoDB transforms any database into a smart spreadsheet interface. It provides a no-code platform for building database applications, APIs, and collaborative workspaces. Think of it as Airtable but for your own database.
 

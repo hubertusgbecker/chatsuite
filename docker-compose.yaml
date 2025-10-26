@@ -34,6 +34,12 @@ services:
     networks:
       - gateway
       - database_pg
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-chatsuite}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
   # PgAdmin
   pgadmin:
     container_name: chatsuite_pgadmin
@@ -252,6 +258,30 @@ services:
       - gateway
       - database_pg
 
+  # NocoDB PostgreSQL Database (separate from main postgres)
+  nocodb_postgres:
+    container_name: chatsuite_nocodb_postgres
+    image: postgres:latest
+    restart: always
+    volumes:
+      - nocodb_postgres_data:/var/lib/postgresql/data
+      - ./config/nocodb/docker-entrypoint-nocodb-postgres.sh:/docker-entrypoint-initdb.d/docker-entrypoint-nocodb-postgres.sh:ro
+    environment:
+      POSTGRES_USER: ${NOCODB_POSTGRES_USER:-nocodb_admin}
+      POSTGRES_PASSWORD: ${NOCODB_POSTGRES_PASSWORD:-nocodb_password_123}
+      POSTGRES_DB: ${NOCODB_POSTGRES_DB:-nocodb}
+      NOCODB_DB_USER: ${NOCODB_DB_USER:-nocodb_user}
+      NOCODB_DB_PASSWORD: ${NOCODB_DB_PASSWORD:-nocodb_user_pass}
+      NOCODB_DB_NAME: ${NOCODB_DB_NAME:-nocodb}
+    networks:
+      - nocodb_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${NOCODB_POSTGRES_USER:-nocodb_admin} -d ${NOCODB_POSTGRES_DB:-nocodb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
   # NocoDB database GUI
   nocodb:
     image: nocodb/nocodb:latest
@@ -263,11 +293,18 @@ services:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     volumes:
       - ./data/nocodb:/usr/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
-      - postgres
+      nocodb_postgres:
+        condition: service_healthy
     networks:
       - gateway
-      - database_pg
+      - nocodb_network
 
   # MCPHub - Unified hub for multiple MCP servers
   mcphub:
@@ -314,7 +351,9 @@ services:
 networks:
   gateway: {}
   database_pg: {}
+  nocodb_network: {}
 
 volumes:
   vectordb_postgres_data:
   postgres_data:
+  nocodb_postgres_data:
