@@ -8,6 +8,9 @@ on:
         default: '[]'
         required: true
 
+permissions:
+  workflows: write
+
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   ACR_ENDPOINT: ${{ secrets.ACR_ENDPOINT }}

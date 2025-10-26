@@ -13,6 +13,7 @@ permissions:
   contents: write
   actions: write
   pull-requests: read
+  workflows: write
 
 env:
   # @INFO: If independent builds are enabled, only affected projects are going to be deployed.
