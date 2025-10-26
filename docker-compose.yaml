@@ -27,7 +27,7 @@ services:
     #  - '5432:5432'
     restart: always
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./config/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
@@ -264,7 +264,7 @@ services:
     image: postgres:latest
     restart: always
     volumes:
-      - nocodb_postgres_data:/var/lib/postgresql/data
+      - nocodb_postgres_data:/var/lib/postgresql
       - ./config/nocodb/docker-entrypoint-nocodb-postgres.sh:/docker-entrypoint-initdb.d/docker-entrypoint-nocodb-postgres.sh:ro
     environment:
       POSTGRES_USER: ${NOCODB_POSTGRES_USER:-nocodb_admin}
