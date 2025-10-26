@@ -1,0 +1,99 @@
+name: debug-test
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  debug-basic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Basic test
+        run: |
+          echo "Basic test running"
+          echo "Current directory: $(pwd)"
+          echo "Git status:"
+          git status
+          echo "Git log:"
+          git log --oneline -5
+
+  debug-affected:
+    runs-on: ubuntu-latest
+    needs: [debug-basic]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.x"
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --prod=false --ignore-scripts
+      - name: Test NX affected
+        run: |
+          echo "Testing NX affected commands:"
+          echo "All projects:"
+          pnpm nx show projects
+          echo "Projects with lint target:"
+          pnpm nx show projects --with-target lint
+          echo "Projects with test target:"
+          pnpm nx show projects --with-target test
+          echo "Projects with build target:"
+          pnpm nx show projects --with-target build
+          echo "Affected projects (no base):"
+          pnpm nx show projects --affected || echo "No affected projects"
+          echo "Affected projects (base=HEAD~1):"
+          pnpm nx show projects --affected --base=HEAD~1 || echo "No affected projects with base HEAD~1"
+      - name: Test our script
+        run: |
+          echo "Testing our affected script:"
+          echo "Lint --all:"
+          node tools/dev-scripts/cmd-print-affected-array.js lint --all
+          echo "Test --all:"
+          node tools/dev-scripts/cmd-print-affected-array.js test --all
+          echo "Build --all:"
+          node tools/dev-scripts/cmd-print-affected-array.js build --all
+          echo "Lint (no flag):"
+          node tools/dev-scripts/cmd-print-affected-array.js lint
+          echo "Test (no flag):"
+          node tools/dev-scripts/cmd-print-affected-array.js test
+      - name: Test condition logic
+        id: test-conditions
+        run: |
+          lint_output='["api-customer-service","client-app"]'
+          echo "lint=$lint_output" >> $GITHUB_OUTPUT
+          echo "Testing condition logic:"
+          echo "lint_output: $lint_output"
+          echo "Is not empty array: $([ "$lint_output" != '[]' ] && echo "true" || echo "false")"
+          echo "Is not empty string: $([ "$lint_output" != '' ] && echo "true" || echo "false")"
+          echo "Is not null: $([ "$lint_output" != 'null' ] && echo "true" || echo "false")"
+          echo "Contains quotes: $(echo "$lint_output" | grep -q '"' && echo "true" || echo "false")"
+    outputs:
+      lint: ${{ steps.test-conditions.outputs.lint }}
+
+  debug-matrix:
+    runs-on: ubuntu-latest
+    needs: [debug-affected]
+    if: ${{ needs.debug-affected.outputs.lint != '[]' && needs.debug-affected.outputs.lint != '' && needs.debug-affected.outputs.lint != 'null' && contains(needs.debug-affected.outputs.lint, '"') }}
+    strategy:
+      matrix:
+        projectName: ${{fromJson(needs.debug-affected.outputs.lint)}}
+    steps:
+      - name: Test matrix
+        run: |
+          echo "Matrix project: ${{ matrix.projectName }}"
+          echo "This job should run for each project in the array"
