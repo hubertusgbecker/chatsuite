@@ -57,47 +57,53 @@ ls -la "$N8N_DATA_DIR" | head -5 || echo "Could not list directory contents"
 
 echo "Permission setup completed for n8n data directory"
 
-# Optional: Install Chromium for Puppeteer-based workflows if not already present
-echo "Checking for Chromium browser for Puppeteer..."
-if [ -z "${PUPPETEER_EXECUTABLE_PATH}" ]; then
-    # Default path for Alpine chromium package
-    export PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+# Chromium / Puppeteer setup (pull image scenario)
+echo "[Puppeteer] Checking for Chromium availability..."
+
+# Preferred system paths
+SYSTEM_PATHS="/usr/bin/chromium-browser /usr/bin/chromium /usr/bin/google-chrome /usr/bin/google-chrome-stable"
+FOUND_SYSTEM_BROWSER=""
+for p in $SYSTEM_PATHS; do
+    if [ -x "$p" ]; then
+        FOUND_SYSTEM_BROWSER="$p"; break; fi
+done
+
+if [ -n "$FOUND_SYSTEM_BROWSER" ]; then
+    export PUPPETEER_EXECUTABLE_PATH="$FOUND_SYSTEM_BROWSER"
+    echo "[Puppeteer] Using system browser at $PUPPETEER_EXECUTABLE_PATH"
+else
+    # User-level download (no root perms required) using @puppeteer/browsers
+    echo "[Puppeteer] No system browser found. Attempting user-space fetch..."
+    BROWSER_CACHE_DIR="${N8N_DATA_DIR}/.cache/puppeteer"
+    mkdir -p "$BROWSER_CACHE_DIR"
+    export PUPPETEER_CACHE_DIR="$BROWSER_CACHE_DIR"
+    # Try fetch only if npx & node available
+    if command -v node >/dev/null 2>&1 && command -v npx >/dev/null 2>&1; then
+        # Fetch stable chrome (chromium) with retries
+        if [ ! -f "$BROWSER_CACHE_DIR/INSTALL_DONE" ]; then
+            echo "[Puppeteer] Downloading Chromium to $BROWSER_CACHE_DIR (this may take a while)..."
+            npx --yes @puppeteer/browsers install chrome@stable --path "$BROWSER_CACHE_DIR" --platform=linux || \
+                npx --yes @puppeteer/browsers install chromium@stable --path "$BROWSER_CACHE_DIR" --platform=linux || echo "[Puppeteer] Warning: download failed"
+            # Mark attempt regardless to avoid repeated heavy downloads; remove this file to force re-attempt
+            touch "$BROWSER_CACHE_DIR/INSTALL_DONE"
+        else
+            echo "[Puppeteer] Cached browser install marker found; skipping download"
+        fi
+        # Discover executable
+        DL_EXE=$(find "$BROWSER_CACHE_DIR" -type f -name chrome -o -name chromium-browser -o -name chromium 2>/dev/null | head -1 || true)
+        if [ -n "$DL_EXE" ]; then
+            chmod +x "$DL_EXE" 2>/dev/null || true
+            export PUPPETEER_EXECUTABLE_PATH="$DL_EXE"
+            echo "[Puppeteer] Using downloaded browser at $PUPPETEER_EXECUTABLE_PATH"
+        else
+            echo "[Puppeteer] No downloadable browser executable found. Headless tasks may fail."
+        fi
+    else
+        echo "[Puppeteer] npx not available; cannot download Chromium."
+    fi
 fi
 
-# Install chromium only if executable missing
-if [ ! -x "$PUPPETEER_EXECUTABLE_PATH" ]; then
-    echo "Chromium not found at $PUPPETEER_EXECUTABLE_PATH. Attempting installation..."
-    # Detect package manager (Alpine vs Debian/Ubuntu). Base n8n image is Alpine as of n8nio/n8n:latest.
-    if command -v apk >/dev/null 2>&1; then
-        echo "Installing chromium and fonts via apk..."
-        apk add --no-cache \
-            chromium \
-            nss \
-            freetype \
-            harfbuzz \
-            ca-certificates \
-            ttf-freefont || {
-              echo "Failed to install chromium dependencies via apk"; exit 1; }
-    elif command -v apt-get >/dev/null 2>&1; then
-        echo "Installing chromium and fonts via apt-get (Debian/Ubuntu variant)..."
-        apt-get update && apt-get install -y \
-            chromium \
-            fonts-liberation \
-            libnss3 \
-            libfreetype6 \
-            libharfbuzz0b \
-            ca-certificates && \
-            rm -rf /var/lib/apt/lists/* || {
-              echo "Failed to install chromium dependencies via apt-get"; exit 1; }
-        # On Debian family chromium path may differ
-        [ -x /usr/bin/chromium ] && export PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
-    else
-        echo "Unsupported package manager for automatic chromium installation. Skipping."
-    fi
-else
-    echo "Chromium already present at $PUPPETEER_EXECUTABLE_PATH"
-fi
-echo "PUPPETEER_EXECUTABLE_PATH set to: $PUPPETEER_EXECUTABLE_PATH"
+echo "[Puppeteer] Final PUPPETEER_EXECUTABLE_PATH: ${PUPPETEER_EXECUTABLE_PATH:-<none>}"
 
 # Configure SSL support if certificates are available
 echo "Configuring SSL support..."
