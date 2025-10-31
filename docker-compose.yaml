@@ -245,6 +245,7 @@ services:
     entrypoint: ["/docker-entrypoint-n8n.sh"]
     restart: always
     init: true
+    user: root
     ports:
       - "5678:5678"
     env_file:

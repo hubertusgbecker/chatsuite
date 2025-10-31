@@ -143,10 +143,39 @@ if command -v n8n >/dev/null 2>&1; then
         # If no arguments provided, try to start n8n
         if [ $# -eq 0 ]; then
             echo "No arguments provided, trying 'n8n start'..."
-            exec n8n start
+                        # If running as root and apk present, install chromium dependencies (one-time per container)
+                        if [ "$(id -u)" -eq 0 ] && command -v apk >/dev/null 2>&1; then
+                            echo "Installing Chromium runtime dependencies via apk..."
+                            apk add --no-cache \
+                                chromium nss freetype harfbuzz ca-certificates ttf-freefont \
+                                atk dbus-libs cups-libs alsa-lib pango cairo libx11 libxcomposite \
+                                libxdamage libxext libxfixes libxrandr libxkbcommon libdrm libgcc libstdc++ ttf-liberation || echo "Warning: Some chromium deps failed to install"
+                            export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+                        fi
+                        # Drop privileges if currently root (needs su-exec or gosu; attempt both)
+                        if [ "$(id -u)" -eq 0 ]; then
+                            if command -v su-exec >/dev/null 2>&1; then
+                                echo "Starting n8n as node user via su-exec"
+                                exec su-exec node n8n start
+                            elif command -v gosu >/dev/null 2>&1; then
+                                echo "Starting n8n as node user via gosu"
+                                exec gosu node n8n start
+                            else
+                                echo "su-exec/gosu not found; running n8n as root (not recommended)"
+                                exec n8n start
+                            fi
+                        else
+                            exec n8n start
+                        fi
         else
             echo "Arguments provided: $@"
-            exec n8n "$@"
+                        if [ "$(id -u)" -eq 0 ] && command -v su-exec >/dev/null 2>&1; then
+                            exec su-exec node n8n "$@"
+                        elif [ "$(id -u)" -eq 0 ] && command -v gosu >/dev/null 2>&1; then
+                            exec gosu node n8n "$@"
+                        else
+                            exec n8n "$@"
+                        fi
         fi
     else
         echo "n8n help not available, trying direct execution..."
