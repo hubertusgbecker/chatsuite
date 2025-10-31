@@ -57,6 +57,32 @@ ls -la "$N8N_DATA_DIR" | head -5 || echo "Could not list directory contents"
 
 echo "Permission setup completed for n8n data directory"
 
+# Install system libraries required by Chromium if running as root (Alpine) - idempotent
+if [ "$(id -u)" -eq 0 ] && command -v apk >/dev/null 2>&1; then
+    CHROME_DEPS_MARKER="/var/tmp/.chromium_deps_installed"
+    if [ ! -f "$CHROME_DEPS_MARKER" ]; then
+        echo "[Puppeteer] Installing system shared libraries for Chromium (Alpine)..."
+        # Package list compiled from runtime errors + provided snippet
+        APK_CHROMIUM_DEPS="chromium nss nspr freetype harfbuzz ca-certificates ttf-freefont ttf-liberation \
+            atk at-spi2-core at-spi2-atk pango cairo gdk-pixbuf dbus-libs cups-libs alsa-lib glib gobject-introspection \
+            libx11 libxcomposite libxdamage libxrandr libxi libxcursor libxtst libxext libxfixes libxkbcommon libxcb \
+            libdrm mesa-gl mesa-dri-gallium udev eudev-libs libgcc libstdc++"
+        # Install with best-effort; continue if some optional packages unavailable
+        for pkg in $APK_CHROMIUM_DEPS; do
+            if ! apk info -e "$pkg" >/dev/null 2>&1; then
+                apk add --no-cache "$pkg" || echo "[Puppeteer] Warning: failed to install $pkg"
+            fi
+        done
+        # Symlink convenience
+        ln -sf /usr/bin/chromium-browser /usr/bin/chromium 2>/dev/null || true
+        touch "$CHROME_DEPS_MARKER"
+    else
+        echo "[Puppeteer] Chromium dependencies already installed (marker present)"
+    fi
+    export PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+    export PUPPETEER_SKIP_DOWNLOAD=true
+fi
+
 # Chromium / Puppeteer setup (pull image scenario)
 echo "[Puppeteer] Checking for Chromium availability..."
 
@@ -72,35 +98,8 @@ if [ -n "$FOUND_SYSTEM_BROWSER" ]; then
     export PUPPETEER_EXECUTABLE_PATH="$FOUND_SYSTEM_BROWSER"
     echo "[Puppeteer] Using system browser at $PUPPETEER_EXECUTABLE_PATH"
 else
-    # User-level download (no root perms required) using @puppeteer/browsers
-    echo "[Puppeteer] No system browser found. Attempting user-space fetch..."
-    BROWSER_CACHE_DIR="${N8N_DATA_DIR}/.cache/puppeteer"
-    mkdir -p "$BROWSER_CACHE_DIR"
-    export PUPPETEER_CACHE_DIR="$BROWSER_CACHE_DIR"
-    # Try fetch only if npx & node available
-    if command -v node >/dev/null 2>&1 && command -v npx >/dev/null 2>&1; then
-        # Fetch stable chrome (chromium) with retries
-        if [ ! -f "$BROWSER_CACHE_DIR/INSTALL_DONE" ]; then
-            echo "[Puppeteer] Downloading Chromium to $BROWSER_CACHE_DIR (this may take a while)..."
-            npx --yes @puppeteer/browsers install chrome@stable --path "$BROWSER_CACHE_DIR" --platform=linux || \
-                npx --yes @puppeteer/browsers install chromium@stable --path "$BROWSER_CACHE_DIR" --platform=linux || echo "[Puppeteer] Warning: download failed"
-            # Mark attempt regardless to avoid repeated heavy downloads; remove this file to force re-attempt
-            touch "$BROWSER_CACHE_DIR/INSTALL_DONE"
-        else
-            echo "[Puppeteer] Cached browser install marker found; skipping download"
-        fi
-        # Discover executable
-        DL_EXE=$(find "$BROWSER_CACHE_DIR" -type f -name chrome -o -name chromium-browser -o -name chromium 2>/dev/null | head -1 || true)
-        if [ -n "$DL_EXE" ]; then
-            chmod +x "$DL_EXE" 2>/dev/null || true
-            export PUPPETEER_EXECUTABLE_PATH="$DL_EXE"
-            echo "[Puppeteer] Using downloaded browser at $PUPPETEER_EXECUTABLE_PATH"
-        else
-            echo "[Puppeteer] No downloadable browser executable found. Headless tasks may fail."
-        fi
-    else
-        echo "[Puppeteer] npx not available; cannot download Chromium."
-    fi
+  echo "[Puppeteer] No system chromium binary found after dependency install attempts."
+  echo "[Puppeteer] Headless browser tasks will fail until chromium is available."
 fi
 
 echo "[Puppeteer] Final PUPPETEER_EXECUTABLE_PATH: ${PUPPETEER_EXECUTABLE_PATH:-<none>}"
@@ -143,15 +142,6 @@ if command -v n8n >/dev/null 2>&1; then
         # If no arguments provided, try to start n8n
         if [ $# -eq 0 ]; then
             echo "No arguments provided, trying 'n8n start'..."
-                        # If running as root and apk present, install chromium dependencies (one-time per container)
-                        if [ "$(id -u)" -eq 0 ] && command -v apk >/dev/null 2>&1; then
-                            echo "Installing Chromium runtime dependencies via apk..."
-                            apk add --no-cache \
-                                chromium nss freetype harfbuzz ca-certificates ttf-freefont \
-                                atk dbus-libs cups-libs alsa-lib pango cairo libx11 libxcomposite \
-                                libxdamage libxext libxfixes libxrandr libxkbcommon libdrm libgcc libstdc++ ttf-liberation || echo "Warning: Some chromium deps failed to install"
-                            export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-                        fi
                         # Drop privileges if currently root (needs su-exec or gosu; attempt both)
                         if [ "$(id -u)" -eq 0 ]; then
                             if command -v su-exec >/dev/null 2>&1; then
