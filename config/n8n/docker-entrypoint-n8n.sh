@@ -57,6 +57,48 @@ ls -la "$N8N_DATA_DIR" | head -5 || echo "Could not list directory contents"
 
 echo "Permission setup completed for n8n data directory"
 
+# Optional: Install Chromium for Puppeteer-based workflows if not already present
+echo "Checking for Chromium browser for Puppeteer..."
+if [ -z "${PUPPETEER_EXECUTABLE_PATH}" ]; then
+    # Default path for Alpine chromium package
+    export PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+fi
+
+# Install chromium only if executable missing
+if [ ! -x "$PUPPETEER_EXECUTABLE_PATH" ]; then
+    echo "Chromium not found at $PUPPETEER_EXECUTABLE_PATH. Attempting installation..."
+    # Detect package manager (Alpine vs Debian/Ubuntu). Base n8n image is Alpine as of n8nio/n8n:latest.
+    if command -v apk >/dev/null 2>&1; then
+        echo "Installing chromium and fonts via apk..."
+        apk add --no-cache \
+            chromium \
+            nss \
+            freetype \
+            harfbuzz \
+            ca-certificates \
+            ttf-freefont || {
+              echo "Failed to install chromium dependencies via apk"; exit 1; }
+    elif command -v apt-get >/dev/null 2>&1; then
+        echo "Installing chromium and fonts via apt-get (Debian/Ubuntu variant)..."
+        apt-get update && apt-get install -y \
+            chromium \
+            fonts-liberation \
+            libnss3 \
+            libfreetype6 \
+            libharfbuzz0b \
+            ca-certificates && \
+            rm -rf /var/lib/apt/lists/* || {
+              echo "Failed to install chromium dependencies via apt-get"; exit 1; }
+        # On Debian family chromium path may differ
+        [ -x /usr/bin/chromium ] && export PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+    else
+        echo "Unsupported package manager for automatic chromium installation. Skipping."
+    fi
+else
+    echo "Chromium already present at $PUPPETEER_EXECUTABLE_PATH"
+fi
+echo "PUPPETEER_EXECUTABLE_PATH set to: $PUPPETEER_EXECUTABLE_PATH"
+
 # Configure SSL support if certificates are available
 echo "Configuring SSL support..."
 if [ -f "/certs/localhost-key.pem" ] && [ -f "/certs/localhost-crt.pem" ]; then
