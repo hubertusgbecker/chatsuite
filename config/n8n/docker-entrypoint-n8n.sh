@@ -104,6 +104,14 @@ fi
 
 echo "[Puppeteer] Final PUPPETEER_EXECUTABLE_PATH: ${PUPPETEER_EXECUTABLE_PATH:-<none>}"
 
+echo "Configuring SSL support..."
+# Normalize N8N_HOST: strip leading scheme if present to avoid duplicated schemes in URLs
+if [ -n "${N8N_HOST:-}" ]; then
+    # Remove leading http:// or https:// if user accidentally included it
+    SANITIZED_N8N_HOST="$(echo "$N8N_HOST" | sed -E 's~^https?://~~i')"
+    export N8N_HOST="$SANITIZED_N8N_HOST"
+fi
+
 # Configure SSL support if certificates are available
 echo "Configuring SSL support..."
 if [ -f "/certs/localhost-key.pem" ] && [ -f "/certs/localhost-crt.pem" ]; then
@@ -130,6 +138,53 @@ echo "  Host: ${N8N_HOST:-localhost}"
 echo "  Port: ${N8N_PORT:-5678}"
 echo "  Database: $N8N_DB_POSTGRESDB_HOST"
 echo "  SSL: $([ "$N8N_PROTOCOL" = "https" ] && echo "Enabled" || echo "Disabled")"
+
+# Database backend enforcement & migration support
+SQLITE_FILE="$N8N_DATA_DIR/database.sqlite"
+MIGRATION_MARKER="$N8N_DATA_DIR/.sqlite_exported"
+if [ "${N8N_DB_TYPE}" = "postgresdb" ]; then
+    # Validate required Postgres vars
+    REQUIRED_VARS="N8N_DB_POSTGRESDB_HOST N8N_DB_POSTGRESDB_PORT N8N_DB_POSTGRESDB_DATABASE N8N_DB_POSTGRESDB_USER N8N_DB_POSTGRESDB_PASSWORD N8N_DB_POSTGRESDB_SCHEMA"
+    MISSING=""
+    for v in $REQUIRED_VARS; do
+        eval val="\${$v}" || val=""
+        if [ -z "$val" ]; then
+            MISSING="$MISSING $v"
+        fi
+    done
+    if [ -n "$MISSING" ]; then
+        echo "[DB] ERROR: Postgres backend selected (N8N_DB_TYPE=postgresdb) but missing required vars:$MISSING"
+        echo "[DB] Please set them in your environment files before restarting. Aborting startup to prevent silent SQLite fallback."
+        exit 1
+    fi
+    # If a legacy SQLite file exists and not yet exported, perform a one-time export backup
+    if [ -f "$SQLITE_FILE" ] && [ ! -f "$MIGRATION_MARKER" ]; then
+        echo "[Migration] Detected legacy SQLite database at $SQLITE_FILE"
+        BACKUP_DIR="$N8N_DATA_DIR/sqlite-backup"
+        mkdir -p "$BACKUP_DIR"
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        echo "[Migration] Creating backup copy before Postgres initialization..."
+        cp "$SQLITE_FILE" "$BACKUP_DIR/database.sqlite.$TIMESTAMP" || echo "[Migration] Warning: could not copy SQLite file"
+        # Attempt automated export of workflows & credentials using internal n8n CLI if available
+        if command -v n8n >/dev/null 2>&1; then
+            echo "[Migration] Exporting existing workflows & credentials via CLI..."
+            EXPORT_DIR="$BACKUP_DIR/exports-$TIMESTAMP"
+            mkdir -p "$EXPORT_DIR"
+            set +e
+            n8n export:workflow --all --output="$EXPORT_DIR/workflows.json" >/dev/null 2>&1 && echo "[Migration] Workflows exported to $EXPORT_DIR/workflows.json" || echo "[Migration] Workflow export failed (will need manual export)"
+            n8n export:credentials --all --output="$EXPORT_DIR/credentials.json" >/dev/null 2>&1 && echo "[Migration] Credentials exported to $EXPORT_DIR/credentials.json" || echo "[Migration] Credential export failed (will need manual export)"
+            set -e
+        else
+            echo "[Migration] n8n CLI not available for export at this stage. Restart after enabling Postgres to perform manual export if needed."
+        fi
+        touch "$MIGRATION_MARKER"
+        echo "[Migration] SQLite export phase completed. Files stored under $BACKUP_DIR"
+        echo "[Migration] Remove $MIGRATION_MARKER to re-run export if necessary."
+    fi
+else
+    echo "[DB] Using default SQLite backend (N8N_DB_TYPE not set to postgresdb)."
+    echo "[DB] To migrate: set N8N_DB_TYPE=postgresdb and corresponding N8N_DB_POSTGRESDB_* vars, then restart."
+fi
 
 # Check if n8n command exists and what commands are available
 if command -v n8n >/dev/null 2>&1; then
