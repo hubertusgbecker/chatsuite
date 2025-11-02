@@ -136,15 +136,15 @@ echo "n8n configuration:"
 echo "  Protocol: $N8N_PROTOCOL"
 echo "  Host: ${N8N_HOST:-localhost}"
 echo "  Port: ${N8N_PORT:-5678}"
-echo "  Database: $N8N_DB_POSTGRESDB_HOST"
+echo "  Database: ${DB_POSTGRESDB_HOST:-SQLite}"
 echo "  SSL: $([ "$N8N_PROTOCOL" = "https" ] && echo "Enabled" || echo "Disabled")"
 
 # Database backend enforcement & migration support
 SQLITE_FILE="$N8N_DATA_DIR/database.sqlite"
 MIGRATION_MARKER="$N8N_DATA_DIR/.sqlite_exported"
-if [ "${N8N_DB_TYPE}" = "postgresdb" ]; then
+if [ "${DB_TYPE}" = "postgresdb" ]; then
     # Validate required Postgres vars
-    REQUIRED_VARS="N8N_DB_POSTGRESDB_HOST N8N_DB_POSTGRESDB_PORT N8N_DB_POSTGRESDB_DATABASE N8N_DB_POSTGRESDB_USER N8N_DB_POSTGRESDB_PASSWORD N8N_DB_POSTGRESDB_SCHEMA"
+    REQUIRED_VARS="DB_POSTGRESDB_HOST DB_POSTGRESDB_PORT DB_POSTGRESDB_DATABASE DB_POSTGRESDB_USER DB_POSTGRESDB_PASSWORD DB_POSTGRESDB_SCHEMA"
     MISSING=""
     for v in $REQUIRED_VARS; do
         eval val="\${$v}" || val=""
@@ -153,7 +153,7 @@ if [ "${N8N_DB_TYPE}" = "postgresdb" ]; then
         fi
     done
     if [ -n "$MISSING" ]; then
-        echo "[DB] ERROR: Postgres backend selected (N8N_DB_TYPE=postgresdb) but missing required vars:$MISSING"
+        echo "[DB] ERROR: Postgres backend selected (DB_TYPE=postgresdb) but missing required vars:$MISSING"
         echo "[DB] Please set them in your environment files before restarting. Aborting startup to prevent silent SQLite fallback."
         exit 1
     fi
@@ -182,8 +182,8 @@ if [ "${N8N_DB_TYPE}" = "postgresdb" ]; then
         echo "[Migration] Remove $MIGRATION_MARKER to re-run export if necessary."
     fi
 else
-    echo "[DB] Using default SQLite backend (N8N_DB_TYPE not set to postgresdb)."
-    echo "[DB] To migrate: set N8N_DB_TYPE=postgresdb and corresponding N8N_DB_POSTGRESDB_* vars, then restart."
+    echo "[DB] Using default SQLite backend (DB_TYPE not set to postgresdb)."
+    echo "[DB] To migrate: set DB_TYPE=postgresdb and corresponding DB_POSTGRESDB_* vars, then restart."
 fi
 
 # Check if n8n command exists and what commands are available

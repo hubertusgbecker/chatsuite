@@ -6,7 +6,19 @@ This directory contains the configuration for n8n, a powerful workflow automatio
 
 n8n is a free and open-source workflow automation tool that allows you to connect different services and automate repetitive tasks. It provides a visual interface for creating complex workflows without coding.
 
+**Database**: n8n uses PostgreSQL (chatsuite_postgres) for persistent storage of workflows, credentials, and execution data. The database schema is automatically created on first startup.
+
 ## Configuration
+
+### Database Configuration
+n8n is configured to use PostgreSQL instead of the default SQLite:
+- **Database Type**: PostgreSQL
+- **Database Host**: postgres (chatsuite_postgres container)
+- **Database Name**: chatsuite
+- **Schema**: n8n
+- **User/Password**: Configured via environment variables
+
+All database migrations are automatically applied on startup. The old SQLite database file (if present) is backed up to `./data/n8n/sqlite-backup/` during the first PostgreSQL startup.
 
 ### Files Structure
 - `./config/n8n/docker-entrypoint-n8n.sh` - Comprehensive startup script with SSL support, permission fixes, and command handling
@@ -18,6 +30,24 @@ The service is configured in `docker-compose.yaml` as:
 - **Container**: `chatsuite_n8n`
 - **Image**: `n8nio/n8n:latest`
 - **Port**: 5678
+- **Database**: PostgreSQL (chatsuite_postgres, schema: n8n)
+- **Chromium**: Installed for browser automation tasks (Puppeteer)
+- **Networks**: gateway, database_pg
+- **Dependencies**: postgres
+
+### Environment Variables
+Database configuration is managed via the following environment variables in `config/env/.env.{dev,qa,host}`:
+```bash
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=${POSTGRES_HOST}
+DB_POSTGRESDB_PORT=${POSTGRES_PORT}
+DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+DB_POSTGRESDB_USER=${POSTGRES_USER}
+DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+DB_POSTGRESDB_SCHEMA=n8n
+```
+
+**Important**: Use `DB_TYPE` (not `N8N_DB_TYPE`) and `DB_POSTGRESDB_*` (not `N8N_DB_POSTGRESDB_*`) as per n8n documentation.
 
 ### Permission Management
 n8n requires proper file permissions to access its data directory. The simplified permission solution includes:
@@ -60,6 +90,32 @@ There are two ways to access n8n:
 2. Create your admin account (first user becomes admin)
 3. Set up your organization and workspace
 4. Start creating workflows!
+
+### 4. Chromium/Puppeteer Support
+n8n includes Chromium for browser automation tasks:
+- **Chromium Version**: Automatically installed on container startup
+- **Puppeteer Support**: Fully configured for headless browser operations
+- **Use Cases**: Web scraping, screenshot capture, PDF generation, automated testing
+
+The entrypoint script automatically installs all required Chromium dependencies on Alpine Linux.
+
+### 5. Updating n8n
+n8n uses Docker image-based updates:
+```bash
+# Pull the latest image
+docker pull n8nio/n8n:latest
+
+# Recreate the container
+docker-compose stop n8n
+docker-compose rm -f n8n
+docker-compose up -d n8n
+```
+
+Or use the convenience commands:
+```bash
+cd /Users/hubertus/Projects/chatsuite
+pnpm rebuild    # Rebuilds all services including n8n
+```
 
 ## Features
 
@@ -122,12 +178,12 @@ n8n uses these key environment variables from the active environment file:
 # Check which environment is active
 cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
 
-# Variables loaded from ./config/env/.env.{NX_APP_ENV}
-N8N_DB_TYPE=postgresdb
-N8N_DB_POSTGRESDB_HOST=postgres
-N8N_DB_POSTGRESDB_SCHEMA=n8n
+# Database variables loaded from ./config/env/.env.{NX_APP_ENV}
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=postgres
+DB_POSTGRESDB_SCHEMA=n8n
 
-# SSL Configuration
+# SSL Configuration (if certificates are present)
 N8N_SSL_KEY=/certs/localhost-key.pem
 N8N_SSL_CERT=/certs/localhost-crt.pem
 
