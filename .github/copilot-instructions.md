@@ -43,7 +43,7 @@ chatsuite/.env
 
 This value determines which config is used:
 ```
-NX_APP_ENV=dev #(or .env.qa, and .env.host as needed)
+NX_APP_ENV=dev #(or qa, and host as needed)
 ```
 
 If not set, `dev` is the fallback.
