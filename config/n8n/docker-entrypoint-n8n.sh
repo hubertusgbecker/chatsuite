@@ -190,6 +190,50 @@ fi
 if command -v n8n >/dev/null 2>&1; then
     echo "n8n binary found, checking available commands..."
 
+    # Install community node package 'n8n-nodes-browser' if not already installed.
+    # This block is idempotent: it records a marker in the n8n data dir so installation
+    # is attempted only once per data volume. It will try to run the install as the
+    # 'node' user when running as root and su-exec/gosu are available.
+    N8N_BROWSER_NODE_MARKER="$N8N_DATA_DIR/.n8n-nodes-browser.installed"
+    if [ ! -f "$N8N_BROWSER_NODE_MARKER" ]; then
+        echo "Checking for community node package: n8n-nodes-browser"
+        if npm ls -g --depth=0 n8n-nodes-browser >/dev/null 2>&1; then
+            echo "n8n-nodes-browser already installed globally"
+            touch "$N8N_BROWSER_NODE_MARKER"
+        else
+            echo "Installing n8n-nodes-browser community node (this may take a moment)..."
+            RC=0
+            set +e
+            if [ "$(id -u)" -eq 0 ]; then
+                # Try to install as node user to avoid permission issues
+                if command -v su-exec >/dev/null 2>&1; then
+                    su-exec node npm install -g n8n-nodes-browser
+                    RC=$?
+                elif command -v gosu >/dev/null 2>&1; then
+                    gosu node npm install -g n8n-nodes-browser
+                    RC=$?
+                else
+                    npm install -g n8n-nodes-browser
+                    RC=$?
+                fi
+            else
+                npm install -g n8n-nodes-browser
+                RC=$?
+            fi
+            set -e
+
+            # Verify install succeeded or at least the package is available
+            if [ "$RC" -eq 0 ] || npm ls -g --depth=0 n8n-nodes-browser >/dev/null 2>&1; then
+                echo "n8n-nodes-browser installation successful"
+                touch "$N8N_BROWSER_NODE_MARKER"
+            else
+                echo "Warning: failed to install n8n-nodes-browser; continuing without it"
+            fi
+        fi
+    else
+        echo "n8n-nodes-browser marker present, skipping install"
+    fi
+
     # Try to get help to see available commands
     if n8n --help >/dev/null 2>&1; then
         echo "n8n help available, attempting to start..."
