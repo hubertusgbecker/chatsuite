@@ -133,7 +133,7 @@ services:
     depends_on:
       - mongodb
       #- librechat_rag_api
-      - mcphub   # Add dependency on MCPHub for MCP
+      - mcphub   # MCPHub for MCP server management
       #- mindsdb  # Add dependency on MindsDB for MCP
       #- n8n      # Add dependency on n8n for MCP
       #- nocodb   # Add dependency on n8n for MCP
@@ -316,7 +316,9 @@ services:
 
   # MCPHub - Unified hub for multiple MCP servers
   mcphub:
-    image: samanhappy/mcphub:latest
+    build:
+      context: ./config/mcphub
+      dockerfile: Dockerfile.custom
     container_name: chatsuite_mcphub
     restart: always
     ports:
@@ -324,14 +326,20 @@ services:
     volumes:
       - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:ro
       - ./data/mcphub:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       mcp-email-server:
         condition: service_healthy
     environment:
       NODE_ENV: production
+      PORT: 3000
     networks:
       - gateway
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # MCP Email Server - IMAP and SMTP via MCP Server
   mcp-email-server:
