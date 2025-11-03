@@ -54,8 +54,6 @@ services:
       # explicit vars to avoid interactive prompt during initial DB migration
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-        PGADMIN_DEFAULT_EMAIL: admin@localhost
-        PGADMIN_DEFAULT_PASSWORD: admin123
       # some pgAdmin entrypoints/checks look for SETUP_* names in certain versions
       - PGADMIN_SETUP_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_SETUP_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
