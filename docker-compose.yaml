@@ -310,9 +310,10 @@ services:
 
   # MCPHub - Unified hub for multiple MCP servers
   mcphub:
-    build:
-      context: ./config/mcphub
-      dockerfile: Dockerfile.custom
+    #build:
+    #  context: ./config/mcphub
+    #  dockerfile: Dockerfile.custom
+    image: samanhappy/mcphub:latest
     container_name: chatsuite_mcphub
     restart: always
     ports:
