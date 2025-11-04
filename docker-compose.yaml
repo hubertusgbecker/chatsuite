@@ -50,13 +50,6 @@ services:
       - ./data/pgadmin:/root/.pgadmin
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
-    environment:
-      # explicit vars to avoid interactive prompt during initial DB migration
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-      # some pgAdmin entrypoints/checks look for SETUP_* names in certain versions
-      - PGADMIN_SETUP_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_SETUP_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     networks:
       - gateway
       - database_pg
@@ -68,6 +61,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    restart: always
   api-customer-service:
     container_name: chatsuite_api-customer-service
     ports:
