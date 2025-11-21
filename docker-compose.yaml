@@ -319,7 +319,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:ro
+      - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:rw
       - ./data/mcphub:/app/data
     depends_on:
       mcp-email-server:
