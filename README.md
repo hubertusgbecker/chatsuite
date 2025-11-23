@@ -8,6 +8,8 @@ Built on a modern full-stack monorepo with Nx, NestJS, and React for enterprise-
 
 ---
 
+- Contributing: see [`CONTRIBUTING.md`](./CONTRIBUTING.md) and our [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![Nx](https://img.shields.io/badge/Built%20with-Nx-lightgrey.svg)](https://nx.dev/)
@@ -55,31 +57,44 @@ ChatSuite is a comprehensive AI collaboration platform that unifies multiple pow
 
 Get ChatSuite running in under 5 minutes:
 
+Clone the repository and install dependencies:
+
 ```bash
-# Clone the repository
 git clone https://github.com/hubertusgbecker/chatsuite.git
 cd chatsuite
-
-# Install dependencies
 pnpm install
+```
 
-# Setup environment configuration
+Setup environment configuration (create a runtime `.env` and copy templates
+for each environment):
+
+```bash
 cp .env.example .env
-
-# Copy environment files from templates (all environments) and add OPENAI_API_KEY and/or other keys as needed
 cp config/env/env.dev config/env/.env.dev
 cp config/env/env.qa config/env/.env.qa
 cp config/env/env.host config/env/.env.host
+```
 
-# Set your preferred environment (dev/qa/host)
-# The .env file controls which environment is active
+Set your preferred environment (dev/qa/host). The root `.env` controls which
+environment is active:
+
+```bash
 pnpm env:set:dev  # or pnpm env:set:qa or pnpm env:set:host
+```
 
-# Generate SSL certificates for HTTPS (requires mkcert)
+Generate SSL certificates for HTTPS (optional, recommended for nginx):
+
+```bash
+brew install mkcert
 mkcert -install
-mkcert -key-file config/certificates/localhost-key.pem -cert-file config/certificates/localhost-crt.pem localhost 127.0.0.1 ::1
+mkcert -key-file config/certificates/localhost-key.pem \
+  -cert-file config/certificates/localhost-crt.pem \
+  localhost 127.0.0.1 ::1
+```
 
-# Launch the entire platform
+Launch the entire platform:
+
+```bash
 pnpm start
 ```
 
@@ -366,6 +381,9 @@ Pro Tip: All libraries are importable as `@chatsuite/library-name` for clean imp
 - Report bugs and request features via GitHub Issues
 - Follow coding standards defined in `AGENTS.md`
 - All contributions welcome under MIT License
+
+- For confidential reports related to harassment or security, see
+  `CODE_OF_CONDUCT.md` or email the maintainers at `hubertus@hubertusbecker.com`.
 
 ### License
 This project is licensed under the [MIT License](./LICENSE) - use it freely for personal and commercial projects.
