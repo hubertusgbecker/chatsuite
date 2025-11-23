@@ -60,6 +60,8 @@ services:
       # Use a valid default email (localhost is rejected by pgAdmin email validator).
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
+      - PGADMIN_SETUP_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      - PGADMIN_SETUP_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
     # Run as root so the pgAdmin entrypoint can create required directories
     # If you need to run as a non-root UID you must ensure that UID exists
     # inside the container's passwd database (or create a passwd entry first).
