@@ -47,20 +47,30 @@ services:
     ports:
       - '8081:80'
     volumes:
-      - ./data/pgadmin:/root/.pgadmin
+      - ./data/pgadmin:/root/.pgadmin/
+      - type: bind
+        source: ./config/pgadmin/docker-entrypoint-pgadmin.sh
+        target: /usr/local/bin/docker-entrypoint-pgadmin.sh
+        read_only: true
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
+    environment:
+      - PGADMIN_CONFIG_FILE=/root/.pgadmin/config_local.py
+      - PGADMIN_ENABLE_TLS=False
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@localhost}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
     networks:
       - gateway
       - database_pg
     depends_on:
       - postgres
+    entrypoint: ["/usr/local/bin/docker-entrypoint-pgadmin.sh"]
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 60s
     restart: always
   api-customer-service:
     container_name: chatsuite_api-customer-service
