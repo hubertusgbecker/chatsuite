@@ -73,11 +73,11 @@ services:
       - postgres
     entrypoint: ["sh", "/usr/local/bin/docker-entrypoint-pgadmin.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -L --max-redirs 5 -o /dev/null -w '%{http_code}' http://127.0.0.1/login | grep -q '^200$' || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/login || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 12
-      start_period: 60s
+      start_period: 120s
     restart: always
   api-customer-service:
     container_name: chatsuite_api-customer-service
