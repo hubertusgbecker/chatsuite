@@ -49,7 +49,7 @@ services:
     ports:
       - '8081:80'
     volumes:
-      - ./data/pgadmin:/root/.pgadmin/
+      - ./data/pgadmin:/var/lib/pgadmin/
       - type: bind
         source: ./config/pgadmin/docker-entrypoint-pgadmin.sh
         target: /usr/local/bin/docker-entrypoint-pgadmin.sh

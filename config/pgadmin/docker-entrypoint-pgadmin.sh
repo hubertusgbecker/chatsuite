@@ -4,7 +4,7 @@ set -e
 echo "[pgadmin-entrypoint] starting initialization wrapper"
 
 # Wait for mount to become available and writable (useful on slow NAS)
-PGADMIN_DIR="/root/.pgadmin"
+PGADMIN_DIR="/var/lib/pgadmin"
 max_attempts=60
 attempt=1
 while [ $attempt -le $max_attempts ]; do
