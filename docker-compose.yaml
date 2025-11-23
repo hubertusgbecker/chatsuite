@@ -59,8 +59,14 @@ services:
     environment:
       - PGADMIN_CONFIG_FILE=/root/.pgadmin/config_local.py
       - PGADMIN_ENABLE_TLS=False
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@localhost}
+      # Use a valid default email (localhost is rejected by pgAdmin email validator).
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
+    # If your NAS bind-mounts do not support chown/chmod, consider running the
+    # container with the host UID/GID that owns the mount. Uncomment and set
+    # HOST_UID/HOST_GID in your .env (or export in environment) to match the
+    # owner of ./data/pgadmin on the host. Example:
+    # user: "${HOST_UID:-0}:${HOST_GID:-0}"
     networks:
       - gateway
       - database_pg
