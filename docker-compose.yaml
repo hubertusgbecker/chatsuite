@@ -16,11 +16,11 @@ services:
       - n8n
       - pgadmin
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null https://127.0.0.1:10443/ || exit 1"]
+      test: ["CMD-SHELL", "wget --ca-certificate=/etc/nginx/certs/localhost-crt.pem -q -O /dev/null https://127.0.0.1:10443/ || wget -k -q -O /dev/null https://127.0.0.1:10443/ || exit 1"]
       interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      timeout: 15s
+      retries: 6
+      start_period: 120s
   # Postgres
   postgres:
     container_name: chatsuite_postgres

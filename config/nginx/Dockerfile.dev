@@ -1,3 +1,16 @@
 FROM nginx
+
+# Ensure we can add local CA certificates and have wget available for healthchecks
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		ca-certificates \
+		wget \
+	&& rm -rf /var/lib/apt/lists/*
+
 COPY ./config/nginx/default.dev.conf /etc/nginx/conf.d/default.conf
 COPY ./config/certificates/ /etc/nginx/certs/
+
+# Add local certificates to the system trusted store (if any PEMs exist)
+RUN mkdir -p /usr/local/share/ca-certificates/local \
+	&& cp /etc/nginx/certs/*.pem /usr/local/share/ca-certificates/local/ 2>/dev/null || true \
+	&& update-ca-certificates || true
