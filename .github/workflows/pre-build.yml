@@ -1,4 +1,7 @@
 name: pre-build
+permissions:
+  contents: read
+  actions: write
 # Events configuration
 on:
   # Execute it on pushing to next branches
@@ -307,4 +310,14 @@ jobs:
       - name: Dispatch build
         run: |
           echo "Dispatching build event..."
-          gh workflow run build.yml -f apps=$BUILD_REQUIRED_APPS
+          # Authenticate gh CLI: prefer a PAT stored in secrets.DISPATCH_PAT, otherwise use runner GITHUB_TOKEN
+          if [ -n "${{ secrets.DISPATCH_PAT }}" ]; then
+            echo "Using DISPATCH_PAT from secrets"
+            echo "${{ secrets.DISPATCH_PAT }}" | gh auth login --with-token
+          else
+            echo "Using runner GITHUB_TOKEN"
+            # Temporarily use the environment token to authenticate gh; unset variable to avoid CLI storing it
+            TOKEN="$GITHUB_TOKEN"; unset GITHUB_TOKEN; echo "$TOKEN" | gh auth login --with-token
+          fi
+          # Dispatch the workflow; quote apps to preserve JSON
+          gh workflow run build.yml -f apps="$BUILD_REQUIRED_APPS" --ref "$BRANCH_NAME"
