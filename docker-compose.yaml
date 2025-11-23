@@ -11,14 +11,16 @@ services:
     networks:
       - gateway
     depends_on:
-      client-app:
-        condition: service_started
-      api-customer-service:
-        condition: service_started
-      n8n:
-        condition: service_started
-      pgadmin:
-        condition: service_healthy
+      - client-app
+      - api-customer-service
+      - n8n
+      - pgadmin
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null https://127.0.0.1:10443/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
   # Postgres
   postgres:
     container_name: chatsuite_postgres
@@ -312,8 +314,7 @@ services:
       retries: 10
       start_period: 30s
     depends_on:
-      nocodb-postgres:
-        condition: service_healthy
+      - nocodb-postgres
     networks:
       - gateway
       - nocodb_network
@@ -332,8 +333,7 @@ services:
       - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:rw
       - ./data/mcphub:/app/data
     depends_on:
-      mcp-email-server:
-        condition: service_healthy
+      - mcp-email-server
     environment:
       NODE_ENV: production
       PORT: 3000
