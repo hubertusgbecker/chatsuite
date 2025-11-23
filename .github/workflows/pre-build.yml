@@ -310,14 +310,12 @@ jobs:
       - name: Dispatch build
         run: |
           echo "Dispatching build event..."
-          # Authenticate gh CLI: prefer a PAT stored in secrets.DISPATCH_PAT, otherwise use runner GITHUB_TOKEN
+          # Dispatch the workflow without running `gh auth login` (avoid CLI storing credentials).
+          # Prefer a PAT in secrets.DISPATCH_PAT, otherwise use the runner token available in GH_TOKEN.
           if [ -n "${{ secrets.DISPATCH_PAT }}" ]; then
             echo "Using DISPATCH_PAT from secrets"
-            echo "${{ secrets.DISPATCH_PAT }}" | gh auth login --with-token
+            GH_TOKEN="${{ secrets.DISPATCH_PAT }}" gh workflow run build.yml -f apps="$BUILD_REQUIRED_APPS" --ref "$BRANCH_NAME"
           else
-            echo "Using runner GITHUB_TOKEN"
-            # Temporarily use the environment token to authenticate gh; unset variable to avoid CLI storing it
-            TOKEN="$GITHUB_TOKEN"; unset GITHUB_TOKEN; echo "$TOKEN" | gh auth login --with-token
+            echo "Using runner GH_TOKEN"
+            GH_TOKEN="$GH_TOKEN" gh workflow run build.yml -f apps="$BUILD_REQUIRED_APPS" --ref "$BRANCH_NAME"
           fi
-          # Dispatch the workflow; quote apps to preserve JSON
-          gh workflow run build.yml -f apps="$BUILD_REQUIRED_APPS" --ref "$BRANCH_NAME"
