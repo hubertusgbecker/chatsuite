@@ -62,11 +62,10 @@ services:
       # Use a valid default email (localhost is rejected by pgAdmin email validator).
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
-    # If your NAS bind-mounts do not support chown/chmod, consider running the
-    # container with the host UID/GID that owns the mount. Uncomment and set
-    # HOST_UID/HOST_GID in your .env (or export in environment) to match the
-    # owner of ./data/pgadmin on the host. Example:
-    # user: "${HOST_UID:-0}:${HOST_GID:-0}"
+    # If your host filesystem (e.g. SMB/CIFS) prevents chown/chmod inside the container,
+    # set HOST_UID and HOST_GID in a .env file so the container process runs with those IDs
+    # and can write to the host-mounted directory. Example: HOST_UID=1026, HOST_GID=100
+    user: "${HOST_UID:-0}:${HOST_GID:-0}"
     networks:
       - gateway
       - database_pg
