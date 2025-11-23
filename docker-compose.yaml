@@ -44,8 +44,8 @@ services:
   pgadmin:
     container_name: chatsuite_pgadmin
     image: dpage/pgadmin4
-    #ports:
-    #  - '8080:80'
+    ports:
+      - '8081:80'
     volumes:
       - ./data/pgadmin:/root/.pgadmin
     env_file:
@@ -56,7 +56,7 @@ services:
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://chatsuite_pgadmin/"]
+      test: ["CMD", "wget", "--spider", "-q", "http://chatsuite_pgadmin:8081/"]
       interval: 10s
       timeout: 5s
       retries: 5

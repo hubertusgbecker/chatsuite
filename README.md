@@ -130,7 +130,7 @@ Once running, access these powerful productivity tools through your browser:
 | **Email MCP** | **Email Intelligence** | [localhost:9557](http://localhost:9557) | **Smart Email Processing** |
 | Client App | Development Starter | [localhost:4200](http://localhost:4200) | Custom Development |
 | API Service | Example Backend | [localhost:3333](http://localhost:3333) | API Development |
-| PgAdmin | Database Admin | Internal Only | Database Management |
+| PgAdmin | Database Admin | [localhost:8081](http://localhost:8081) | Database Management |
 
 ### Nginx Reverse Proxy
 - Port: 10443 (HTTPS ready when certificates configured)
