@@ -62,10 +62,10 @@ services:
       # Use a valid default email (localhost is rejected by pgAdmin email validator).
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
-    # Running on NAS: hard-coded host UID/GID to match mounted folder ownership
-    # NOTE: This is intentionally hard-coded for the environment where the mount
-    # is owned by UID 1026 and GID 100. If you run elsewhere, update these values.
-    user: "1026:100"
+    # Run as root so the pgAdmin entrypoint can create required directories
+    # If you need to run as a non-root UID you must ensure that UID exists
+    # inside the container's passwd database (or create a passwd entry first).
+    user: "0:0"
     networks:
       - gateway
       - database_pg
