@@ -56,7 +56,7 @@ services:
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://pgadmin/"]
+      test: ["CMD", "wget", "--spider", "-q", "http://chatsuite_pgadmin/"]
       interval: 10s
       timeout: 5s
       retries: 5
