@@ -32,27 +32,25 @@ After copying, you can customize `mcp_settings.json` to:
 
 ## Current Status
 
-✅ **MCPHub is WORKING** - Custom Docker image built and running properly:
-- Memory usage: **57MB (0.20%)** - down from 16GB in official image
-- No fork bombs or infinite loops
-- Successfully connected to MCP Email Server
-- Health endpoint responding correctly
-- LibreChat integrated and detecting all MCP tools
+MCPHub integration is available in ChatSuite. By default the Compose configuration uses the upstream image `samanhappy/mcphub:latest` defined in `docker-compose.yaml`. A custom Dockerfile is included in this repository as an optional alternative if you need to build a local image (see "Optional Custom Docker Image" below).
+
+The MCPHub service in this repository is configured to run and connect to available MCP servers (for example `zerolib-email`). If you run into issues with the upstream image you can build and use the provided custom image instead.
 
 ## Architecture
 
-### Custom Docker Image
-We build a custom image instead of using `samanhappy/mcphub:latest` because:
-- **Official image bug**: Creates fork bombs trying to install pnpm repeatedly
-- **Memory leak**: Consumed 16GB+ RAM in error loops
-- **Infinite retries**: Never successfully started
+### Optional Custom Docker Image
+This repository includes `config/mcphub/Dockerfile.custom` as an optional, local Dockerfile you can use if you encounter problems with the upstream image. The default `docker-compose.yaml` uses the remote image `samanhappy/mcphub:latest`; you do not need to build the custom image to run ChatSuite.
 
-### Our Solution
-- **Custom Dockerfile**: `config/mcphub/Dockerfile.custom`
-- **Base**: Python 3.13-slim with Node.js 22
-- **Package**: Installs `@samanhappy/mcphub@latest` npm package
-- **No pre-installations**: Only essential dependencies
-- **Clean startup**: Uses mcphub CLI directly
+Why include a custom Dockerfile?
+- It provides a reproducible build that you can tweak locally (for example to pin versions or install extra debugging tools).
+- If you encounter runtime issues with the upstream image, the custom image gives an alternative path for operators to test and deploy.
+
+Key details of the optional custom image:
+- Location: `config/mcphub/Dockerfile.custom`
+- Base: Python slim image with Node.js installed
+- Installs `@samanhappy/mcphub` and exposes port `3000`
+
+See the "Maintenance" section below for build and usage instructions.
 
 ## Configuration
 
@@ -105,28 +103,33 @@ LibreChat successfully connects to MCPHub and discovers all MCP tools:
 
 ## Performance
 
-### Resource Usage
-- **Memory**: 57MB (0.20% of 31GB)
-- **CPU**: <1% during normal operation
-- **Startup**: ~5-10 seconds
-- **Healthcheck**: Passing (healthy status)
-
-### Comparison with Official Image
-- Official: 16.24GB RAM, fork bomb, never started
-- Custom: 57MB RAM, stable, all features working
-- **Improvement**: 300x better memory efficiency
+Performance of MCPHub depends on which image you run and the MCP servers you attach. The upstream image usually works fine; if you see excessive resource usage, consider switching to the optional custom image (see Maintenance). Monitor container metrics and logs to determine the best option for your environment.
 
 ## Maintenance
 
-### Rebuilding the Image
+### Rebuilding or Using the Custom Image (Optional)
+By default the Compose file pulls the upstream `samanhappy/mcphub:latest` image. If you prefer to build the included custom image, you can do one of the following:
+
+1) Build using Docker Compose (uncomment the `build:` block in `docker-compose.yaml`):
+
 ```bash
-cd /volume1/docker/chatsuite
+# Edit docker-compose.yaml: uncomment the build: context and dockerfile lines for the mcphub service
 docker-compose build mcphub
 docker-compose up -d mcphub
 ```
 
+2) Build directly with Docker (local image tag):
+
+```bash
+docker build -t local/mcphub:custom -f config/mcphub/Dockerfile.custom config/mcphub
+docker run -d --name chatsuite_mcphub -p 3000:3000 \
+  -v $(pwd)/config/mcphub/mcp_settings.json:/app/mcp_settings.json:rw \
+  -v $(pwd)/data/mcphub:/app/data local/mcphub:custom
+```
+
 ### Updating MCP Servers
-Edit `config/mcphub/mcp_settings.json` and restart:
+Edit your local `config/mcphub/mcp_settings.json` and restart the mcphub service:
+
 ```bash
 docker-compose restart mcphub
 ```
