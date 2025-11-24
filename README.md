@@ -92,6 +92,15 @@ mkcert -key-file config/certificates/localhost-key.pem \
   localhost 127.0.0.1 ::1
 ```
 
+Configure MCPHub (required for MCP server integration):
+
+```bash
+# Copy the example configuration to create your settings file
+cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
+```
+
+**Note**: `mcp_settings.json` is not tracked in version control and must be created for each installation, similar to `.env` files. The example file provides a template with recommended MCP server configurations.
+
 Launch the entire platform:
 
 ```bash
@@ -293,12 +302,21 @@ Find the perfect place to start by following these steps:
      mkcert -key-file localhost-key.pem -cert-file localhost-crt.pem localhost host.minikube.internal 0.0.0.0 127.0.0.1 ::1
      ```
 
-6. **Install dependencies:**
+6. **MCPHub Configuration (Required):**
+   - Copy the example MCP settings to create your configuration:
+     ```bash
+     cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
+     ```
+   - This file is not tracked in version control, similar to `.env` files
+   - The example provides pre-configured MCP servers (time, fetch, email, browser-use)
+   - Customize as needed based on your available MCP servers
+
+7. **Install dependencies:**
    ```bash
    pnpm install
    ```
 
-7. **Start the platform:**
+8. **Start the platform:**
    ```bash
    pnpm start
    ```

@@ -4,6 +4,32 @@
 
 This directory contains the configuration for MCPHub, a unified hub for managing multiple Model Context Protocol (MCP) servers. The official Docker image had critical bugs, so we use a custom-built image.
 
+## Preparation - Required Before First Start
+
+**IMPORTANT**: Before starting MCPHub for the first time, you must create your configuration file:
+
+```bash
+# Copy the example configuration to create your settings file
+cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
+```
+
+**Why is this required?**
+- `mcp_settings.json` contains your personal MCP server configuration
+- This file is **not** tracked in version control (similar to `.env` files)
+- Each installation needs its own configuration based on available MCP servers
+- The `.example` file provides a template with recommended defaults
+
+**What's included in the example?**
+- Pre-configured MCP servers: time, fetch, zerolib-email, mcp-browser-use-server
+- Proper URLs for both internal (Docker) and external (host machine) MCP servers
+- User authentication configuration with example credentials
+
+After copying, you can customize `mcp_settings.json` to:
+- Add or remove MCP servers based on your needs
+- Update URLs if you change server ports
+- Configure user authentication
+- Adjust keep-alive intervals
+
 ## Current Status
 
 ✅ **MCPHub is WORKING** - Custom Docker image built and running properly:
@@ -31,9 +57,12 @@ We build a custom image instead of using `samanhappy/mcphub:latest` because:
 ## Configuration
 
 ### Files Structure
-- `./config/mcphub/mcp_settings.json` - MCP server configuration (email server only)
+- `./config/mcphub/mcp_settings.json.example` - Template configuration file (tracked in git)
+- `./config/mcphub/mcp_settings.json` - Your active configuration (not tracked in git)
 - `./config/mcphub/Dockerfile.custom` - Custom Docker image build
 - `./data/mcphub/` - Data persistence directory
+
+**Note**: Always edit `mcp_settings.json` for your configuration. The `.example` file is only a template and should not be modified directly.
 
 ### Docker Service (CUSTOM BUILD)
 The service is configured in `docker-compose.yaml` as:

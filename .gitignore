@@ -45,6 +45,9 @@ config/librechat/librechat.yaml
 
 config/mcp-email-server/config.toml
 
+config/mcphub/mcp_settings.json
+!config/mcphub/mcp_settings.json.example
+
 # Data
 #data/**
 !data/**/.gitkeep
