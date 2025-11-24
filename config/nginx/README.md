@@ -1,123 +1,95 @@
-# Nginx Reverse Proxy Int### SSL Certificates
-The system uses different certificates based on environment:
+docker-compose up client-app api-customer-service n8n -d
+docker-compose up nginx -d
+docker-compose up -d
+# Nginx Reverse Proxy
 
-**Development (.env.dev):**
-- Self-signed certificates for localhost
-- `./config/certificates/localhost-crt.pem`
-- `./config/certificates/localhost-key.pem`
+This directory contains configuration and helper files for the Nginx reverse proxy used by ChatSuite.
 
-**Production (.env.host):**
-- Proper SSL certificates from Certificate Authority
-- Configure paths in `./config/env/.env.host`
-- Update certificate references in nginx configurationtion
-
-This directory contains the configuration for Nginx reverse proxy server in the ChatSuite monorepo.
+This README is aligned with `repomix-output.xml` (repository manifest) and the current `docker-compose.yaml` in the repository. Use those files as the source of truth for runtime configuration.
 
 ## Overview
 
-Nginx serves as the main reverse proxy and SSL termination point for all ChatSuite services. It provides a unified HTTPS entry point and routes requests to the appropriate backend services.
+Nginx acts as the main reverse proxy and TLS termination point for ChatSuite. In development it exposes HTTPS on port `10443` and routes requests to backend services by URL path.
 
-## Configuration
+## How Nginx Is Defined (docker-compose)
 
-### Files Structure
-- `./config/nginx/Dockerfile.dev` - Development Docker image
-- `./config/nginx/default.dev.conf` - Nginx server configuration
-- `./config/certificates/` - SSL certificates directory
+Key runtime facts (from `docker-compose.yaml`):
 
-### Docker Service
-The service is configured in `docker-compose.yaml` as:
-- **Container**: `chatsuite_nginx`
-- **Build**: Custom image with SSL support
-- **Port**: 10443 (HTTPS)
-- **Networks**: gateway
-- **Dependencies**: client-app, api-customer-service, n8n
+- **Service name**: `nginx`
+- **Container name**: `chatsuite_nginx`
+- **Build**: `config/nginx/Dockerfile.dev`
+- **Published port**: `10443` (HTTPS)
+- **Networks**: `gateway`
+- **Depends on**: `client-app`, `api-customer-service`, `n8n`, `pgadmin`
+- **Healthcheck**: verifies HTTPS on `127.0.0.1:10443`
 
-## Setup Guide
+## Files
 
-### 1. SSL Certificates
-The system uses self-signed certificates for development. They should already be in place:
-- `./config/certificates/localhost-crt.pem` - SSL certificate
-- `./config/certificates/localhost-key.pem` - SSL private key
+- `config/nginx/Dockerfile.dev` — build instructions for the development proxy image
+- `config/nginx/default.dev.conf` — Nginx server configuration used in development
+- `config/certificates/` — directory for TLS certificates used by Nginx
 
-### 2. Start the Service
+## SSL Certificates
+
+Development uses self-signed certificates placed under `./config/certificates/`:
+
+- `./config/certificates/localhost-crt.pem`
+- `./config/certificates/localhost-key.pem`
+
+For production (host) environment, replace these with CA-signed certificates and update `./config/env/.env.host` and the Nginx configuration as needed.
+
+## Common Commands
+
+Start the proxy (after starting backends):
+
 ```bash
-# Start all backend services first
-docker-compose up client-app api-customer-service n8n -d
+# start dependent services first
+docker-compose up -d client-app api-customer-service n8n pgadmin
 
-# Start Nginx
-docker-compose up nginx -d
+# then start nginx
+docker-compose up -d nginx
 
-# Or start everything at once
+# or start everything
 docker-compose up -d
 ```
 
-### 3. Access Services
-Open your browser and go to: `https://localhost:10443`
+Test connectivity:
 
-**Note**: You'll see a security warning due to self-signed certificates. Click "Advanced" and "Proceed to localhost" to continue.
+```bash
+curl -k https://localhost:10443/
+curl -k https://localhost:10443/api/health
+```
 
-## Service Routing
+## Routing Overview
 
-Nginx routes requests to different services based on URL paths:
+Examples of proxy routes (see `config/nginx/default.dev.conf` for exact mappings):
 
-### Main Application
-- **URL**: `https://localhost:10443/`
-- **Backend**: React client app (port 4200)
-- **Description**: Main ChatSuite web interface
+- `https://localhost:10443/` → `client-app:4200`
+- `https://localhost:10443/api/` → `api-customer-service:3333`
+- `https://localhost:10443/n8n/` → `n8n:5678`
+- `https://localhost:10443/nocodb/` → `nocodb:8080`
+- `https://localhost:10443/pgadmin/` → `pgadmin:80`
 
-### API Endpoints
-- **URL**: `https://localhost:10443/api/`
-- **Backend**: NestJS API service (port 3333)
-- **Description**: Customer service API endpoints
+## Troubleshooting
 
-### Workflow Automation
-- **URL**: `https://localhost:10443/n8n/`
-- **Backend**: n8n workflow engine (port 5678)
-- **Description**: Workflow automation interface
+- Check Nginx logs:
 
-### Database Management
-- **URL**: `https://localhost:10443/nocodb/`
-- **Backend**: NocoDB (port 8080)
-- **Description**: Database GUI and API builder
+```bash
+docker-compose logs nginx
+```
 
-### Admin Tools
-- **URL**: `https://localhost:10443/pgadmin/`
-- **Backend**: PgAdmin (port 80)
-- **Description**: PostgreSQL administration
+- Validate configuration inside the running container:
 
-## Configuration Details
+```bash
+docker exec chatsuite_nginx nginx -t
+docker exec chatsuite_nginx nginx -s reload
+```
 
-### SSL/TLS Settings
-- **Protocol**: TLS 1.2 and 1.3
-- **Ciphers**: Modern security standards
-- **HSTS**: HTTP Strict Transport Security enabled
-- **Certificate**: Self-signed for development
+If you see certificate warnings in your browser, this is expected with self-signed certs; replace with proper CA-signed certs in production.
 
-### Proxy Settings
-- **Timeouts**: 60 seconds for backend connections
-- **Buffer Size**: Optimized for API responses
-- **Headers**: Proper forwarding of client information
-- **WebSocket**: Support for real-time connections
+## Production Notes
 
-### Security Headers
-- **X-Frame-Options**: DENY
-- **X-Content-Type-Options**: nosniff
-- **X-XSS-Protection**: 1; mode=block
-- **Referrer-Policy**: strict-origin-when-cross-origin
-
-## Development Features
-
-### Hot Reload Support
-Nginx is configured to support development hot reload:
-- React app changes are reflected immediately
-- API changes restart the backend service
-- Nginx configuration can be updated without container rebuild
-
-### CORS Handling
-Cross-Origin Resource Sharing is properly configured:
-- API endpoints accept requests from the frontend
-- WebSocket connections are supported
-- Development tools can access APIs
+For production deployments update certificate paths, enable automated certificate renewal (Let's Encrypt or other), and tighten proxy/security settings (rate limiting, WAF, IP whitelisting).
 
 ## Troubleshooting
 

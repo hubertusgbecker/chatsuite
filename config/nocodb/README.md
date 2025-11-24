@@ -6,10 +6,13 @@ NocoDB has been configured with its own dedicated PostgreSQL database, completel
 
 ## Architecture
 
-- **Separate PostgreSQL Container**: `chatsuite_nocodb-postgres`
-- **Dedicated Network**: `nocodb_network`
-- **Data Persistence**: Docker volume `nocodb_postgres_data`
-- **Database**: `nocodb` owned by `nocodb_user`
+- **PostgreSQL container (compose service)**: `nocodb-postgres` (container name `chatsuite_nocodb-postgres`)
+- **Compose service (app)**: `nocodb` (container name `chatsuite_nocodb`)
+- **Dedicated network**: `nocodb_network` (also connected to `gateway` for the `nocodb` service)
+- **Data persistence**: Docker volume `nocodb_postgres_data`
+- **Database name**: `nocodb` (default DB created by entrypoint)
+
+These names are taken from `docker-compose.yaml` (use `repomix-output.xml` as the repository manifest / source of truth).
 
 ## Environment Configuration
 
@@ -55,9 +58,9 @@ The `docker-entrypoint-nocodb-postgres.sh` script handles:
 ## Docker Compose Configuration
 
 The `docker-compose.yaml` includes:
-- `nocodb-postgres` service with health checks
-- `nocodb` service depending on PostgreSQL health
-- Proper network isolation with `nocodb_network`
+- `nocodb-postgres` service (container `chatsuite_nocodb-postgres`) with health checks
+- `nocodb` service (container `chatsuite_nocodb`) depending on `nocodb-postgres`
+- Network isolation using `nocodb_network` (and `gateway` for the app service)
 - Volume mapping for data persistence
 
 ## Usage
