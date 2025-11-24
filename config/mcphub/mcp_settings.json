@@ -14,13 +14,6 @@
     },
     "zerolib-email": {
       "url": "http://chatsuite_mcp-email-server:9557/sse"
-    },
-    "mcp-browser-use-server": {
-      "enabled": true,
-      "owner": "admin",
-      "type": "sse",
-      "url": "http://localhost:8082/sse",
-      "keepAliveInterval": 60000
     }
   },
   "users": [

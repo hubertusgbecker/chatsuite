@@ -344,6 +344,8 @@ services:
       PORT: 3000
     networks:
       - gateway
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
       interval: 30s
