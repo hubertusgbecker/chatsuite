@@ -55,7 +55,7 @@ ChatSuite is a comprehensive AI collaboration platform that unifies multiple pow
 
 ## Quick Start
 
-Get ChatSuite running in under 5 minutes:
+Get ChatSuite running quickly (time varies by network and machine):
 
 Clone the repository and install dependencies:
 
@@ -154,12 +154,20 @@ Once running, access these powerful productivity tools through your browser:
 | **Email MCP** | **Email Intelligence** | [localhost:9557](http://localhost:9557) | **Smart Email Processing** |
 | Client App | Development Starter | [localhost:4200](http://localhost:4200) | Custom Development |
 | API Service | Example Backend | [localhost:3333](http://localhost:3333) | API Development |
-| PgAdmin | Database Admin | [localhost:8081](http://localhost:8081) | Database Management |
+| PgAdmin | Database Admin | [localhost:8081](http://localhost:8081) (or via proxy `https://localhost:10443/pgadmin/`) | Database Management |
 
 ### Nginx Reverse Proxy
 - Port: 10443 (HTTPS ready when certificates configured)
 - Purpose: Unified access point for all services
 - Security: SSL termination and request routing
+
+Proxy routes (examples — see `config/nginx/default.dev.conf` for exact mappings):
+
+- `/` → `client-app:4200`
+- `/api/` → `api-customer-service:3333`
+- `/n8n/` → `n8n:5678`
+- `/nocodb/` → `nocodb:8080`
+- `/pgadmin/` → `pgadmin:80`
 
 ## Platform Commands
 
@@ -320,7 +328,7 @@ Find the perfect place to start by following these steps:
    ```bash
    pnpm start
    ```
-   Wait for all Docker containers to be up, then navigate to [https://localhost:3080](https://localhost:3080) for LibreChat or [http://localhost:4200](http://localhost:4200) for the main dashboard.
+  Wait for all Docker containers to be up, then navigate to `http://localhost:3080` for LibreChat (or use the unified proxy at `https://localhost:10443/`), or `http://localhost:4200` for the main dashboard.
 
 You're ready to go! The platform will automatically start all services with proper dependencies.
 
