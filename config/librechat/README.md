@@ -9,6 +9,7 @@ LibreChat provides a web-based interface for multiple AI models including OpenAI
 ## Configuration
 
 ### Files Structure
+
 - `./config/librechat/librechat.example.yaml` - Example configuration file
 - `./config/librechat/librechat.yaml` - Main configuration file (edit this)
 - `./config/librechat/docker-entrypoint-librechat.sh` - Custom startup script
@@ -16,7 +17,9 @@ LibreChat provides a web-based interface for multiple AI models including OpenAI
 - `./data/librechat/` - Data persistence directory
 
 ### Docker Service
+
 The service is configured in `docker-compose.yaml` as:
+
 - **Container**: `chatsuite_librechat`
 - **Image**: `ghcr.io/danny-avila/librechat-dev-api:latest`
 - **Port**: 3080
@@ -26,19 +29,21 @@ The service is configured in `docker-compose.yaml` as:
 ## Setup Guide
 
 ### 1. Configure API Keys
+
 Check which environment is active and edit the corresponding environment file:
 
 ```bash
 # Check current environment
 cat ../../.env    # Should show NX_APP_ENV=dev (or qa/host)
 
-# Edit the active environment file  
+# Edit the active environment file
 nano ../../config/env/.env.dev    # For development (default)
 # nano ../../config/env/.env.qa   # For QA environment
 # nano ../../config/env/.env.host # For production environment
 ```
 
 Add your API keys to the active environment file:
+
 ```bash
 # OpenAI API Key (required for GPT models)
 OPENAI_API_KEY=your_openai_api_key_here
@@ -52,6 +57,7 @@ AZURE_OPENAI_API_KEY=your_azure_key
 ```
 
 ### 2. Start the Service
+
 ```bash
 # Start all dependencies (MongoDB, MCPHub)
 docker-compose up mongodb mcphub -d
@@ -64,9 +70,11 @@ docker-compose up -d
 ```
 
 ### 3. Access LibreChat
+
 Open your browser and go to: `http://localhost:3080`
 
 ### 4. Create Your Account
+
 1. Click "Sign up" on the LibreChat login page
 2. Enter your email and password
 3. Complete registration and log in
@@ -74,19 +82,23 @@ Open your browser and go to: `http://localhost:3080`
 ## Features
 
 ### AI Model Support
+
 - **OpenAI**: GPT-4o, GPT-4o-mini, GPT-4-turbo, GPT-3.5-turbo
 - **Anthropic**: Claude-3.5-sonnet, Claude-3.5-haiku, Claude-3-opus
 - **Google**: Gemini models (with API key)
 - **Azure OpenAI**: Enterprise models (with configuration)
 
 ### MCP Integration
+
 LibreChat integrates with Model Context Protocol servers via MCPHub:
+
 - **Email Server**: Send and manage emails through AI chat
 - **Time Server**: Get current time and date information
 - **Fetch Server**: Retrieve web content and APIs
 - **Custom Servers**: Add your own MCP servers via MCPHub
 
 ### Data Persistence
+
 - **Conversations**: Stored in MongoDB
 - **Files**: Uploaded files in `./data/librechat/uploads/`
 - **Images**: Generated images in `./data/librechat/images/`
@@ -95,6 +107,7 @@ LibreChat integrates with Model Context Protocol servers via MCPHub:
 ## Configuration
 
 ### Basic Settings
+
 Edit `./config/librechat/librechat.yaml` to customize:
 
 ```yaml
@@ -104,18 +117,20 @@ cache: true
 # Configure AI endpoints
 endpoints:
   openAI:
-    apiKey: "${OPENAI_API_KEY}"
+    apiKey: '${OPENAI_API_KEY}'
     models:
-      default: ["gpt-4o", "gpt-4o-mini"]
-    mcpServers: ["mcphub"]  # Enable MCP integration
+      default: ['gpt-4o', 'gpt-4o-mini']
+    mcpServers: ['mcphub'] # Enable MCP integration
 
 # Customize interface
 interface:
-  customWelcome: "Welcome to ChatSuite LibreChat!"
+  customWelcome: 'Welcome to ChatSuite LibreChat!'
 ```
 
 ### Advanced Configuration
+
 For advanced users, you can:
+
 1. Add custom AI endpoints
 2. Configure authentication providers (Google, GitHub, etc.)
 3. Set up conversation templates
@@ -128,10 +143,11 @@ LibreChat connects to MCP servers through MCPHub. To add new MCP capabilities:
 
 1. Configure the server in `./config/mcphub/mcp_settings.json`
 2. Add the server reference to `librechat.yaml`:
+
 ```yaml
 endpoints:
   openAI:
-    mcpServers: ["mcphub"]  # This enables all MCPHub servers
+    mcpServers: ['mcphub'] # This enables all MCPHub servers
 ```
 
 ## Troubleshooting
@@ -139,6 +155,7 @@ endpoints:
 ### Common Issues
 
 1. **Cannot connect to AI models**
+
    - Check your API keys in the active environment file:
      ```bash
      cat ../../.env  # Check which environment is active
@@ -148,10 +165,12 @@ endpoints:
    - Check API rate limits
 
 2. **Chat history not saving**
+
    - Ensure MongoDB is running: `docker-compose logs mongodb`
    - Check volume mounts for data persistence
 
 3. **MCP features not working**
+
    - Verify MCPHub is running: `docker-compose logs mcphub`
    - Check MCP server status in MCPHub web interface
 
@@ -161,14 +180,18 @@ endpoints:
    - Verify user permissions
 
 ### Debug Mode
+
 Enable debug logging by setting environment variables:
+
 ```bash
 DEBUG=true
 LOG_LEVEL=debug
 ```
 
 ### Container Logs
+
 Check LibreChat logs:
+
 ```bash
 docker-compose logs librechat
 ```
@@ -176,6 +199,7 @@ docker-compose logs librechat
 ## Service Status
 
 ### **Working Components:**
+
 - LibreChat web interface on port 3080
 - MongoDB database integration
 - MCP server integration via MCPHub
@@ -183,6 +207,7 @@ docker-compose logs librechat
 - Conversation persistence
 
 ### **Integration Benefits:**
+
 - Unified AI chat interface
 - Multiple model support
 - MCP protocol for tool integration

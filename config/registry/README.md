@@ -20,6 +20,7 @@ config/registry/
 ## Setup Guide
 
 ### 1. Basic Registry Configuration
+
 To enable a Docker registry, add this service to your `docker-compose.yaml`:
 
 ```yaml
@@ -29,7 +30,7 @@ services:
     container_name: chatsuite_registry
     restart: always
     ports:
-      - "5000:5000"
+      - '5000:5000'
     environment:
       REGISTRY_HTTP_TLS_CERTIFICATE: /certs/registry.crt
       REGISTRY_HTTP_TLS_KEY: /certs/registry.key
@@ -45,6 +46,7 @@ services:
 ```
 
 ### 2. Create Authentication
+
 Set up basic authentication for the registry:
 
 ```bash
@@ -57,6 +59,7 @@ docker run --rm --entrypoint htpasswd \
 ```
 
 ### 3. Generate SSL Certificates
+
 For HTTPS access, generate SSL certificates:
 
 ```bash
@@ -72,6 +75,7 @@ mv ./config/registry/registry.* ./config/certificates/
 ```
 
 ### 4. Start the Registry
+
 ```bash
 # Start the registry service
 docker-compose up registry -d
@@ -83,6 +87,7 @@ curl -k https://localhost:5000/v2/
 ## Usage
 
 ### Pushing Images to Registry
+
 ```bash
 # Login to your registry
 docker login localhost:5000
@@ -95,6 +100,7 @@ docker push localhost:5000/your-image:tag
 ```
 
 ### Pulling Images from Registry
+
 ```bash
 # Pull an image from your registry
 docker pull localhost:5000/your-image:tag
@@ -106,6 +112,7 @@ services:
 ```
 
 ### Registry Web UI (Optional)
+
 Add a web interface for the registry:
 
 ```yaml
@@ -115,7 +122,7 @@ services:
     container_name: chatsuite_registry_ui
     restart: always
     ports:
-      - "8081:80"
+      - '8081:80'
     environment:
       REGISTRY_TITLE: ChatSuite Registry
       REGISTRY_URL: https://registry:5000
@@ -130,7 +137,9 @@ services:
 ## Use Cases
 
 ### 1. Custom Application Images
+
 Store custom-built images for ChatSuite components:
+
 ```bash
 # Build and push custom API image
 docker build -t localhost:5000/chatsuite/api:latest ./apps/api-customer-service/
@@ -138,7 +147,9 @@ docker push localhost:5000/chatsuite/api:latest
 ```
 
 ### 2. Image Caching
+
 Cache external images locally to improve build times:
+
 ```bash
 # Pull and re-tag external images
 docker pull postgres:latest
@@ -147,7 +158,9 @@ docker push localhost:5000/postgres:latest
 ```
 
 ### 3. Development Snapshots
+
 Store development snapshots and experimental builds:
+
 ```bash
 # Create development snapshot
 docker build -t localhost:5000/chatsuite/client-app:dev-$(date +%Y%m%d) ./apps/client-app/
@@ -157,6 +170,7 @@ docker push localhost:5000/chatsuite/client-app:dev-$(date +%Y%m%d)
 ## Configuration Options
 
 ### Environment Configuration
+
 Configure different storage backends using environment variables:
 
 ```bash
@@ -165,7 +179,7 @@ cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
 
 # Edit the active environment file
 # ./config/env/.env.dev (development)
-# ./config/env/.env.qa (testing)  
+# ./config/env/.env.qa (testing)
 # ./config/env/.env.host (production)
 ```
 
@@ -173,7 +187,7 @@ cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
 environment:
   # Local filesystem (default for dev)
   REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
-  
+
   # S3 storage (production/host environment)
   REGISTRY_STORAGE: s3
   REGISTRY_STORAGE_S3_BUCKET: my-registry-bucket
@@ -181,6 +195,7 @@ environment:
 ```
 
 ### Access Control
+
 Configure advanced access control:
 
 ```yaml
@@ -192,6 +207,7 @@ environment:
 ```
 
 ### Registry Mirrors
+
 Configure as a mirror for Docker Hub:
 
 ```yaml
@@ -202,6 +218,7 @@ environment:
 ## Maintenance
 
 ### Cleanup Old Images
+
 ```bash
 # Run garbage collection to free space
 docker exec chatsuite_registry registry garbage-collect /etc/docker/registry/config.yml
@@ -211,6 +228,7 @@ curl -X DELETE https://localhost:5000/v2/your-image/manifests/sha256:digest
 ```
 
 ### Backup Registry Data
+
 ```bash
 # Create backup of registry data
 tar -czf registry-backup-$(date +%Y%m%d).tar.gz ./config/registry/data/
@@ -220,6 +238,7 @@ tar -xzf registry-backup-YYYYMMDD.tar.gz -C ./config/registry/
 ```
 
 ### Monitor Registry
+
 ```bash
 # Check registry logs
 docker-compose logs registry
@@ -236,31 +255,34 @@ curl -k https://localhost:5000/v2/_catalog
 ### Common Issues
 
 1. **Certificate errors**
+
    ```bash
    # Add registry to Docker daemon insecure registries
    # Edit /etc/docker/daemon.json:
    {
      "insecure-registries": ["localhost:5000"]
    }
-   
+
    # Restart Docker daemon
    sudo systemctl restart docker
    ```
 
 2. **Authentication failures**
+
    ```bash
    # Verify htpasswd file
    cat ./config/registry/auth/htpasswd
-   
+
    # Test authentication
    curl -u username:password https://localhost:5000/v2/
    ```
 
 3. **Storage space issues**
+
    ```bash
    # Check disk usage
    df -h ./config/registry/data/
-   
+
    # Run garbage collection
    docker exec chatsuite_registry registry garbage-collect --dry-run /etc/docker/registry/config.yml
    ```
@@ -268,6 +290,7 @@ curl -k https://localhost:5000/v2/_catalog
 ## Security Considerations
 
 ### Production Security
+
 1. **Use proper SSL certificates** from a trusted CA
 2. **Implement proper authentication** with token-based auth
 3. **Set up network isolation** with firewall rules
@@ -276,6 +299,7 @@ curl -k https://localhost:5000/v2/_catalog
 6. **Backup encryption** for stored images
 
 ### Access Control
+
 - Limit registry access to authorized users only
 - Use separate credentials for different environments
 - Implement role-based access control for teams
@@ -284,6 +308,7 @@ curl -k https://localhost:5000/v2/_catalog
 ## Integration with CI/CD
 
 ### GitHub Actions
+
 ```yaml
 - name: Login to Registry
   run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login localhost:5000 -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
@@ -295,6 +320,7 @@ curl -k https://localhost:5000/v2/_catalog
 ```
 
 ### Development Workflow
+
 1. Build images locally
 2. Push to private registry
 3. Test with registry images

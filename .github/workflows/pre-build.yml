@@ -14,16 +14,16 @@ on:
 
 env:
   # @INFO: If independent builds are enabled, only affected projects are going to be deployed.
-  IS_INDEPENDENT_BUILD_ENABLED: "true"
+  IS_INDEPENDENT_BUILD_ENABLED: 'true'
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
   NX_BRANCH: ${{ github.head_ref || github.ref_name }}
   # Force SWC to use WASM fallback if native bindings fail
-  SWC_FORCE_WASM: "1"
+  SWC_FORCE_WASM: '1'
   # Ensure native modules can be built
-  SKIP_BINARY_DOWNLOAD_FOR_CI: "1"
+  SKIP_BINARY_DOWNLOAD_FOR_CI: '1'
   # Prevent Chromium download for Puppeteer if used
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
 
 jobs:
   # Get branch info
@@ -38,11 +38,11 @@ jobs:
       - name: Get base branch name
         id: get-base-branch-name
         run: |
-            if [[ "${{github.event.pull_request.base.ref}}" != "" ]]; then
-              echo "branch=${{github.event.pull_request.base.ref}}" >> $GITHUB_OUTPUT
-            else
-              echo "branch=main" >> $GITHUB_OUTPUT
-            fi
+          if [[ "${{github.event.pull_request.base.ref}}" != "" ]]; then
+            echo "branch=${{github.event.pull_request.base.ref}}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=main" >> $GITHUB_OUTPUT
+          fi
     outputs:
       # Export the branch names as output to be able to use it in other jobs
       base-branch-name: ${{ steps.get-base-branch-name.outputs.branch }}
@@ -62,7 +62,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: "10.x"
+          version: '10.x'
       # Install Node.js
       - name: Setup node
         uses: actions/setup-node@v4
@@ -87,21 +87,21 @@ jobs:
         id: get-projects-arrays
         # main and release branches will run all the tests once workflow is run
         run: |
-            if [[ "${{github.event.pull_request.base.ref}}" == "" ]]; then
-              echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint)" >> $GITHUB_OUTPUT
-              echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test)" >> $GITHUB_OUTPUT
-              # Running on origin/release or origin/main branch
-              if [[ $IS_INDEPENDENT_BUILD_ENABLED == "true" ]]; then
-                echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build)" >> $GITHUB_OUTPUT
-              else
-                echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build --all)" >> $GITHUB_OUTPUT
-              fi
+          if [[ "${{github.event.pull_request.base.ref}}" == "" ]]; then
+            echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint)" >> $GITHUB_OUTPUT
+            echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test)" >> $GITHUB_OUTPUT
+            # Running on origin/release or origin/main branch
+            if [[ $IS_INDEPENDENT_BUILD_ENABLED == "true" ]]; then
+              echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build)" >> $GITHUB_OUTPUT
             else
-              # Running on PR
-              echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test origin/${{needs.branch-info.outputs.base-branch-name}})" >> $GITHUB_OUTPUT
-              echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint origin/${{needs.branch-info.outputs.base-branch-name}})" >> $GITHUB_OUTPUT
-              echo "build=[]" >> $GITHUB_OUTPUT
+              echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build --all)" >> $GITHUB_OUTPUT
             fi
+          else
+            # Running on PR
+            echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test origin/${{needs.branch-info.outputs.base-branch-name}})" >> $GITHUB_OUTPUT
+            echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint origin/${{needs.branch-info.outputs.base-branch-name}})" >> $GITHUB_OUTPUT
+            echo "build=[]" >> $GITHUB_OUTPUT
+          fi
       - name: Print affected
         run: |
           echo "Test-Unit (Affected): ${{steps.get-projects-arrays.outputs.test-unit}}"
@@ -126,7 +126,7 @@ jobs:
       max-parallel: 4
       # One job for each different project and node version
       matrix:
-        node: ["24.x"]
+        node: ['24.x']
         projectName: ${{fromJson(needs.get-affected.outputs.lint)}}
     env:
       NODE: ${{ matrix.node }}
@@ -139,7 +139,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: "10.x"
+          version: '10.x'
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -163,7 +163,7 @@ jobs:
       max-parallel: 4
       # One job for each different project and node version
       matrix:
-        node: ["24.x"]
+        node: ['24.x']
         projectName: ${{fromJson(needs.get-affected.outputs.test-unit)}}
     env:
       NODE: ${{ matrix.node }}
@@ -176,7 +176,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: "10.x"
+          version: '10.x'
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -218,7 +218,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: "10.x"
+          version: '10.x'
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -255,9 +255,9 @@ jobs:
         timeout-minutes: 10
         id: trigger-semantic-release
         env:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-           SWC_FORCE_WASM: true
-           CI: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SWC_FORCE_WASM: true
+          CI: true
         run: |
           echo "Starting semantic-release at $(date)"
           echo "GITHUB_TOKEN length: ${#GITHUB_TOKEN}"

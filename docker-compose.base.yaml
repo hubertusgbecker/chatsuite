@@ -1,25 +1,21 @@
-version: "3"
+version: '3'
 
-x-nx-env-volume:
-  &nx-env
+x-nx-env-volume: &nx-env
   type: bind
   source: ./config/env/.env.${NX_APP_ENV:-dev}
   target: /usr/src/root/.env
 
-x-nx-tools-volume:
-  &nx-tools
+x-nx-tools-volume: &nx-tools
   type: bind
   source: ./tools
   target: /usr/src/root/tools
 
-x-nx-libs-volume:
-  &nx-libs
+x-nx-libs-volume: &nx-libs
   type: bind
   source: ./libs
   target: /usr/src/root/libs
 
-x-nx-node-modules-volume:
-  &nx-node-modules
+x-nx-node-modules-volume: &nx-node-modules
   type: bind
   source: ./node_modules
   target: /usr/src/root/node_modules
@@ -28,10 +24,10 @@ services:
   nx-base:
     # Reference code for healthcheck
     # healthcheck:
-      # test: "wget --no-verbose --tries=1 --spider http://localhost:8081 || exit 1"
-      # interval: 2s
-      # timeout: 200s
-      # retries: 100
+    # test: "wget --no-verbose --tries=1 --spider http://localhost:8081 || exit 1"
+    # interval: 2s
+    # timeout: 200s
+    # retries: 100
     environment:
       - NX_CLOUD_ACCESS_TOKEN=""
       - NX_NO_CLOUD=true

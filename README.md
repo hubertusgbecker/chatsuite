@@ -21,8 +21,9 @@
 ChatSuite is a comprehensive AI collaboration platform that unifies multiple powerful tools into one cohesive workspace:
 
 **Core AI Productivity Tools:**
-- **LibreChat** - Advanced AI chat interface with multi-model support 
-- **n8n** - Visual workflow automation and integration platform  
+
+- **LibreChat** - Advanced AI chat interface with multi-model support
+- **n8n** - Visual workflow automation and integration platform
 - **MindsDB** - AI-powered database with ML capabilities
 - **NocoDB** - Smart spreadsheet interface for databases
 - **MinIO** - S3-compatible object storage for scalable file management
@@ -30,28 +31,33 @@ ChatSuite is a comprehensive AI collaboration platform that unifies multiple pow
 - **MCP Email** - Email integration via Model Context Protocol
 
 **Development Foundation:**
+
 - **React Frontend** - Starter client application demonstrating modern UI patterns
 - **NestJS API** - Example backend service showcasing scalable architecture
 
 ## Key Features
 
 ### Seamless AI Tool Integration
+
 - **Unified Workspace** - All AI productivity tools accessible from one platform
 - **Centralized Configuration** - Single point of management for all services
 - **Cross-Tool Data Flow** - Seamless information sharing between LibreChat, n8n, MindsDB, and NocoDB
 
 ### Intelligent Automation & Orchestration
+
 - **Visual Workflows** - Connect AI models to real-world data with n8n automations
 - **Smart Email Processing** - MCP Email integration for intelligent email handling
 - **Dynamic MCP Orchestration** - MCPHub enables seamless service communication
 - **AI-Powered Analytics** - MindsDB brings machine learning to your databases
 
 ### Maximum Productivity
+
 - **One-Click Deployment** - Complete platform launches with single command
 - **Real-time Collaboration** - Share insights across LibreChat, workflows, and databases
 - **Automated Task Management** - Reduce manual work through intelligent automation
 
 ### Enterprise Ready
+
 - **Docker-Based Architecture** - Consistent deployment across environments
 - **Comprehensive Monitoring** - Built-in logging and health checks
 - **Scalable Foundation** - Modern TypeScript/React/NestJS stack for custom development
@@ -129,38 +135,38 @@ pnpm rebuild && pnpm test
 
 **What each command does:**
 
-- **`pnpm rebuild`**: 
+- **`pnpm rebuild`**:
+
   - Stops and cleans existing containers
   - Pulls latest service images
   - Starts all services in correct order
   - Waits for core services initialization
 
-- **`pnpm test`**: 
+- **`pnpm test`**:
   - Tests all service endpoints
   - Verifies MCP server integration
   - Displays comprehensive system status
   - Confirms system is ready for use
 
-
-
 ## Access Your Platform
 
 Once running, access these powerful productivity tools through your browser:
 
-| Service | Purpose | Direct Access | Primary Focus |
-|---------|---------|---------------|---------------|
-| **LibreChat** | **Multi-Model AI Chat** | [localhost:3080](http://localhost:3080) | **Core AI Interface** |
-| **n8n** | **Visual Workflow Automation** | [localhost:5678](http://localhost:5678) | **Productivity Automation** |
-| **NocoDB** | **Smart Database Interface** | [localhost:8080](http://localhost:8080) | **Data Management** |
-| **MindsDB** | **AI-Powered Database** | [localhost:47334](http://localhost:47334) | **ML Analytics** |
-| **MinIO** | **S3 Object Storage** | [localhost:9001](http://localhost:9001) | **File Storage & Management** |
-| **MCPHub** | **Protocol Orchestration** | [localhost:3000](http://localhost:3000) | **Service Integration** |
-| **Email MCP** | **Email Intelligence** | [localhost:9557](http://localhost:9557) | **Smart Email Processing** |
-| Client App | Development Starter | [localhost:4200](http://localhost:4200) | Custom Development |
-| API Service | Example Backend | [localhost:3333](http://localhost:3333) | API Development |
-| PgAdmin | Database Admin | [localhost:8081](http://localhost:8081) (or via proxy `https://localhost:10443/pgadmin/`) | Database Management |
+| Service       | Purpose                        | Direct Access                                                                             | Primary Focus                 |
+| ------------- | ------------------------------ | ----------------------------------------------------------------------------------------- | ----------------------------- |
+| **LibreChat** | **Multi-Model AI Chat**        | [localhost:3080](http://localhost:3080)                                                   | **Core AI Interface**         |
+| **n8n**       | **Visual Workflow Automation** | [localhost:5678](http://localhost:5678)                                                   | **Productivity Automation**   |
+| **NocoDB**    | **Smart Database Interface**   | [localhost:8080](http://localhost:8080)                                                   | **Data Management**           |
+| **MindsDB**   | **AI-Powered Database**        | [localhost:47334](http://localhost:47334)                                                 | **ML Analytics**              |
+| **MinIO**     | **S3 Object Storage**          | [localhost:9001](http://localhost:9001)                                                   | **File Storage & Management** |
+| **MCPHub**    | **Protocol Orchestration**     | [localhost:3000](http://localhost:3000)                                                   | **Service Integration**       |
+| **Email MCP** | **Email Intelligence**         | [localhost:9557](http://localhost:9557)                                                   | **Smart Email Processing**    |
+| Client App    | Development Starter            | [localhost:4200](http://localhost:4200)                                                   | Custom Development            |
+| API Service   | Example Backend                | [localhost:3333](http://localhost:3333)                                                   | API Development               |
+| PgAdmin       | Database Admin                 | [localhost:8081](http://localhost:8081) (or via proxy `https://localhost:10443/pgadmin/`) | Database Management           |
 
 ### Nginx Reverse Proxy
+
 - Port: 10443 (HTTPS ready when certificates configured)
 - Purpose: Unified access point for all services
 - Security: SSL termination and request routing
@@ -180,14 +186,16 @@ Proxy routes (examples — see `config/nginx/default.dev.conf` for exact mapping
 Master ChatSuite with these essential commands:
 
 ### Core Operations
+
 ```bash
-pnpm start              # Launch all services  
+pnpm start              # Launch all services
 pnpm stop               # Graceful shutdown
 pnpm rebuild            # Complete system rebuild
 pnpm test               # Comprehensive health checks
 ```
 
 ### Health & Monitoring
+
 ```bash
 pnpm check              # Verify dependencies
 pnpm env:show           # Display current environment
@@ -195,9 +203,10 @@ pnpm env:verify         # Security configuration check
 ```
 
 ### Environment Management
+
 ```bash
 pnpm start:workspace:dev    # Development environment
-pnpm start:workspace:qa     # QA environment  
+pnpm start:workspace:qa     # QA environment
 pnpm start:workspace:host   # Production environment
 ```
 
@@ -206,6 +215,7 @@ pnpm start:workspace:host   # Production environment
 ChatSuite is built on modern, enterprise-grade architecture:
 
 ### Technology Stack
+
 - Frontend: React 18 + TypeScript + Tailwind CSS
 - Backend: NestJS + Node.js + TypeScript
 - Database: PostgreSQL + MongoDB (LibreChat)
@@ -214,6 +224,7 @@ ChatSuite is built on modern, enterprise-grade architecture:
 - Automation: n8n workflows + GitHub Actions
 
 ### Service Architecture
+
 ```
 ChatSuite AI Productivity Platform
 ├── Nginx Proxy (SSL Termination & Routing)
@@ -230,6 +241,7 @@ ChatSuite AI Productivity Platform
 ```
 
 ### Security & Compliance
+
 - MIT License for maximum flexibility
 - Environment-based configuration
 - Containerized isolation
@@ -240,6 +252,7 @@ Developer Guide: All development standards and guidelines are defined in [`AGENT
 ## Platform Capabilities
 
 ### Integrated AI Productivity Suite
+
 - [x] **Multi-Model AI Chat** - LibreChat with OpenAI, Claude, Gemini, and more
 - [x] **Visual Workflow Automation** - n8n with 200+ integrations for seamless productivity
 - [x] **AI-Powered Database Intelligence** - MindsDB with ML predictions and insights
@@ -249,12 +262,14 @@ Developer Guide: All development standards and guidelines are defined in [`AGENT
 - [x] **Intelligent Email Processing** - MCP Email server for smart email automation
 
 ### Seamless Integration & Collaboration
+
 - [x] **Unified Data Flow** - Connect insights from LibreChat directly to n8n workflows
 - [x] **Cross-Platform Analytics** - Share data between NocoDB, MindsDB, and automation tools
 - [x] **Real-time Orchestration** - MCPHub enables dynamic service coordination
 - [x] **Centralized Management** - Single platform for all AI productivity tools
 
 ### Development Foundation
+
 - [x] **Nx Monorepo** - Scalable workspace with dependency graphs for custom development
 - [x] **React Starter App** - Modern client application template with best practices
 - [x] **NestJS Example API** - Backend service template demonstrating scalable architecture
@@ -263,6 +278,7 @@ Developer Guide: All development standards and guidelines are defined in [`AGENT
 - [x] **Hot Reload** - Instant feedback during development
 
 ### Production Ready
+
 - [x] **Environment Management** - Dev, QA, and production configurations
 - [x] **Health Monitoring** - Comprehensive service health checks
 - [x] **Security Scanning** - Automated dependency vulnerability checks
@@ -277,6 +293,7 @@ Developer Guide: All development standards and guidelines are defined in [`AGENT
 Find the perfect place to start by following these steps:
 
 1. **Install NVM (Node Version Manager):**
+
    - [NVM Installation Guide](https://github.com/nvm-sh/nvm#installing-and-updating)
    - In the project root, run:
      ```bash
@@ -289,6 +306,7 @@ Find the perfect place to start by following these steps:
      ```
 
 2. **Install Docker:**
+
    - [Docker Installation Guide](https://docs.docker.com/engine/install/)
    - Verify installation:
      ```bash
@@ -296,12 +314,14 @@ Find the perfect place to start by following these steps:
      ```
 
 3. **Install pnpm:**
+
    - This repo uses pnpm for efficient dependency management.
      ```bash
      npm install -g pnpm
      ```
 
 4. **Generate .env files:**
+
    - Copy all files in `config/env/` and prefix each with a dot (`.`) to make them hidden and git-ignored:
      ```bash
      cp config/env/env.dev config/env/.env.dev
@@ -310,6 +330,7 @@ Find the perfect place to start by following these steps:
      ```
 
 5. **SSL Setup (Recommended for HTTPS):**
+
    - Install [mkcert](https://github.com/FiloSottile/mkcert) (easiest via Homebrew):
      ```bash
      brew install mkcert
@@ -319,6 +340,7 @@ Find the perfect place to start by following these steps:
      ```
 
 6. **MCPHub Configuration (Required):**
+
    - Copy the example MCP settings to create your configuration:
      ```bash
      cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
@@ -328,6 +350,7 @@ Find the perfect place to start by following these steps:
    - Customize as needed based on your available MCP servers
 
 7. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
@@ -336,7 +359,7 @@ Find the perfect place to start by following these steps:
    ```bash
    pnpm start
    ```
-  Wait for all Docker containers to be up, then navigate to `http://localhost:3080` for LibreChat (or use the unified proxy at `https://localhost:10443/`), or `http://localhost:4200` for the main dashboard.
+   Wait for all Docker containers to be up, then navigate to `http://localhost:3080` for LibreChat (or use the unified proxy at `https://localhost:10443/`), or `http://localhost:4200` for the main dashboard.
 
 You're ready to go! The platform will automatically start all services with proper dependencies.
 
@@ -347,9 +370,11 @@ You're ready to go! The platform will automatically start all services with prop
 ChatSuite's main value comes from the seamless integration of AI productivity tools. The platform also includes starter applications for custom development:
 
 **AI Productivity Suite:**
+
 - LibreChat, n8n, MindsDB, NocoDB, MCPHub, and MCP Email work together to create a unified AI collaboration environment
 
 **Development Starters:**
+
 - `client-app` - React SPA template demonstrating modern UI patterns and integration approaches
 - `api-customer-service` - NestJS REST API example showing scalable backend architecture
 
@@ -361,7 +386,7 @@ pnpm start
 
 # Development environments
 pnpm start:workspace:dev    # Point to DEV backend services
-pnpm start:workspace:qa     # Point to QA backend services  
+pnpm start:workspace:qa     # Point to QA backend services
 pnpm start:workspace:host   # Point to production services
 
 # Client-only development
@@ -379,7 +404,7 @@ pnpm stop:prune            # Complete cleanup (removes containers & images)
 # Run all tests
 pnpm nx:test
 
-# Run tests for changed code only  
+# Run tests for changed code only
 pnpm nx:test:affected
 
 # Build for production
@@ -395,7 +420,7 @@ pnpm nx:start
 # Generate new library
 nx g @nx/react:lib my-library
 
-# Generate new component  
+# Generate new component
 nx g @nx/react:component my-component --project=client-app
 
 # View dependency graph
@@ -407,11 +432,13 @@ Pro Tip: All libraries are importable as `@chatsuite/library-name` for clean imp
 ## Contributing & Support
 
 ### Documentation
+
 - [AGENTS.md](./AGENTS.md) - Complete development guidelines and architecture
 - [Environment Docs](./docs/) - Configuration and deployment guides
 - [Nx Documentation](https://nx.dev) - Monorepo tooling and best practices
 
 ### Issues & Support
+
 - Report bugs and request features via GitHub Issues
 - Follow coding standards defined in `AGENTS.md`
 - All contributions welcome under MIT License
@@ -420,6 +447,7 @@ Pro Tip: All libraries are importable as `@chatsuite/library-name` for clean imp
   `CODE_OF_CONDUCT.md` or email the maintainers at `hubertus@hubertusbecker.com`.
 
 ### License
+
 This project is licensed under the [MIT License](./LICENSE) - use it freely for personal and commercial projects.
 
 ---
@@ -427,8 +455,6 @@ This project is licensed under the [MIT License](./LICENSE) - use it freely for 
 ## Configuration Documentation
 
 All configuration and environment documentation for ChatSuite—including setup, environment management, and service-specific configuration—is centrally maintained in [`/config/README.md`](./config/README.md). This file provides a comprehensive overview and links to detailed documentation for each integrated service and environment. For any configuration or environment-related questions, always refer to `/config/README.md` first.
-
-
 
 Built with ChatSuite - The Complete AI Collaboration Platform
 

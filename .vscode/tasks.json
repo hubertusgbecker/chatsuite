@@ -1,15 +1,13 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "shell",
-			"label": "Run Lint",
-			"command": "pnpm lint",
-			"group": "build",
-			"problemMatcher": [
-				"$eslint-stylish"
-			]
-		},
-		// Removed magg-related tasks
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "Run Lint",
+      "command": "pnpm lint",
+      "group": "build",
+      "problemMatcher": ["$eslint-stylish"]
+    }
+    // Removed magg-related tasks
+  ]
 }

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## v0.2.0 - 2025-12-20
 
 ### Added
+
 - **MinIO Integration**: Added S3-compatible object storage service
   - MinIO service with health checks on ports 9000 (API) and 9001 (Console)
   - Comprehensive MinIO documentation in `config/minio/README.md`
@@ -33,6 +34,7 @@ All notable changes to this project will be documented in this file.
   - Streamlined reporting mechanism
 
 ### Changed
+
 - **Docker Configuration**: Fixed all localhost references to use proper container names
   - Changed MinIO healthcheck from `localhost:9000` to `minio:9000`
   - Changed MCPHub healthcheck from `localhost:3000` to `mcphub:3000`
@@ -46,9 +48,11 @@ All notable changes to this project will be documented in this file.
   - Enhanced project header with professional formatting
 
 ### Removed
+
 - `.github/copilot-instructions.md` (merged into `AGENTS.md`)
 
 ### Notes
+
 - All services now properly use Docker container names for inter-service communication
 - MinIO provides S3-compatible storage at `https://localhost:10443/minio/`
 - Security scanning runs weekly and on every push to main/develop branches
@@ -57,6 +61,7 @@ All notable changes to this project will be documented in this file.
 ## v0.1.0 - 2025-11-23
 
 ### Changed
+
 - Standardized documentation and contribution workflow.
 - Cleaned and consolidated `CONTRIBUTING.md`.
 - Fixed `README.md` Quick Start code blocks and unified environment and
@@ -65,11 +70,13 @@ All notable changes to this project will be documented in this file.
   and feature requests.
 
 ### Added
+
 - `SECURITY.md` with private reporting instructions, response timelines,
   coordinated disclosure policy, and safe-harbor note.
 - Minor editorial and formatting fixes across documentation.
 
 ### Notes
+
 - Maintainer contact for confidential reports: `hubertus@hubertusbecker.com`.
 - Recommended next step: remove outer code fences from some docs to ensure
   proper Markdown rendering (optional follow-up).

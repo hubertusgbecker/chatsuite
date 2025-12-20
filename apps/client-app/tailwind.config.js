@@ -1,5 +1,5 @@
-const { createGlobPatternsForDependencies } = require("@nx/react/tailwind");
-const { join } = require("node:path");
+const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
+const { join } = require('node:path');
 
 /*
 
@@ -13,15 +13,15 @@ Could not find stylesheet to update. Add the following imports to your styleshee
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: [
-		join(
-			__dirname,
-			"{src,pages,components}/**/*!(*.stories|*.spec).{ts,tsx,html}",
-		),
-		...createGlobPatternsForDependencies(__dirname),
-	],
-	theme: {
-		extend: {},
-	},
-	plugins: [],
+  content: [
+    join(
+      __dirname,
+      '{src,pages,components}/**/*!(*.stories|*.spec).{ts,tsx,html}'
+    ),
+    ...createGlobPatternsForDependencies(__dirname),
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
 };

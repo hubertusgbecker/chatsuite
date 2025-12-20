@@ -41,9 +41,9 @@
     "nx:migrate:run": "pnpm check:dependencies --only=node && pnpm install --no-frozen-lockfile && dotenv -e .env -- pnpm nx migrate --run-migrations",
     "env:show": "echo \"Current environment: $(node tools/dev-scripts/cmd-resolve-env.js)\"",
     "env:verify": "bash ./tools/dev-scripts/cmd-verify-security.sh",
-  "env:set:dev": "tools/dev-scripts/cmd-write-env.sh NX_APP_ENV dev && pnpm env:show",
-  "env:set:qa": "tools/dev-scripts/cmd-write-env.sh NX_APP_ENV qa && pnpm env:show",
-  "env:set:host": "tools/dev-scripts/cmd-write-env.sh NX_APP_ENV host && pnpm env:show",
+    "env:set:dev": "tools/dev-scripts/cmd-write-env.sh NX_APP_ENV dev && pnpm env:show",
+    "env:set:qa": "tools/dev-scripts/cmd-write-env.sh NX_APP_ENV qa && pnpm env:show",
+    "env:set:host": "tools/dev-scripts/cmd-write-env.sh NX_APP_ENV host && pnpm env:show",
     "env:test": "bash ./tools/dev-scripts/cmd-test-env-config.sh",
     "rebuild": "bash ./tools/dev-scripts/cmd-rebuild.sh",
     "test": "bash ./tools/dev-scripts/cmd-test.sh"

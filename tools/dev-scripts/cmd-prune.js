@@ -1,84 +1,84 @@
-const util = require("node:util");
-const execPromise = util.promisify(require("node:child_process").exec);
+const util = require('node:util');
+const execPromise = util.promisify(require('node:child_process').exec);
 
 const pruneContainers = () => {
-	return execPromise("docker container prune -f")
-		.catch((e) => {
-			console.error(
-				"[ChatSuite] An error occurred while pruning docker containers.",
-				e,
-			);
-		})
-		.finally(() => console.log("[ChatSuite] Container prune completed."));
+  return execPromise('docker container prune -f')
+    .catch((e) => {
+      console.error(
+        '[ChatSuite] An error occurred while pruning docker containers.',
+        e
+      );
+    })
+    .finally(() => console.log('[ChatSuite] Container prune completed.'));
 };
 
 const pruneImages = () => {
-	return execPromise("docker images | grep none")
-		.then((output) => {
-			if (!output?.stdout?.length) {
-				return;
-			}
-			const imageIdExecs = [];
-			output.stdout.split("\n").forEach((line) => {
-				if (!line || !line.length) {
-					return;
-				}
-				const sanitizedLine = line.replace(/\s\s+/g, " ").split(" ");
-				const imageId = sanitizedLine[2];
-				if (imageId?.length) {
-					imageIdExecs.push(
-						execPromise(`docker image rm ${imageId} -f`)
-							.then(() =>
-								console.log(
-									`[ChatSuite] Docker image with id:${imageId} removed.`,
-								),
-							)
-							.catch(),
-					);
-				}
-			});
-			return Promise.all(imageIdExecs);
-		})
-		.catch(() => {
-			return "error";
-		})
-		.finally(() => console.log("[ChatSuite] Image removal completed."));
+  return execPromise('docker images | grep none')
+    .then((output) => {
+      if (!output?.stdout?.length) {
+        return;
+      }
+      const imageIdExecs = [];
+      output.stdout.split('\n').forEach((line) => {
+        if (!line || !line.length) {
+          return;
+        }
+        const sanitizedLine = line.replace(/\s\s+/g, ' ').split(' ');
+        const imageId = sanitizedLine[2];
+        if (imageId?.length) {
+          imageIdExecs.push(
+            execPromise(`docker image rm ${imageId} -f`)
+              .then(() =>
+                console.log(
+                  `[ChatSuite] Docker image with id:${imageId} removed.`
+                )
+              )
+              .catch()
+          );
+        }
+      });
+      return Promise.all(imageIdExecs);
+    })
+    .catch(() => {
+      return 'error';
+    })
+    .finally(() => console.log('[ChatSuite] Image removal completed.'));
 };
 
 const _stopDockerCompose = () => {
-return execPromise("docker-compose -f ./docker-compose.workspace.yaml down")
-		.then((response) => {
-			if (response?.stderr?.length) {
-				console.log(response?.stderr);
-			}
-		})
-		.catch((e) => {
-			console.error(
-				"[ChatSuite] An error occurred while executing docker compose down.",
-				e,
-			);
-		});
+  return execPromise('docker-compose -f ./docker-compose.workspace.yaml down')
+    .then((response) => {
+      if (response?.stderr?.length) {
+        console.log(response?.stderr);
+      }
+    })
+    .catch((e) => {
+      console.error(
+        '[ChatSuite] An error occurred while executing docker compose down.',
+        e
+      );
+    });
 };
 
 const prune = () => {
-	return pruneContainers().then(() => pruneImages());
+  return pruneContainers().then(() => pruneImages());
 };
 
 const handleSuccess = () => {
-	console.error("[ChatSuite] Docker prune operation completed.");
-	process.exit(0);
+  console.error('[ChatSuite] Docker prune operation completed.');
+  process.exit(0);
 };
 
 const handleError = (error) => {
-	console.error(
-		"[ChatSuite] An error occurred while pruning docker assets.",
-		error,
-	);
-	process.exit(1);
+  console.error(
+    '[ChatSuite] An error occurred while pruning docker assets.',
+    error
+  );
+  process.exit(1);
 };
 
 const run = () => {
-	prune().then(handleSuccess).catch(handleError);
+  prune().then(handleSuccess).catch(handleError);
 };
 
 run();

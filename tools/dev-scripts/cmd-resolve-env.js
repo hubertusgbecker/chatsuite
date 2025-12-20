@@ -25,7 +25,9 @@ function findProjectRoot(currentDir = __dirname) {
 
   const parentDir = path.dirname(currentDir);
   if (parentDir === currentDir) {
-    throw new Error('Could not find package.json - are you in the project directory?');
+    throw new Error(
+      'Could not find package.json - are you in the project directory?'
+    );
   }
 
   return findProjectRoot(parentDir);
@@ -98,7 +100,6 @@ function main() {
 
     // Output just the value for script usage
     console.log(resolvedEnv);
-
   } catch (error) {
     console.error('Error resolving environment:', error.message);
     process.exit(1);

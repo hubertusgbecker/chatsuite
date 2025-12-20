@@ -1,91 +1,91 @@
 {
-	"name": "client-app",
-	"$schema": "../../node_modules/nx/schemas/project-schema.json",
-	"sourceRoot": "apps/client-app/src",
-	"projectType": "application",
-	"targets": {
-		"build": {
-			"executor": "@nx/webpack:webpack",
-			"outputs": ["{options.outputPath}"],
-			"defaultConfiguration": "production",
-			"options": {
-				"compiler": "babel",
-				"outputPath": "dist/apps/client-app",
-				"index": "apps/client-app/src/index.html",
-				"baseHref": "/",
-				"main": "apps/client-app/src/main.tsx",
-				"polyfills": "apps/client-app/src/polyfills.ts",
-				"tsConfig": "apps/client-app/tsconfig.app.json",
-				"assets": [
-					"apps/client-app/src/favicon.ico",
-					"apps/client-app/src/assets"
-				],
-				"styles": [],
-				"scripts": [],
-				"webpackConfig": "apps/client-app/webpack.config.js",
-				"postcssConfig": "apps/client-app/postcss.config.js",
-				"isolatedConfig": true
-			},
-			"configurations": {
-				"development": {
-					"extractLicenses": false,
-					"optimization": false,
-					"sourceMap": true,
-					"vendorChunk": true
-				},
-				"production": {
-					"fileReplacements": [
-						{
-							"replace": "apps/client-app/src/environments/environment.ts",
-							"with": "apps/client-app/src/environments/environment.prod.ts"
-						}
-					],
-					"optimization": true,
-					"outputHashing": "all",
-					"sourceMap": false,
-					"namedChunks": false,
-					"extractLicenses": true,
-					"vendorChunk": false
-				}
-			}
-		},
-		"serve": {
-			"executor": "@nx/webpack:dev-server",
-			"defaultConfiguration": "development",
-			"options": {
-				"buildTarget": "client-app:build",
-				"hmr": true,
-				"host": "localhost",
-				"ssl": false,
-				"sslKey": "config/certificates/localhost-key.pem",
-				"sslCert": "config/certificates/localhost-crt.pem"
-			},
-			"configurations": {
-				"development": {
-					"buildTarget": "client-app:build:development"
-				},
-				"production": {
-					"buildTarget": "client-app:build:production",
-					"hmr": false
-				}
-			}
-		},
-		"lint": {
-			"executor": "@nx/linter:eslint",
-			"outputs": ["{options.outputFile}"],
-			"options": {
-				"lintFilePatterns": ["apps/client-app/**/*.{ts,tsx,js,jsx}"],
-				"ignorePath": "apps/client-app/.eslintignore"
-			}
-		},
-		"test": {
-			"executor": "@nx/jest:jest",
-			"outputs": ["{workspaceRoot}/coverage/apps/client-app"],
-			"options": {
-				"jestConfig": "apps/client-app/jest.config.ts",
-				"passWithNoTests": true
-			}
-		}
-	},
-	"tags": []
+  "name": "client-app",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/client-app/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "compiler": "babel",
+        "outputPath": "dist/apps/client-app",
+        "index": "apps/client-app/src/index.html",
+        "baseHref": "/",
+        "main": "apps/client-app/src/main.tsx",
+        "polyfills": "apps/client-app/src/polyfills.ts",
+        "tsConfig": "apps/client-app/tsconfig.app.json",
+        "assets": [
+          "apps/client-app/src/favicon.ico",
+          "apps/client-app/src/assets"
+        ],
+        "styles": [],
+        "scripts": [],
+        "webpackConfig": "apps/client-app/webpack.config.js",
+        "postcssConfig": "apps/client-app/postcss.config.js",
+        "isolatedConfig": true
+      },
+      "configurations": {
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        },
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/client-app/src/environments/environment.ts",
+              "with": "apps/client-app/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/webpack:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "client-app:build",
+        "hmr": true,
+        "host": "localhost",
+        "ssl": false,
+        "sslKey": "config/certificates/localhost-key.pem",
+        "sslCert": "config/certificates/localhost-crt.pem"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "client-app:build:development"
+        },
+        "production": {
+          "buildTarget": "client-app:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/client-app/**/*.{ts,tsx,js,jsx}"],
+        "ignorePath": "apps/client-app/.eslintignore"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/client-app"],
+      "options": {
+        "jestConfig": "apps/client-app/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
 }

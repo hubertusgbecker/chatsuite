@@ -11,7 +11,9 @@ n8n is a free and open-source workflow automation tool that allows you to connec
 ## Configuration
 
 ### Database Configuration
+
 n8n is configured to use PostgreSQL instead of the default SQLite:
+
 - **Database Type**: PostgreSQL
 - **Database Host**: postgres (chatsuite_postgres container)
 - **Database Name**: chatsuite
@@ -21,12 +23,15 @@ n8n is configured to use PostgreSQL instead of the default SQLite:
 All database migrations are automatically applied on startup. The old SQLite database file (if present) is backed up to `./data/n8n/sqlite-backup/` during the first PostgreSQL startup.
 
 ### Files Structure
+
 - `./config/n8n/docker-entrypoint-n8n.sh` - Comprehensive startup script with SSL support, permission fixes, and command handling
 - `./config/n8n/README.md` - This documentation
 - `./data/n8n/` - Persistent workflow and configuration data
 
 ### Docker Service
+
 The service is configured in `docker-compose.yaml` as:
+
 - **Container**: `chatsuite_n8n`
 - **Image**: `n8nio/n8n:latest`
 - **Port**: 5678
@@ -36,7 +41,9 @@ The service is configured in `docker-compose.yaml` as:
 - **Dependencies**: postgres
 
 ### Environment Variables
+
 Database configuration is managed via the following environment variables in `config/env/.env.{dev,qa,host}`:
+
 ```bash
 DB_TYPE=postgresdb
 DB_POSTGRESDB_HOST=${POSTGRES_HOST}
@@ -50,6 +57,7 @@ DB_POSTGRESDB_SCHEMA=n8n
 **Important**: Use `DB_TYPE` (not `N8N_DB_TYPE`) and `DB_POSTGRESDB_*` (not `N8N_DB_POSTGRESDB_*`) as per n8n documentation.
 
 ### Permission Management
+
 n8n requires proper file permissions to access its data directory. The simplified permission solution includes:
 
 1. **Automatic Comprehensive Fixes**: The entrypoint script automatically handles all permission scenarios
@@ -59,12 +67,14 @@ n8n requires proper file permissions to access its data directory. The simplifie
 5. **Data Directory Structure**: Creates required subdirectories (workflows, credentials, logs, nodes)
 
 **Simplified Architecture**: All permission handling is now integrated into the docker entrypoint - no external scripts needed.
+
 - **Networks**: gateway, database_pg
 - **Dependencies**: postgres
 
 ## Setup Guide
 
 ### 1. Start the Service
+
 ```bash
 # Start PostgreSQL first (dependency)
 docker-compose up postgres -d
@@ -77,22 +87,28 @@ docker-compose up -d
 ```
 
 ### 2. Access n8n
+
 There are two ways to access n8n:
 
 **Direct Access:**
+
 - URL: `http://localhost:5678`
 
 **Via Nginx Proxy (Recommended):**
+
 - URL: `https://localhost:10443/n8n/`
 
 ### 3. First Time Setup
+
 1. Open n8n in your browser
 2. Create your admin account (first user becomes admin)
 3. Set up your organization and workspace
 4. Start creating workflows!
 
 ### 4. Chromium/Puppeteer Support
+
 n8n includes Chromium for browser automation tasks:
+
 - **Chromium Version**: Automatically installed on container startup
 - **Puppeteer Support**: Fully configured for headless browser operations
 - **Use Cases**: Web scraping, screenshot capture, PDF generation, automated testing
@@ -100,7 +116,9 @@ n8n includes Chromium for browser automation tasks:
 The entrypoint script automatically installs all required Chromium dependencies on Alpine Linux.
 
 ### 5. Updating n8n
+
 n8n uses Docker image-based updates:
+
 ```bash
 # Pull the latest image
 docker pull n8nio/n8n:latest
@@ -112,6 +130,7 @@ docker-compose up -d n8n
 ```
 
 Or use the convenience commands:
+
 ```bash
 cd /Users/hubertus/Projects/chatsuite
 pnpm rebuild    # Rebuilds all services including n8n
@@ -120,6 +139,7 @@ pnpm rebuild    # Rebuilds all services including n8n
 ## Features
 
 ### Visual Workflow Builder
+
 - **Drag & Drop Interface**: Create workflows visually
 - **500+ Integrations**: Connect to popular services and APIs
 - **Custom Code**: Add JavaScript/Python code when needed
@@ -127,12 +147,15 @@ pnpm rebuild    # Rebuilds all services including n8n
 - **Error Handling**: Built-in retry and error handling
 
 ### Database Integration
+
 n8n uses the shared PostgreSQL database with its own schema:
+
 - **Database**: `chatsuite`
 - **Schema**: `n8n`
 - **Tables**: Workflows, executions, credentials, settings
 
 ### Key Integrations Available
+
 - **Email**: SMTP, IMAP, Gmail, Outlook
 - **Databases**: PostgreSQL, MySQL, MongoDB
 - **APIs**: HTTP requests, webhooks, REST APIs
@@ -145,26 +168,31 @@ n8n uses the shared PostgreSQL database with its own schema:
 ## Use Cases in ChatSuite
 
 ### 1. Customer Service Automation
+
 ```
 New Support Ticket → Classify Priority → Assign Agent → Send Notification
 ```
 
 ### 2. Email Marketing
+
 ```
 New Customer → Add to CRM → Send Welcome Email → Schedule Follow-ups
 ```
 
 ### 3. Data Synchronization
+
 ```
 Database Changes → Transform Data → Update External Systems → Log Activity
 ```
 
 ### 4. AI Integration
+
 ```
 User Message → Analyze Sentiment → Route to AI → Process Response → Store Results
 ```
 
 ### 5. Monitoring & Alerts
+
 ```
 System Error → Check Severity → Send Alert → Create Ticket → Update Dashboard
 ```
@@ -172,6 +200,7 @@ System Error → Check Severity → Send Alert → Create Ticket → Update Dash
 ## Configuration
 
 ### Environment Variables
+
 n8n uses these key environment variables from the active environment file:
 
 ```bash
@@ -192,27 +221,32 @@ N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
 ```
 
 ### SSL/TLS Configuration
+
 n8n uses SSL certificates from `./config/certificates/` for secure HTTPS connections.
 
 ### Webhook Configuration
+
 For webhooks and external integrations:
+
 ```bash
 # Webhook URL format
 WEBHOOK_URL=https://localhost:10443/n8n/webhook/your-webhook-id
 
-# Test webhook URL format  
+# Test webhook URL format
 WEBHOOK_TEST_URL=https://localhost:10443/n8n/webhook-test/your-webhook-id
 ```
 
 ## Creating Your First Workflow
 
 ### Example: Email Notification Workflow
+
 1. **Trigger**: Webhook (receives data from external system)
 2. **Filter**: Check if urgent priority
 3. **Email**: Send notification to admin
 4. **Database**: Log the incident
 
 ### Step-by-Step:
+
 1. Click "Add Workflow" in n8n interface
 2. Add "Webhook" trigger node
 3. Add "If" condition node
@@ -224,24 +258,30 @@ WEBHOOK_TEST_URL=https://localhost:10443/n8n/webhook-test/your-webhook-id
 ## Advanced Features
 
 ### Code Nodes
+
 Add custom JavaScript or Python code:
+
 ```javascript
 // Example: Transform data
-return items.map(item => ({
+return items.map((item) => ({
   ...item.json,
   processed_at: new Date().toISOString(),
-  status: 'processed'
+  status: 'processed',
 }));
 ```
 
 ### Cron Scheduling
+
 Schedule workflows to run automatically:
+
 - **Every Hour**: `0 * * * *`
 - **Daily at 9 AM**: `0 9 * * *`
 - **Weekly on Monday**: `0 9 * * 1`
 
 ### Sub-workflows
+
 Break complex workflows into reusable components:
+
 1. Create a sub-workflow
 2. Call it from main workflows
 3. Pass parameters between workflows
@@ -249,21 +289,27 @@ Break complex workflows into reusable components:
 ## Integration with Other ChatSuite Services
 
 ### LibreChat Integration
+
 Create workflows that:
+
 - Monitor chat conversations
 - Analyze user sentiment
 - Route complex queries to human agents
 - Generate conversation summaries
 
 ### MindsDB Integration
+
 Use n8n to:
+
 - Trigger ML model training
 - Process prediction results
 - Automate data preparation
 - Send prediction alerts
 
 ### Email Server Integration
+
 Connect with MCP Email Server:
+
 - Process incoming emails
 - Send automated responses
 - Manage email campaigns
@@ -274,20 +320,23 @@ Connect with MCP Email Server:
 ### Common Issues
 
 1. **n8n not starting**
+
    ```bash
    # Check container logs
    docker-compose logs n8n
-   
+
    # Verify PostgreSQL connection
    docker exec chatsuite_n8n nc -z postgres 5432
    ```
 
 2. **Workflows not executing**
+
    - Check workflow activation status
    - Verify trigger configuration
    - Review execution logs in n8n interface
 
 3. **Database connection errors**
+
    - Ensure PostgreSQL is running
    - Check database credentials
    - Verify n8n schema exists
@@ -298,6 +347,7 @@ Connect with MCP Email Server:
    - Test HTTPS access
 
 ### Debug Commands
+
 ```bash
 # Check n8n logs
 docker-compose logs n8n --tail=100
@@ -315,6 +365,7 @@ docker exec chatsuite_n8n n8n --version
 ## Service Status
 
 ✅ **Working Components:**
+
 - n8n web interface on port 5678
 - PostgreSQL database integration
 - SSL certificate support
@@ -323,6 +374,7 @@ docker exec chatsuite_n8n n8n --version
 - Cron job scheduling
 
 ✅ **Integration Benefits:**
+
 - Visual workflow automation
 - 500+ service integrations
 - Database persistence
@@ -333,12 +385,14 @@ docker exec chatsuite_n8n n8n --version
 ## Security Considerations
 
 ### Development Security
+
 - SSL certificates for encrypted communication
 - Database credentials in environment files (per environment)
 - Network isolation through Docker networks
 - Nginx reverse proxy protection
 
 ### Production Security
+
 1. **Change default credentials** in `./config/env/.env.host`
 2. **Enable proper authentication** (LDAP, SAML, OAuth)
 3. **Set up webhook security** with authentication
@@ -350,12 +404,14 @@ docker exec chatsuite_n8n n8n --version
 ## Performance Optimization
 
 ### Workflow Best Practices
+
 - Use efficient nodes and avoid unnecessary loops
 - Implement proper error handling
 - Set appropriate timeouts
 - Use sub-workflows for reusable logic
 
 ### Database Optimization
+
 - Regular cleanup of old executions
 - Index optimization for large datasets
 - Connection pooling configuration
@@ -363,6 +419,7 @@ docker exec chatsuite_n8n n8n --version
 ## Backup and Restore
 
 ### Workflow Backup
+
 ```bash
 # Export all workflows
 docker exec chatsuite_n8n n8n export:workflow --all --output=/tmp/workflows.json
@@ -372,6 +429,7 @@ docker cp chatsuite_n8n:/tmp/workflows.json ./backup/
 ```
 
 ### Database Backup
+
 ```bash
 # Backup n8n schema
 docker exec chatsuite_postgres pg_dump -U admin -d chatsuite --schema=n8n > n8n_backup.sql
@@ -389,9 +447,11 @@ docker exec chatsuite_postgres pg_dump -U admin -d chatsuite --schema=n8n > n8n_
 ## Nginx Proxy
 
 n8n is accessible through the nginx reverse proxy at:
+
 - HTTPS: `https://localhost:10443/n8n`
 
 The nginx configuration includes:
+
 - WebSocket support for real-time updates
 - Proper headers for reverse proxy operation
 - SSL termination
@@ -442,12 +502,15 @@ docker-compose pull n8n
 **Problem**: n8n fails to start with permission errors like "EACCES: permission denied" or "cannot create directory"
 
 **Solutions**:
+
 1. **Self-Healing**: Simply restart the container - the entrypoint automatically fixes permissions:
+
    ```bash
    docker-compose restart n8n
    ```
 
 2. **Complete Reset**: Stop and start fresh to ensure clean permission setup:
+
    ```bash
    docker-compose stop n8n && docker-compose up n8n -d
    ```
@@ -463,12 +526,15 @@ docker-compose pull n8n
 **Problem**: n8n container exits immediately or fails to start
 
 **Debugging Steps**:
+
 1. Check container logs:
+
    ```bash
    pnpm docker:n8n:logs
    ```
 
 2. Verify data directory exists and is accessible:
+
    ```bash
    ls -la ./data/n8n/
    ```
@@ -483,12 +549,15 @@ docker-compose pull n8n
 **Problem**: n8n loses workflows or credentials
 
 **Verification**:
+
 1. Check if data directory is properly mounted:
+
    ```bash
    docker-compose exec n8n ls -la /home/node/.n8n/
    ```
 
 2. Verify subdirectories exist:
+
    ```bash
    ls -la ./data/n8n/
    # Should show: credentials, logs, nodes, workflows
@@ -505,7 +574,9 @@ docker-compose pull n8n
 **Problem**: n8n cannot connect to PostgreSQL
 
 **Check**:
+
 1. Verify PostgreSQL is running:
+
    ```bash
    docker-compose ps postgres
    ```
@@ -519,6 +590,7 @@ docker-compose pull n8n
 ### Performance Issues
 
 **Solutions**:
+
 - Increase container memory limits in docker-compose.yaml
 - Monitor disk usage in `./data/n8n/`
 - Check PostgreSQL performance and indexes
@@ -527,6 +599,7 @@ docker-compose pull n8n
 ## Development
 
 The n8n configuration follows the monorepo patterns:
+
 - Environment-specific configuration
 - Shared database and networking
 - Consistent logging and monitoring

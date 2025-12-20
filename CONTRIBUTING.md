@@ -130,6 +130,7 @@ suggesting enhancements. Include:
 ### Prerequisites
 
 1. **Install NVM (Node Version Manager):**
+
    - [NVM Installation Guide](https://github.com/nvm-sh/nvm#installing-and-updating)
    - In the project root, run:
      ```bash
@@ -142,6 +143,7 @@ suggesting enhancements. Include:
      ```
 
 2. **Install Docker:**
+
    - [Docker Installation Guide](https://docs.docker.com/engine/install/)
    - Verify installation:
      ```bash
@@ -157,11 +159,13 @@ suggesting enhancements. Include:
 ### Initial Setup
 
 1. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
 
 2. **Generate environment files:**
+
    ```bash
    cp config/env/env.dev config/env/.env.dev
    cp config/env/env.host config/env/.env.host
@@ -169,6 +173,7 @@ suggesting enhancements. Include:
    ```
 
 3. **SSL Setup (Recommended for HTTPS):**
+
    ```bash
    brew install mkcert
    mkcert -install
@@ -177,6 +182,7 @@ suggesting enhancements. Include:
    ```
 
 4. **MCPHub Configuration:**
+
    ```bash
    cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
    ```
@@ -259,6 +265,7 @@ chmod +x .git/hooks/pre-commit
 ```
 
 The pre-commit hook will:
+
 - Run `pnpm lint` to check code style
 - Ensure code formatting is consistent
 - Prevent commits with linting errors
@@ -313,6 +320,7 @@ When contributing to the architecture:
 ## Design Discussions
 
 For larger changes:
+
 1. Open an issue to discuss the proposal before implementing
 2. Tag it with `discussion` or `design` label
 3. Wait for maintainer feedback
@@ -334,5 +342,3 @@ Thank you for contributing to ChatSuite! Your efforts help make this platform
 better for everyone.
 
 Built with ❤️ by the ChatSuite community
-
-

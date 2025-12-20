@@ -1,9 +1,9 @@
 ---
 name: Feature Request
 about: Suggest an idea for ChatSuite
-title: "[FEATURE] "
+title: '[FEATURE] '
 labels: enhancement
-assignees: ""
+assignees: ''
 ---
 
 Thanks for taking the time to improve ChatSuite. Please describe your idea

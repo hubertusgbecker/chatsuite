@@ -16,11 +16,11 @@ env:
   NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
   NX_BRANCH: ${{ github.head_ref || github.ref_name }}
   # Force SWC to use WASM fallback if native bindings fail
-  SWC_FORCE_WASM: "1"
+  SWC_FORCE_WASM: '1'
   # Ensure native modules can be built
-  SKIP_BINARY_DOWNLOAD_FOR_CI: "1"
+  SKIP_BINARY_DOWNLOAD_FOR_CI: '1'
   # Prevent Chromium download for Puppeteer if used
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
 
 jobs:
   set-inputs:
@@ -75,7 +75,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        node: ["24.x"]
+        node: ['24.x']
         projectName: ${{fromJson(needs.set-inputs.outputs.apps)}}
     env:
       NODE: ${{ matrix.node }}
@@ -94,7 +94,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: "10.x"
+          version: '10.x'
       - name: Setup node
         uses: actions/setup-node@v4
         with:

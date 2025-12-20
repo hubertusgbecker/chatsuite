@@ -9,14 +9,17 @@ MinIO is an S3-compatible object storage solution that provides enterprise-grade
 ## Configuration
 
 ### Files Structure
+
 - `./config/minio/` - MinIO configuration directory
 - `./data/minio/` - Data persistence directory (physical folder)
 
 ### Docker Service
+
 The service is configured in `docker-compose.yaml` as:
+
 - **Container**: `chatsuite_minio`
 - **Image**: `minio/minio:latest`
-- **Ports**: 
+- **Ports**:
   - 9000 (API)
   - 9001 (Console UI)
 - **Networks**: gateway
@@ -25,6 +28,7 @@ The service is configured in `docker-compose.yaml` as:
 ## Setup Guide
 
 ### 1. Start the Service
+
 ```bash
 # Start MinIO
 docker-compose up minio -d
@@ -34,19 +38,24 @@ docker-compose ps minio
 ```
 
 ### 2. Access MinIO Console
+
 Open your browser and go to:
+
 - **Console UI**: `http://localhost:9001`
 - **API Endpoint**: `http://localhost:9000`
 - **Via Nginx Proxy**: `https://localhost:10443/minio/` (Console)
 
 ### 3. Default Credentials
+
 The default credentials are set via environment variables:
+
 - **Username**: Value from `MINIO_ROOT_USER` in `.env.${NX_APP_ENV}`
 - **Password**: Value from `MINIO_ROOT_PASSWORD` in `.env.${NX_APP_ENV}`
 
 **IMPORTANT**: Change these credentials in production!
 
 ### 4. First Time Setup
+
 1. Log in to the MinIO console at `http://localhost:9001`
 2. Create buckets for your applications
 3. Set up access policies and users
@@ -55,6 +64,7 @@ The default credentials are set via environment variables:
 ## Features
 
 ### Object Storage Capabilities
+
 - **S3-Compatible API**: Drop-in replacement for Amazon S3
 - **High Performance**: Fast read/write operations
 - **Bucket Management**: Organize data into logical buckets
@@ -67,6 +77,7 @@ The default credentials are set via environment variables:
 ## Integration Examples
 
 ### Python (boto3)
+
 ```python
 import boto3
 from botocore.client import Config
@@ -86,6 +97,7 @@ s3.download_file('my-bucket', 'remote-file.txt', 'downloaded-file.txt')
 ```
 
 ### Node.js (AWS SDK)
+
 ```javascript
 const AWS = require('aws-sdk');
 
@@ -94,14 +106,14 @@ const s3 = new AWS.S3({
   accessKeyId: 'admin',
   secretAccessKey: 'minioadmin123',
   s3ForcePathStyle: true,
-  signatureVersion: 'v4'
+  signatureVersion: 'v4',
 });
 
 // Upload a file
 const params = {
   Bucket: 'my-bucket',
   Key: 'remote-file.txt',
-  Body: fileContent
+  Body: fileContent,
 };
 s3.upload(params, (err, data) => {
   if (err) console.error(err);
@@ -110,6 +122,7 @@ s3.upload(params, (err, data) => {
 ```
 
 ### cURL
+
 ```bash
 # Create a bucket
 mc alias set myminio http://localhost:9000 admin minioadmin123
@@ -144,6 +157,7 @@ mc ls myminio/my-bucket/
 ## Health Check
 
 MinIO includes a built-in health check endpoint:
+
 ```bash
 curl -f http://localhost:9000/minio/health/live
 ```
@@ -163,6 +177,7 @@ Configure MinIO behavior via environment variables in `.env.${NX_APP_ENV}`:
 ## Monitoring
 
 ### Check Service Status
+
 ```bash
 # View container logs
 docker logs chatsuite_minio
@@ -175,7 +190,9 @@ docker exec chatsuite_minio mc admin info local --json
 ```
 
 ### Prometheus Metrics
+
 MinIO exposes Prometheus metrics at:
+
 ```
 http://localhost:9000/minio/v2/metrics/cluster
 ```
@@ -183,6 +200,7 @@ http://localhost:9000/minio/v2/metrics/cluster
 ## Data Persistence
 
 All MinIO data is stored in `./data/minio/` which is mounted to `/data` inside the container. This directory contains:
+
 - Object data
 - Bucket metadata
 - Configuration files
@@ -193,22 +211,26 @@ All MinIO data is stored in `./data/minio/` which is mounted to `/data` inside t
 ## Troubleshooting
 
 ### MinIO Won't Start
+
 1. Check if port 9000 or 9001 is already in use
 2. Verify directory permissions for `./data/minio`
 3. Check Docker logs: `docker logs chatsuite_minio`
 
 ### Cannot Access Console
+
 1. Verify the service is running: `docker ps | grep minio`
 2. Check if port 9001 is accessible
 3. Try accessing via nginx proxy: `https://localhost:10443/minio/`
 
 ### Permission Denied Errors
+
 ```bash
 # Fix permissions
 sudo chown -R $(id -u):$(id -g) ./data/minio
 ```
 
 ### Reset MinIO
+
 ```bash
 # Stop and remove container
 docker-compose down minio

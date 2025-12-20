@@ -14,17 +14,20 @@ cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
 ```
 
 **Why is this required?**
+
 - `mcp_settings.json` contains your personal MCP server configuration
 - This file is **not** tracked in version control (similar to `.env` files)
 - Each installation needs its own configuration based on available MCP servers
 - The `.example` file provides a template with recommended defaults
 
 **What's included in the example?**
+
 - Pre-configured MCP servers: time, fetch, zerolib-email, mcp-browser-use-server
 - Proper URLs for both internal (Docker) and external (host machine) MCP servers
 - User authentication configuration with example credentials
 
 After copying, you can customize `mcp_settings.json` to:
+
 - Add or remove MCP servers based on your needs
 - Update URLs if you change server ports
 - Configure user authentication
@@ -39,13 +42,16 @@ The MCPHub service in this repository is configured to run and connect to availa
 ## Architecture
 
 ### Optional Custom Docker Image
+
 This repository includes `config/mcphub/Dockerfile.custom` as an optional, local Dockerfile you can use if you encounter problems with the upstream image. The default `docker-compose.yaml` uses the remote image `samanhappy/mcphub:latest`; you do not need to build the custom image to run ChatSuite.
 
 Why include a custom Dockerfile?
+
 - It provides a reproducible build that you can tweak locally (for example to pin versions or install extra debugging tools).
 - If you encounter runtime issues with the upstream image, the custom image gives an alternative path for operators to test and deploy.
 
 Key details of the optional custom image:
+
 - Location: `config/mcphub/Dockerfile.custom`
 - Base: Python slim image with Node.js installed
 - Installs `@samanhappy/mcphub` and exposes port `3000`
@@ -55,6 +61,7 @@ See the "Maintenance" section below for build and usage instructions.
 ## Configuration
 
 ### Files Structure
+
 - `./config/mcphub/mcp_settings.json.example` - Template configuration file (tracked in git)
 - `./config/mcphub/mcp_settings.json` - Your active configuration (not tracked in git)
 - `./config/mcphub/Dockerfile.custom` - Custom Docker image build
@@ -63,7 +70,9 @@ See the "Maintenance" section below for build and usage instructions.
 **Note**: Always edit `mcp_settings.json` for your configuration. The `.example` file is only a template and should not be modified directly.
 
 ### Docker Service (CUSTOM BUILD)
+
 The service is configured in `docker-compose.yaml` as:
+
 - **Container**: `chatsuite_mcphub`
 - **Build**: Custom from `config/mcphub/Dockerfile.custom`
 - **Port**: 3000
@@ -73,6 +82,7 @@ The service is configured in `docker-compose.yaml` as:
 ## MCP Server Configuration
 
 Currently configured MCP servers in `mcp_settings.json`:
+
 ```json
 {
   "mcpServers": {
@@ -84,17 +94,21 @@ Currently configured MCP servers in `mcp_settings.json`:
 ```
 
 ### Why Only Email Server?
+
 The `uvx`-based servers (time, fetch) caused the original fork bomb issue. We use only HTTP/SSE-based servers which don't require runtime installation.
 
 ## Integration
 
 ### LibreChat Integration
+
 LibreChat successfully connects to MCPHub and discovers all MCP tools:
+
 - **Endpoint**: `http://mcphub:3000/mcp`
 - **Transport**: Streamable HTTP (SSE)
 - **Tools Detected**: 5 email tools from zerolib-email server
 
 ### Available Tools
+
 1. `zerolib-email-list_available_accounts` - List configured email accounts
 2. `zerolib-email-add_email_account` - Add new email account
 3. `zerolib-email-list_emails_metadata` - List email metadata
@@ -108,9 +122,10 @@ Performance of MCPHub depends on which image you run and the MCP servers you att
 ## Maintenance
 
 ### Rebuilding or Using the Custom Image (Optional)
+
 By default the Compose file pulls the upstream `samanhappy/mcphub:latest` image. If you prefer to build the included custom image, you can do one of the following:
 
-1) Build using Docker Compose (uncomment the `build:` block in `docker-compose.yaml`):
+1. Build using Docker Compose (uncomment the `build:` block in `docker-compose.yaml`):
 
 ```bash
 # Edit docker-compose.yaml: uncomment the build: context and dockerfile lines for the mcphub service
@@ -118,7 +133,7 @@ docker-compose build mcphub
 docker-compose up -d mcphub
 ```
 
-2) Build directly with Docker (local image tag):
+2. Build directly with Docker (local image tag):
 
 ```bash
 docker build -t local/mcphub:custom -f config/mcphub/Dockerfile.custom config/mcphub
@@ -128,6 +143,7 @@ docker run -d --name chatsuite_mcphub -p 3000:3000 \
 ```
 
 ### Updating MCP Servers
+
 Edit your local `config/mcphub/mcp_settings.json` and restart the mcphub service:
 
 ```bash
@@ -135,11 +151,13 @@ docker-compose restart mcphub
 ```
 
 ### Checking Logs
+
 ```bash
 docker logs chatsuite_mcphub
 ```
 
 ### Health Check
+
 ```bash
 curl http://localhost:3000/health
 ```
@@ -147,17 +165,20 @@ curl http://localhost:3000/health
 ## Troubleshooting
 
 ### If MCPHub won't start
+
 1. Check logs: `docker logs chatsuite_mcphub`
 2. Verify config: `cat config/mcphub/mcp_settings.json`
 3. Rebuild image: `docker-compose build mcphub`
 4. Check dependencies: Ensure mcp-email-server is healthy
 
 ### If memory usage increases
+
 1. Check for runaway processes: `docker top chatsuite_mcphub`
 2. Restart container: `docker-compose restart mcphub`
 3. Review MCP server config for command-based servers
 
 ### If tools don't appear in LibreChat
+
 1. Verify MCPHub is healthy: `curl http://localhost:3000/health`
 2. Check LibreChat logs for MCP connection
 3. Restart LibreChat: `docker-compose restart librechat`
@@ -165,7 +186,9 @@ curl http://localhost:3000/health
 ## Future Improvements
 
 ### Adding More MCP Servers
+
 To add HTTP/SSE-based servers (recommended):
+
 ```json
 {
   "mcpServers": {
@@ -180,7 +203,9 @@ To add HTTP/SSE-based servers (recommended):
 ```
 
 ### Command-based Servers (Use with Caution)
+
 Only add if absolutely necessary and test thoroughly:
+
 ```json
 {
   "mcpServers": {
@@ -197,6 +222,7 @@ Only add if absolutely necessary and test thoroughly:
 ## Summary
 
 MCPHub is now fully operational using a custom Docker build that:
+
 - ✅ Eliminates the fork bomb issue from the official image
 - ✅ Uses minimal memory (57MB vs 16GB)
 - ✅ Successfully connects to MCP Email Server
@@ -208,6 +234,7 @@ MCPHub is now fully operational using a custom Docker build that:
 ## Setup Guide
 
 ### 1. Start the Service
+
 ```bash
 # Start MCP email server first (dependency)
 docker-compose up mcp-email-server -d
@@ -220,21 +247,26 @@ docker-compose up mcphub mcp-email-server -d
 ```
 
 ### 2. Access MCPHub
+
 Open your browser and go to: `http://localhost:3000`
 
 ### 3. Configure MCP Servers
+
 The MCP servers are pre-configured in `mcp_settings.json`. You can add more servers through the web interface or by editing the configuration file.
 
 ## Features
 
 ### Pre-configured MCP Servers
+
 MCPHub comes with these MCP servers ready to use:
 
 1. **Time Server**
+
    - Provides current time and date functions
    - Uses: `uvx mcp-server-time`
 
 2. **Fetch Server**
+
    - Fetches content from web URLs and APIs
    - Uses: `uvx mcp-server-fetch`
 
@@ -243,6 +275,7 @@ MCPHub comes with these MCP servers ready to use:
    - Connects to: `http://chatsuite_mcp-email-server:9557/sse`
 
 ### Web Management Interface
+
 - **Server Status**: View running status of all MCP servers
 - **Configuration**: Add, edit, and remove MCP servers
 - **Logs**: Monitor server logs and performance
@@ -251,6 +284,7 @@ MCPHub comes with these MCP servers ready to use:
 ## Configuration
 
 ### Adding New MCP Servers
+
 Edit `./config/mcphub/mcp_settings.json`:
 
 ```json
@@ -276,6 +310,7 @@ Edit `./config/mcphub/mcp_settings.json`:
 ```
 
 ### Server Types
+
 MCPHub supports different types of MCP servers:
 
 1. **Command-based**: Servers run as subprocess commands
@@ -289,7 +324,7 @@ MCPHub integrates with LibreChat automatically. In your LibreChat configuration:
 ```yaml
 endpoints:
   openAI:
-    mcpServers: ["mcphub"]  # This enables all MCPHub servers
+    mcpServers: ['mcphub'] # This enables all MCPHub servers
 ```
 
 All MCP tools will then be available in your AI conversations.
@@ -297,16 +332,19 @@ All MCP tools will then be available in your AI conversations.
 ## Available MCP Tools
 
 ### Time Tools
+
 - **get_current_time**: Get current date and time
 - **get_timezone**: Get timezone information
 - **format_date**: Format dates in different formats
 
 ### Fetch Tools
+
 - **fetch_url**: Download content from web URLs
 - **fetch_api**: Make API requests to external services
 - **parse_html**: Extract content from HTML pages
 
 ### Email Tools
+
 - **send_email**: Send emails via SMTP
 - **list_emails**: List emails from IMAP accounts
 - **search_emails**: Search through email content
@@ -316,20 +354,23 @@ All MCP tools will then be available in your AI conversations.
 ### Common Issues
 
 1. **MCPHub not starting**
+
    ```bash
    # Check container status
    docker-compose logs mcphub
-   
+
    # Verify dependencies are running
    docker-compose ps mcp-email-server
    ```
 
 2. **MCP servers not responding**
+
    - Check server status in MCPHub web interface
    - Verify network connectivity between containers
    - Review MCP server logs
 
 3. **Configuration not loading**
+
    - Verify JSON syntax in `mcp_settings.json`
    - Restart MCPHub container after configuration changes
    - Check file permissions
@@ -340,6 +381,7 @@ All MCP tools will then be available in your AI conversations.
    - Check network connectivity on gateway network
 
 ### Debug Commands
+
 ```bash
 # Check MCPHub status and logs
 docker-compose logs mcphub
@@ -357,6 +399,7 @@ docker exec chatsuite_mcphub ps aux
 ## Service Status
 
 ### **Working Components:**
+
 - MCPHub web interface on port 3000
 - Time server integration
 - Fetch server integration
@@ -364,6 +407,7 @@ docker exec chatsuite_mcphub ps aux
 - Docker socket access for container management
 
 ### **Integration Benefits:**
+
 - Centralized MCP server management
 - Web-based configuration interface
 - Automatic server discovery and monitoring
@@ -373,6 +417,7 @@ docker exec chatsuite_mcphub ps aux
 ## Advanced Configuration
 
 ### Custom MCP Servers
+
 To add your own MCP server:
 
 1. Create your MCP server following the protocol specification
@@ -381,7 +426,9 @@ To add your own MCP server:
 4. Test the server in the web interface
 
 ### Environment Variables
+
 You can customize MCPHub behavior with environment variables in the active environment file:
+
 ```bash
 # Check current environment
 cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
@@ -393,6 +440,7 @@ MCP_SERVER_TIMEOUT=30000   # Set server timeout (ms)
 ```
 
 ### Volume Mounts
+
 - `/app/mcp_settings.json` - Configuration file
 - `/app/data` - Persistent data storage
 - `/var/run/docker.sock` - Docker socket for container management

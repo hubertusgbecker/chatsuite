@@ -12,30 +12,35 @@ cache: true
 endpoints:
   # Native OpenAI endpoint for GPT models
   openAI:
-    apiKey: "${OPENAI_API_KEY}"
+    apiKey: '${OPENAI_API_KEY}'
     models:
-      default: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
+      default: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo']
       fetch: true
     titleConvo: true
-    titleModel: "gpt-4o-mini"
+    titleModel: 'gpt-4o-mini'
     summarize: true
     forcePrompt: false
-    mcpServers: ["mcphub"]  # Use only MCPHub server
+    mcpServers: ['mcphub'] # Use only MCPHub server
 
   # Native Anthropic endpoint for Claude models
   anthropic:
-    apiKey: "${ANTHROPIC_API_KEY}"
+    apiKey: '${ANTHROPIC_API_KEY}'
     models:
-      default: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"]
+      default:
+        [
+          'claude-3-5-sonnet-20241022',
+          'claude-3-5-haiku-20241022',
+          'claude-3-opus-20240229',
+        ]
       fetch: true
     titleConvo: true
-    titleModel: "claude-3-5-haiku-20241022"
+    titleModel: 'claude-3-5-haiku-20241022'
     summarize: true
     forcePrompt: false
 
 # Custom interface configuration
 interface:
-  customWelcome: "Welcome to LibreChat! Enjoy your experience."
+  customWelcome: 'Welcome to LibreChat! Enjoy your experience.'
   # Privacy policy settings
   privacyPolicy:
     externalUrl: 'https://librechat.ai/privacy-policy'
@@ -46,7 +51,7 @@ interface:
     externalUrl: 'https://librechat.ai/tos'
     openNewTab: true
     modalAcceptance: true
-    modalTitle: "Terms of Service for LibreChat"
+    modalTitle: 'Terms of Service for LibreChat'
     modalContent: |
       # Terms and Conditions for LibreChat
 
@@ -96,23 +101,22 @@ interface:
 # Example Actions Object Structure
 actions:
   allowedDomains:
-    - "swapi.dev"
-    - "librechat.ai"
-    - "google.com"
+    - 'swapi.dev'
+    - 'librechat.ai'
+    - 'google.com'
 
 # MCP Servers Configuration - MCPHub only
 mcpServers:
-   ## MCPHub - Multi-server MCP hub with time and fetch tools
-   mcphub:
-     type: "streamable-http"
-     url: "http://mcphub:3000/mcp"
-     startup: true
-     chatMenu: true
-     serverInstructions: true
-     headers:
-       Content-Type: "application/json"
-       Accept: "application/json, text/event-stream"
-
+  ## MCPHub - Multi-server MCP hub with time and fetch tools
+  mcphub:
+    type: 'streamable-http'
+    url: 'http://mcphub:3000/mcp'
+    startup: true
+    chatMenu: true
+    serverInstructions: true
+    headers:
+      Content-Type: 'application/json'
+      Accept: 'application/json, text/event-stream'
 #filesystem:
 #  type: stdio
 #  command: "npx"

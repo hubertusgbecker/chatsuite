@@ -9,13 +9,16 @@ MindsDB is an AI database that allows you to use machine learning models as virt
 ## Configuration
 
 ### Files Structure
+
 - `./config/mindsdb/mindsdb_config.json` - MindsDB configuration file
 - `./config/mindsdb/docker-entrypoint-mindsdb.sh` - Custom startup script
 - `./config/mindsdb/fix-mindsdb-permissions.sh` - Permission fixing script
 - `./data/mindsdb/` - Data persistence directory
 
 ### Docker Service
+
 The service is configured in `docker-compose.yaml` as:
+
 - **Container**: `chatsuite_mindsdb`
 - **Image**: `mindsdb/mindsdb:latest`
 - **Ports**: 47334 (HTTP), 47335 (MySQL), 47337 (MCP), 47338 (A2A)
@@ -25,6 +28,7 @@ The service is configured in `docker-compose.yaml` as:
 ## Setup Guide
 
 ### 1. Start the Service
+
 ```bash
 # Start MindsDB
 docker-compose up mindsdb -d
@@ -34,9 +38,11 @@ docker-compose ps mindsdb
 ```
 
 ### 2. Access MindsDB
+
 Open your browser and go to: `http://localhost:47334`
 
 ### 3. First Time Setup
+
 1. Create an account on the MindsDB web interface
 2. Connect your data sources (PostgreSQL, MySQL, APIs, etc.)
 3. Start creating and training ML models
@@ -44,6 +50,7 @@ Open your browser and go to: `http://localhost:47334`
 ## Features
 
 ### AI Database Capabilities
+
 - **Predictive Models**: Train models to predict future outcomes
 - **Natural Language Processing**: Analyze text data
 - **Time Series Forecasting**: Predict trends and patterns
@@ -51,7 +58,9 @@ Open your browser and go to: `http://localhost:47334`
 - **Regression**: Predict numerical values
 
 ### Data Source Integration
+
 MindsDB can connect to:
+
 - **PostgreSQL**: Your ChatSuite database
 - **MySQL**: External MySQL databases
 - **APIs**: REST APIs and web services
@@ -59,7 +68,9 @@ MindsDB can connect to:
 - **Cloud Services**: AWS S3, Google Cloud, Azure
 
 ### SQL Interface
+
 Use standard SQL commands to:
+
 ```sql
 -- Connect to data source
 CREATE DATABASE my_postgres
@@ -86,18 +97,21 @@ JOIN mindsdb.customer_churn_predictor;
 ## Use Cases in ChatSuite
 
 ### 1. Customer Analytics
+
 - Predict customer churn probability
 - Analyze customer behavior patterns
 - Segment customers automatically
 - Forecast customer lifetime value
 
 ### 2. Business Intelligence
+
 - Analyze conversation patterns in LibreChat
 - Predict workflow automation success rates
 - Optimize email marketing campaigns
 - Forecast system resource usage
 
 ### 3. AI-Powered Automation
+
 - Integrate with n8n workflows for automated predictions
 - Create smart alerts based on ML predictions
 - Automate customer support responses
@@ -106,6 +120,7 @@ JOIN mindsdb.customer_churn_predictor;
 ## API Access
 
 ### HTTP API (Port 47334)
+
 ```bash
 # Health check
 curl http://localhost:47334/api/status
@@ -117,6 +132,7 @@ curl -X POST http://localhost:47334/api/sql/query \
 ```
 
 ### MySQL Interface (Port 47335)
+
 ```bash
 # Connect using MySQL client
 mysql -h localhost -P 47335 -u mindsdb -p
@@ -126,7 +142,9 @@ DATABASE_URL="mysql://mindsdb:password@localhost:47335/mindsdb"
 ```
 
 ### MCP Integration (Port 47337)
+
 MindsDB provides MCP (Model Context Protocol) endpoints for AI integration:
+
 - Connect to LibreChat for AI-powered database queries
 - Use with MCPHub for unified AI tool access
 - Integrate with custom AI applications
@@ -134,6 +152,7 @@ MindsDB provides MCP (Model Context Protocol) endpoints for AI integration:
 ## Configuration
 
 ### Custom Settings
+
 Edit `./config/mindsdb/mindsdb_config.json`:
 
 ```json
@@ -156,7 +175,9 @@ Edit `./config/mindsdb/mindsdb_config.json`:
 ```
 
 ### Environment Variables
+
 Configure MindsDB behavior using the active environment file:
+
 ```bash
 # Check current environment
 cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
@@ -179,34 +200,39 @@ POSTGRES_PASSWORD=admin    # Change for qa/host environments
 ### Common Issues
 
 1. **MindsDB not starting**
+
    ```bash
    # Check container logs
    docker-compose logs mindsdb
-   
+
    # Verify file permissions
    docker exec chatsuite_mindsdb ls -la /root/mdb_storage
    ```
 
 2. **Cannot connect to data sources**
+
    - Verify database connectivity from MindsDB container
    - Check firewall and network settings
    - Ensure correct credentials and connection strings
 
 3. **Model training fails**
+
    - Check data quality and format
    - Verify sufficient disk space
    - Review MindsDB logs for specific errors
 
 4. **Web interface not loading**
+
    ```bash
    # Test HTTP API directly
    curl http://localhost:47334/api/status
-   
+
    # Check port availability
    netstat -tulpn | grep 47334
    ```
 
 ### Debug Commands
+
 ```bash
 # Access MindsDB CLI
 docker exec -it chatsuite_mindsdb mindsdb
@@ -224,6 +250,7 @@ docker exec chatsuite_mindsdb nc -z postgres 5432
 ## Service Status
 
 ✅ **Working Components:**
+
 - MindsDB web interface on port 47334
 - MySQL-compatible API on port 47335
 - MCP integration on port 47337
@@ -231,6 +258,7 @@ docker exec chatsuite_mindsdb nc -z postgres 5432
 - Connection to ChatSuite PostgreSQL database
 
 ✅ **Integration Benefits:**
+
 - AI-powered database analytics
 - SQL-based machine learning
 - Multiple API interfaces (HTTP, MySQL, MCP)
@@ -240,6 +268,7 @@ docker exec chatsuite_mindsdb nc -z postgres 5432
 ## Advanced Usage
 
 ### Integration with n8n
+
 Create automated workflows that use MindsDB predictions:
 
 1. **n8n Workflow**: Trigger on new customer data
@@ -247,6 +276,7 @@ Create automated workflows that use MindsDB predictions:
 3. **Action**: Send alert if high risk detected
 
 ### Custom ML Models
+
 ```sql
 -- Create sentiment analysis model
 CREATE MODEL sentiment_analyzer
@@ -262,11 +292,12 @@ WINDOW 12;
 ```
 
 ### API Integration
+
 ```python
 import requests
 
 # Query MindsDB via HTTP API
-response = requests.post('http://localhost:47334/api/sql/query', 
+response = requests.post('http://localhost:47334/api/sql/query',
     json={'query': 'SELECT * FROM mindsdb.models;'})
 print(response.json())
 ```
@@ -274,12 +305,15 @@ print(response.json())
 ## Security Considerations
 
 ### Development Security
+
 - MindsDB exposed only on localhost
 - Default credentials for development
 - Network isolation through Docker
 
 ### Production Security
+
 For production deployment (host environment):
+
 1. **Change default credentials** in `./config/env/.env.host`
 2. **Enable SSL/TLS** for all APIs
 3. **Set up proper authentication**

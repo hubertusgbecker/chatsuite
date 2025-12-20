@@ -9,6 +9,7 @@ This configuration provides a centralized PNPM store that can be shared across d
 ## Configuration
 
 ### Files Structure
+
 ```
 config/pnpm/
 ├── README.md           # This documentation
@@ -16,23 +17,27 @@ config/pnpm/
 ```
 
 ### Docker Configuration
+
 The PNPM store is configured as a Docker volume and can be used by build containers to cache Node.js packages efficiently.
 
 ## Setup Guide
 
 ### 1. Build PNPM Store Image
+
 ```bash
 # Build the PNPM store container image
 docker build -f ./config/pnpm/Dockerfile.pnpm-store -t chatsuite-pnpm-store .
 ```
 
 ### 2. Create PNPM Store Volume
+
 ```bash
 # Create a named volume for PNPM store
 docker volume create chatsuite_pnpm_store
 ```
 
 ### 3. Use in Docker Compose
+
 Add to your `docker-compose.yaml`:
 
 ```yaml
@@ -55,12 +60,14 @@ volumes:
 ## Benefits
 
 ### Performance Optimization
+
 - **Faster Builds**: Cached packages don't need to be downloaded again
 - **Reduced Network Usage**: Packages downloaded once and reused
 - **Consistent Dependencies**: Same package versions across containers
 - **Parallel Builds**: Multiple containers can share the same store
 
 ### Storage Efficiency
+
 - **Deduplication**: Packages stored once regardless of usage
 - **Space Saving**: Significant disk space reduction for large projects
 - **Clean Builds**: Store persists even when containers are recreated
@@ -68,6 +75,7 @@ volumes:
 ## Usage in Development
 
 ### Local Development
+
 ```bash
 # Use PNPM with shared store
 docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
@@ -79,6 +87,7 @@ docker-compose up client-app -d
 ```
 
 ### Build Process
+
 ```dockerfile
 # Example Dockerfile using PNPM store
 FROM node:18-alpine
@@ -104,6 +113,7 @@ RUN pnpm build
 ## PNPM Store Management
 
 ### Store Information
+
 ```bash
 # Check store location and size
 docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
@@ -115,6 +125,7 @@ docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
 ```
 
 ### Store Cleanup
+
 ```bash
 # Remove unused packages from store
 docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
@@ -126,6 +137,7 @@ docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
 ```
 
 ### Store Migration
+
 ```bash
 # Copy store from one location to another
 docker run --rm \
@@ -137,6 +149,7 @@ docker run --rm \
 ## Integration with ChatSuite
 
 ### Client App Build
+
 The React client app can use the shared PNPM store:
 
 ```yaml
@@ -154,6 +167,7 @@ services:
 ```
 
 ### API Service Build
+
 The NestJS API service can also benefit:
 
 ```yaml
@@ -171,6 +185,7 @@ services:
 ```
 
 ### CI/CD Integration
+
 Use in GitHub Actions or other CI systems:
 
 ```yaml
@@ -181,7 +196,7 @@ steps:
     with:
       path: ~/.pnpm-store
       key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-      
+
   - name: Install dependencies
     run: pnpm install --frozen-lockfile --store-dir ~/.pnpm-store
 ```
@@ -189,6 +204,7 @@ steps:
 ## Configuration Options
 
 ### Store Directory
+
 ```bash
 # Set custom store directory
 export PNPM_STORE_DIR=/custom/path/.pnpm-store
@@ -202,7 +218,9 @@ export PNPM_STORE_DIR=/custom/path/.pnpm-store
 ```
 
 ### Store Settings
+
 Configure store settings in the active environment file:
+
 ```bash
 # Check current environment
 cat ../../.env    # Shows NX_APP_ENV=dev (or qa/host)
@@ -217,6 +235,7 @@ verify-store-integrity=true
 ```
 
 ### Network Configuration
+
 ```bash
 # Configure registry for store
 registry=https://registry.npmjs.org/
@@ -229,49 +248,54 @@ registry=https://npm.your-company.com/
 ### Common Issues
 
 1. **Store not accessible**
+
    ```bash
    # Check volume existence
    docker volume ls | grep pnpm
-   
+
    # Inspect volume details
    docker volume inspect chatsuite_pnpm_store
-   
+
    # Check mount points in container
    docker run --rm -v chatsuite_pnpm_store:/store alpine ls -la /store
    ```
 
 2. **Permission issues**
+
    ```bash
    # Fix store permissions
    docker run --rm -v chatsuite_pnpm_store:/store alpine chown -R 1000:1000 /store
-   
+
    # Check current permissions
    docker run --rm -v chatsuite_pnpm_store:/store alpine ls -la /store
    ```
 
 3. **Corrupted store**
+
    ```bash
    # Verify store integrity
    docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
      node:18 pnpm store verify
-   
+
    # Repair corrupted store
    docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
      node:18 pnpm store prune
    ```
 
 4. **Slow builds despite store**
+
    ```bash
    # Check if store is being used
    docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
      node:18 pnpm config get store-dir
-   
+
    # Verify PNPM_STORE_DIR environment variable
    docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
      node:18 env | grep PNPM
    ```
 
 ### Debug Commands
+
 ```bash
 # Check store status
 docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
@@ -292,6 +316,7 @@ docker run --rm -v chatsuite_pnpm_store:/store alpine du -sh /store
 ## Maintenance
 
 ### Regular Cleanup
+
 ```bash
 # Weekly cleanup script
 #!/bin/bash
@@ -308,6 +333,7 @@ docker run --rm -v chatsuite_pnpm_store:/store alpine du -sh /store
 ```
 
 ### Backup and Restore
+
 ```bash
 # Backup PNPM store
 docker run --rm -v chatsuite_pnpm_store:/store \
@@ -319,6 +345,7 @@ docker run --rm -v chatsuite_pnpm_store:/store \
 ```
 
 ### Store Analytics
+
 ```bash
 # Generate store report
 docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
@@ -335,17 +362,21 @@ docker run --rm -v chatsuite_pnpm_store:/root/.pnpm-store \
 ## Performance Benefits
 
 ### Build Time Comparison
+
 Without PNPM store:
+
 - Fresh build: 5-10 minutes
 - Dependencies downloaded every time
 - Network bandwidth intensive
 
 With PNPM store:
+
 - First build: 5-10 minutes (initial download)
 - Subsequent builds: 1-2 minutes
 - Network usage reduced by 80-90%
 
 ### Resource Usage
+
 - **Disk Space**: 50-70% reduction in total package storage
 - **Network**: 80-90% reduction in package downloads
 - **Build Time**: 60-80% faster subsequent builds

@@ -18,13 +18,13 @@ module.exports = composePlugins(withNx(), (config) => {
       }
 
       // Externalize other node_modules
-      if (/^[a-z@][\w\-\.]*(\/[\w\-\.]*)*$/.test(request)) {
+      if (/^[a-z@][\w-.]*(\/[\w-.]*)*$/.test(request)) {
         return callback(null, 'commonjs ' + request);
       }
 
       // Include everything else in the bundle
       callback();
-    }
+    },
   ];
 
   return config;

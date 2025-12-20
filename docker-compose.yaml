@@ -16,7 +16,11 @@ services:
       - n8n
       - pgadmin
     healthcheck:
-      test: ["CMD-SHELL", "wget --ca-certificate=/etc/nginx/certs/localhost-crt.pem -q -O /dev/null https://127.0.0.1:10443/ || wget -k -q -O /dev/null https://127.0.0.1:10443/ || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'wget --ca-certificate=/etc/nginx/certs/localhost-crt.pem -q -O /dev/null https://127.0.0.1:10443/ || wget -k -q -O /dev/null https://127.0.0.1:10443/ || exit 1',
+        ]
       interval: 30s
       timeout: 15s
       retries: 6
@@ -37,7 +41,11 @@ services:
       - gateway
       - database_pg
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-chatsuite}"]
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-chatsuite}',
+        ]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -65,15 +73,16 @@ services:
     # Run as root so the pgAdmin entrypoint can create required directories
     # If you need to run as a non-root UID you must ensure that UID exists
     # inside the container's passwd database (or create a passwd entry first).
-    user: "0:0"
+    user: '0:0'
     networks:
       - gateway
       - database_pg
     depends_on:
       - postgres
-    entrypoint: ["sh", "/usr/local/bin/docker-entrypoint-pgadmin.sh"]
+    entrypoint: ['sh', '/usr/local/bin/docker-entrypoint-pgadmin.sh']
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/login || exit 1"]
+      test:
+        ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1/login || exit 1']
       interval: 15s
       timeout: 10s
       retries: 12
@@ -101,7 +110,14 @@ services:
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://api-customer-service:3333/api"]
+      test:
+        [
+          'CMD',
+          'wget',
+          '--spider',
+          '-q',
+          'http://api-customer-service:3333/api',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -128,7 +144,7 @@ services:
     depends_on:
       - api-customer-service
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://client-app:4200/"]
+      test: ['CMD', 'wget', '--spider', '-q', 'http://client-app:4200/']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -144,12 +160,12 @@ services:
     depends_on:
       - mongodb
       #- librechat_rag_api
-      - mcphub   # MCPHub for MCP server management
+      - mcphub # MCPHub for MCP server management
       #- mindsdb  # Add dependency on MindsDB for MCP
       #- n8n      # Add dependency on n8n for MCP
       #- nocodb   # Add dependency on n8n for MCP
-    entrypoint: ["/usr/local/bin/docker-entrypoint-librechat.sh"]
-    command: ["node", "server/index.js"]
+    entrypoint: ['/usr/local/bin/docker-entrypoint-librechat.sh']
+    command: ['node', 'server/index.js']
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     environment:
@@ -176,7 +192,7 @@ services:
     networks:
       - gateway
     extra_hosts:
-      - "synology.local:192.168.178.3"
+      - 'synology.local:192.168.178.3'
 
   mongodb:
     container_name: chatsuite_mongodb
@@ -189,7 +205,12 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=
       - MONGO_INITDB_ROOT_PASSWORD=
-    command: ["sh", "-c", "rm -f /data/db/mongod.lock && exec mongod --noauth --bind_ip_all --dbpath /data/db"]
+    command:
+      [
+        'sh',
+        '-c',
+        'rm -f /data/db/mongod.lock && exec mongod --noauth --bind_ip_all --dbpath /data/db',
+      ]
     networks:
       - gateway
 
@@ -234,15 +255,15 @@ services:
   #  networks:
   #    - gateway
 
-# MindsDB
+  # MindsDB
   mindsdb:
     image: mindsdb/mindsdb:latest
     container_name: chatsuite_mindsdb
     ports:
-      - "47334:47334"  # HTTP API
-      - "47335:47335"  # MySQL API
-      - "47337:47337"  # MCP API
-      - "47338:47338"  # A2A API
+      - '47334:47334' # HTTP API
+      - '47335:47335' # MySQL API
+      - '47337:47337' # MCP API
+      - '47338:47338' # A2A API
     restart: always
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
@@ -251,7 +272,12 @@ services:
       - ./config/mindsdb/mindsdb_config.json:/root/mindsdb_config.json:ro
       - ./config/mindsdb/docker-entrypoint-mindsdb.sh:/docker-entrypoint-mindsdb.sh:ro
       - ./config/mindsdb/fix-mindsdb-permissions.sh:/fix-mindsdb-permissions.sh
-    entrypoint: ["/bin/sh", "-c", "/fix-mindsdb-permissions.sh && exec /docker-entrypoint-mindsdb.sh"]
+    entrypoint:
+      [
+        '/bin/sh',
+        '-c',
+        '/fix-mindsdb-permissions.sh && exec /docker-entrypoint-mindsdb.sh',
+      ]
     networks:
       - gateway
 
@@ -260,12 +286,12 @@ services:
     #image: n8nio/n8n:beta # Use the beta release of n8n. Change this tag if you prefer a specific beta version (e.g. n8nio/n8n:0.236.0-beta.1)
     image: n8nio/n8n:latest
     container_name: chatsuite_n8n
-    entrypoint: ["/docker-entrypoint-n8n.sh"]
+    entrypoint: ['/docker-entrypoint-n8n.sh']
     restart: always
     init: true
     user: root
     ports:
-      - "5678:5678"
+      - '5678:5678'
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     volumes:
@@ -295,7 +321,11 @@ services:
     networks:
       - nocodb_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${NOCODB_POSTGRES_USER:-nocodb_admin} -d ${NOCODB_POSTGRES_DB:-nocodb}"]
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${NOCODB_POSTGRES_USER:-nocodb_admin} -d ${NOCODB_POSTGRES_DB:-nocodb}',
+        ]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -307,13 +337,13 @@ services:
     container_name: chatsuite_nocodb
     restart: always
     ports:
-      - "8080:8080"
+      - '8080:8080'
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     volumes:
       - ./data/nocodb:/usr/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://nocodb:8080/api/v1/health"]
+      test: ['CMD', 'curl', '-f', 'http://nocodb:8080/api/v1/health']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -333,7 +363,7 @@ services:
     container_name: chatsuite_mcphub
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:rw
       - ./data/mcphub:/app/data
@@ -345,9 +375,9 @@ services:
     networks:
       - gateway
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://mcphub:3000/health || exit 1"]
+      test: ['CMD-SHELL', 'curl -f http://mcphub:3000/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -358,17 +388,23 @@ services:
     image: ghcr.io/ai-zerolab/mcp-email-server:latest
     container_name: chatsuite_mcp-email-server
     restart: always
-    command: ["sse", "--host", "0.0.0.0", "--port", "9557"]
+    command: ['sse', '--host', '0.0.0.0', '--port', '9557']
     environment:
       - DEBUG=1
       - MCP_EMAIL_CONFIG_PATH=/root/.config/zerolib/mcp_email_server/config.toml
     ports:
-      - "9557:9557"  # SSE server port
+      - '9557:9557' # SSE server port
     volumes:
       - ./config/mcp-email-server:/root/.config/zerolib/mcp_email_server:rw
       - ./data/mcp-email-server:/app/data:rw
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://mcp-email-server:9557/sse')"]
+      test:
+        [
+          'CMD',
+          'python3',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://mcp-email-server:9557/sse')",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -382,8 +418,8 @@ services:
     container_name: chatsuite_minio
     restart: unless-stopped
     ports:
-      - '9000:9000'  # API
-      - '9001:9001'  # Console UI
+      - '9000:9000' # API
+      - '9001:9001' # Console UI
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
     environment:

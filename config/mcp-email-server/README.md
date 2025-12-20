@@ -9,12 +9,15 @@ The MCP Email Server provides IMAP and SMTP functionality via the Model Context 
 ## Configuration
 
 ### Files Structure
+
 - `./config/mcp-email-server/config.example.toml` - Example configuration file for email accounts
 - `./config/mcp-email-server/config.toml` - Actual configuration file (git-ignored)
 - `./data/mcp-email-server/` - Data persistence directory
 
 ### Docker Service
+
 The service is configured in `docker-compose.yaml` as:
+
 - **Container**: `chatsuite_mcp-email-server`
 - **Image**: `ghcr.io/ai-zerolab/mcp-email-server:latest`
 - **Port**: 9557 (SSE server endpoint)
@@ -22,19 +25,23 @@ The service is configured in `docker-compose.yaml` as:
 - **Mode**: Server-Sent Events (SSE) for MCP protocol communication
 
 ### MCPHub Integration
+
 MCPHub is available at `http://localhost:3000` and currently includes time and fetch servers. The email server runs independently and can be integrated as needed.
 
 ## Usage
 
 ### Starting the Service
+
 ```bash
 docker-compose up mcp-email-server
 ```
 
 ### MCP Endpoint
+
 The MCP server is available at `http://localhost:9557/sse` using Server-Sent Events transport.
 
 ### Configuration
+
 1. Copy the example configuration: `cp config.example.toml config.toml`
 2. Edit `config.toml` to add your email accounts
 3. Restart the container to apply changes: `docker-compose restart mcp-email-server`
@@ -72,12 +79,14 @@ For stdio-based MCP clients (direct container execution):
 ## Service Status
 
 ✅ **Working Components:**
+
 - MCP Email Server container running on port 9557
 - SSE endpoint accessible and responding correctly
 - MCPHub running independently on port 3000
 - Docker volume mounts for config and data persistence
 
 ✅ **Integration Benefits:**
+
 - Pure Docker deployment - no code dependencies in monorepo
 - Persistent configuration through mounted volumes
 - Network isolation through Docker networking

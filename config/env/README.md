@@ -5,24 +5,27 @@ This directory contains environment configuration files for different deployment
 ## Overview
 
 ChatSuite supports **three environments** with different purposes:
-- **dev**: local development  
-- **qa**: integration and testing  
-- **host**: production-like, host deployment  
+
+- **dev**: local development
+- **qa**: integration and testing
+- **host**: production-like, host deployment
 
 ## Configuration
 
 Each environment has its own config file under `./config/env/`:
+
 - `config/env/.env.dev` - Development environment configuration
-- `config/env/.env.qa` - QA/Testing environment configuration  
+- `config/env/.env.qa` - QA/Testing environment configuration
 - `config/env/.env.host` - Host/Production environment configuration
 
 The active environment is controlled by the root `.env` file in the ChatSuite folder:
 `chatsuite/.env`
 
 This value determines which config is used:
+
 ```bash
 NX_APP_ENV=dev  # Uses config/env/.env.dev (default)
-# NX_APP_ENV=qa    # Uses config/env/.env.qa  
+# NX_APP_ENV=qa    # Uses config/env/.env.qa
 # NX_APP_ENV=host  # Uses config/env/.env.host
 ```
 
@@ -31,6 +34,7 @@ If `NX_APP_ENV` is not set, `dev` is the fallback.
 ## Usage
 
 ### Environment Switching
+
 Change environment by editing `NX_APP_ENV` in the root `.env` file or using helper commands:
 
 ```bash
@@ -47,6 +51,7 @@ echo "NX_APP_ENV=dev" > .env   # Switch to Dev (default)
 ```
 
 ### Starting Services
+
 ```bash
 # Uses environment from root .env file
 docker-compose up -d
@@ -57,9 +62,11 @@ pnpm start:workspace:qa
 ```
 
 ### NX Commands
+
 NX commands (pnpm nx:build, pnpm nx:test, etc.) automatically load the environment from the root .env file.
 
 ## Benefits
+
 - One root .env as single source of truth
 - Easy switching between dev, qa, and host
 - Explicit overrides remain available
@@ -68,6 +75,7 @@ NX commands (pnpm nx:build, pnpm nx:test, etc.) automatically load the environme
 ## Configuration Categories
 
 ### Database Configuration
+
 ```bash
 # PostgreSQL Settings
 POSTGRES_HOST=postgres
@@ -87,6 +95,7 @@ N8N_DB_POSTGRESDB_SCHEMA=n8n
 ```
 
 ### AI Service API Keys
+
 ```bash
 # OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key_here
@@ -104,6 +113,7 @@ AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 ```
 
 ### LibreChat Configuration
+
 ```bash
 # LibreChat Settings
 APP_TITLE=ChatSuite LibreChat
@@ -125,6 +135,7 @@ MCP_ALLOW_ANONYMOUS_TOOLS=true
 ```
 
 ### n8n Configuration
+
 ```bash
 # n8n Database
 N8N_DB_TYPE=postgresdb
@@ -140,6 +151,7 @@ N8N_SSL_CERT=/certs/localhost-crt.pem
 ```
 
 ### NocoDB Configuration
+
 ```bash
 # NocoDB Database Connection
 NC_DB=pg://postgres:5432?u=admin&p=admin&d=chatsuite
@@ -152,6 +164,7 @@ NC_ADMIN_PASSWORD=admin
 ```
 
 ### Email Configuration
+
 ```bash
 # SMTP Settings for email sending
 SMTP_HOST=smtp.gmail.com
@@ -166,6 +179,7 @@ SMTP_TLS=true      # enable TLS
 ```
 
 ### MindsDB Configuration
+
 ```bash
 # MindsDB Settings
 MINDSDB_STORAGE_PATH=/root/mdb_storage
@@ -173,6 +187,7 @@ MINDSDB_CONFIG_PATH=/root/mindsdb_config.json
 ```
 
 ### Search and Vector Database
+
 ```bash
 # Meilisearch Configuration
 MEILI_HOST=http://meilisearch:7700
@@ -190,6 +205,7 @@ VECTOR_DB_NAME=chatsuite
 ## Environment-Specific Settings
 
 ### Development (.env.dev)
+
 - **Purpose**: Local development and testing
 - **Security**: Relaxed settings for ease of development
 - **Databases**: Local Docker containers
@@ -205,6 +221,7 @@ CORS_ORIGIN=http://localhost:4200
 ```
 
 ### Quality Assurance (.env.qa)
+
 - **Purpose**: Testing and quality assurance
 - **Security**: Moderate security settings
 - **Databases**: Dedicated QA databases
@@ -220,6 +237,7 @@ CORS_ORIGIN=https://qa.chatsuite.com
 ```
 
 ### Production (.env.host)
+
 - **Purpose**: Production deployment
 - **Security**: Maximum security settings
 - **Databases**: Production databases with backups
@@ -238,6 +256,7 @@ RATE_LIMIT_ENABLED=true
 ## Setup Guide
 
 ### 1. Copy Environment Template
+
 If environment files don't exist, create them from templates:
 
 ```bash
@@ -252,6 +271,7 @@ cp ./config/env/.env.host.example ./config/env/.env.host
 ```
 
 ### 2. Configure API Keys
+
 Edit the appropriate environment file and add your API keys:
 
 ```bash
@@ -264,6 +284,7 @@ ANTHROPIC_API_KEY=sk-ant-your-actual-anthropic-key-here
 ```
 
 ### 3. Generate Secrets
+
 Generate secure secrets for production:
 
 ```bash
@@ -279,6 +300,7 @@ openssl rand -hex 16   # Use for ENCRYPTION_KEY
 ```
 
 ### 4. Validate Configuration
+
 Test your configuration:
 
 ```bash
@@ -292,6 +314,7 @@ docker-compose logs | grep -i "error\|failed"
 ## Security Best Practices
 
 ### API Key Management
+
 1. **Never commit real API keys** to version control
 2. **Use different keys** for different environments
 3. **Rotate keys regularly** especially for production
@@ -299,6 +322,7 @@ docker-compose logs | grep -i "error\|failed"
 5. **Use minimum required permissions** for each key
 
 ### Password Security
+
 1. **Use strong passwords** (32+ characters)
 2. **Different passwords** for each environment
 3. **Regular password rotation** in production
@@ -306,6 +330,7 @@ docker-compose logs | grep -i "error\|failed"
 5. **Never use default passwords** in production
 
 ### Environment Isolation
+
 1. **Separate credentials** for each environment
 2. **Network isolation** between environments
 3. **Access control** based on roles
@@ -315,6 +340,7 @@ docker-compose logs | grep -i "error\|failed"
 ## Common Configuration Issues
 
 ### Database Connection Errors
+
 ```bash
 # Check database connectivity
 docker exec chatsuite_api-customer-service nc -z postgres 5432
@@ -324,6 +350,7 @@ docker exec chatsuite_postgres psql -U admin -d chatsuite -c "SELECT version();"
 ```
 
 ### API Key Issues
+
 ```bash
 # Test OpenAI API key
 curl -H "Authorization: Bearer $OPENAI_API_KEY" https://api.openai.com/v1/models
@@ -333,6 +360,7 @@ curl -H "x-api-key: $ANTHROPIC_API_KEY" https://api.anthropic.com/v1/messages
 ```
 
 ### Service Discovery Problems
+
 ```bash
 # Check if services can resolve each other
 docker exec chatsuite_api-customer-service nslookup postgres
@@ -342,60 +370,67 @@ docker exec chatsuite_librechat nslookup mongodb
 ## Environment Variables Reference
 
 ### Core Application
-| Variable | Description | Example |
-|----------|-------------|---------|
+
+| Variable   | Description             | Example                     |
+| ---------- | ----------------------- | --------------------------- |
 | `NODE_ENV` | Application environment | `development`, `production` |
-| `PORT` | Application port | `3000`, `3333` |
-| `HOST` | Application host | `0.0.0.0`, `localhost` |
-| `DEBUG` | Enable debug logging | `true`, `false` |
+| `PORT`     | Application port        | `3000`, `3333`              |
+| `HOST`     | Application host        | `0.0.0.0`, `localhost`      |
+| `DEBUG`    | Enable debug logging    | `true`, `false`             |
 
 ### Database
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:port/db` |
-| `POSTGRES_HOST` | PostgreSQL hostname | `postgres`, `localhost` |
-| `POSTGRES_PORT` | PostgreSQL port | `5432` |
-| `POSTGRES_DB` | Database name | `chatsuite` |
+
+| Variable        | Description                  | Example                               |
+| --------------- | ---------------------------- | ------------------------------------- |
+| `DATABASE_URL`  | PostgreSQL connection string | `postgresql://user:pass@host:port/db` |
+| `POSTGRES_HOST` | PostgreSQL hostname          | `postgres`, `localhost`               |
+| `POSTGRES_PORT` | PostgreSQL port              | `5432`                                |
+| `POSTGRES_DB`   | Database name                | `chatsuite`                           |
 
 ### Security
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `JWT_SECRET` | JWT signing secret | Random 32-byte hex string |
-| `ENCRYPTION_KEY` | Data encryption key | Random 16-byte hex string |
-| `SESSION_EXPIRY` | Session timeout | `1000 * 60 * 15` (15 minutes) |
+
+| Variable         | Description         | Example                       |
+| ---------------- | ------------------- | ----------------------------- |
+| `JWT_SECRET`     | JWT signing secret  | Random 32-byte hex string     |
+| `ENCRYPTION_KEY` | Data encryption key | Random 16-byte hex string     |
+| `SESSION_EXPIRY` | Session timeout     | `1000 * 60 * 15` (15 minutes) |
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Environment file not found**
+
    ```bash
    # Check file existence
    ls -la ./config/env/
-   
+
    # Verify environment selection
    echo $NX_APP_ENV
    ```
 
 2. **Invalid environment variables**
+
    ```bash
    # Check environment loading
    docker-compose config
-   
+
    # Validate specific service environment
    docker-compose exec service-name env | grep VAR_NAME
    ```
 
 3. **Permission denied**
+
    ```bash
    # Fix file permissions
    chmod 600 ./config/env/.env.*
-   
+
    # Check file ownership
    ls -la ./config/env/
    ```
 
 ### Debug Commands
+
 ```bash
 # Show all environment variables for a service
 docker-compose exec api-customer-service env
@@ -410,6 +445,7 @@ docker-compose exec librechat echo $OPENAI_API_KEY
 ## Backup and Restore
 
 ### Backup Environment Configuration
+
 ```bash
 # Create backup of all environment files
 tar -czf env-backup-$(date +%Y%m%d).tar.gz ./config/env/
@@ -422,6 +458,7 @@ gpg --cipher-algo AES256 --compress-algo 1 --s2k-cipher-algo AES256 \
 ```
 
 ### Restore Configuration
+
 ```bash
 # Restore from backup
 tar -xzf env-backup-YYYYMMDD.tar.gz

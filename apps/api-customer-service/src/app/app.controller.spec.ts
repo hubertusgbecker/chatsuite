@@ -1,24 +1,24 @@
-import { Test, type TestingModule } from "@nestjs/testing";
+import { Test, type TestingModule } from '@nestjs/testing';
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
-describe("AppController", () => {
-	let app: TestingModule;
+describe('AppController', () => {
+  let app: TestingModule;
 
-	beforeAll(async () => {
-		app = await Test.createTestingModule({
-			controllers: [AppController],
-			providers: [AppService],
-		}).compile();
-	});
+  beforeAll(async () => {
+    app = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
+    }).compile();
+  });
 
-	describe("getData", () => {
-		it('should return "Welcome to api-customer-service of ChatSuite!"', () => {
-			const appController = app.get<AppController>(AppController);
-			expect(appController.getData()).toEqual({
-				message: "Welcome to api-customer-service of ChatSuite!",
-			});
-		});
-	});
+  describe('getData', () => {
+    it('should return "Welcome to api-customer-service of ChatSuite!"', () => {
+      const appController = app.get<AppController>(AppController);
+      expect(appController.getData()).toEqual({
+        message: 'Welcome to api-customer-service of ChatSuite!',
+      });
+    });
+  });
 });

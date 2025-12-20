@@ -1,6 +1,7 @@
 docker-compose up client-app api-customer-service n8n -d
 docker-compose up nginx -d
 docker-compose up -d
+
 # Nginx Reverse Proxy
 
 This directory contains configuration and helper files for the Nginx reverse proxy used by ChatSuite.
@@ -96,23 +97,26 @@ For production deployments update certificate paths, enable automated certificat
 ### Common Issues
 
 1. **Certificate warnings in browser**
+
    - This is expected with self-signed certificates
    - Click "Advanced" → "Proceed to localhost"
    - For production, use proper SSL certificates
 
 2. **Service not reachable**
+
    ```bash
    # Check Nginx status
    docker-compose logs nginx
-   
+
    # Verify backend services are running
    docker-compose ps
-   
+
    # Test specific service connectivity
    curl -k https://localhost:10443/api/health
    ```
 
 3. **SSL/TLS errors**
+
    - Verify certificate files exist and are readable
    - Check certificate validity dates
    - Ensure proper file permissions
@@ -123,6 +127,7 @@ For production deployments update certificate paths, enable automated certificat
    - Review Nginx error logs
 
 ### Debug Commands
+
 ```bash
 # Check Nginx configuration
 docker exec chatsuite_nginx nginx -t
@@ -141,6 +146,7 @@ docker exec chatsuite_nginx curl http://api-customer-service:3333/health
 ## Service Status
 
 ### **Working Components:**
+
 - HTTPS reverse proxy on port 10443
 - SSL certificate handling
 - Service routing and load balancing
@@ -148,6 +154,7 @@ docker exec chatsuite_nginx curl http://api-customer-service:3333/health
 - WebSocket proxy support
 
 ### **Integration Benefits:**
+
 - Single HTTPS entry point for all services
 - SSL termination and security
 - Unified routing and service discovery
@@ -157,7 +164,9 @@ docker exec chatsuite_nginx curl http://api-customer-service:3333/health
 ## Production Considerations
 
 ### SSL Certificates
+
 For production deployment (host environment):
+
 1. Obtain proper SSL certificates from a Certificate Authority
 2. Replace self-signed certificates in `./config/certificates/`
 3. Update certificate paths in `./config/env/.env.host`
@@ -165,12 +174,14 @@ For production deployment (host environment):
 5. Set up automatic certificate renewal (Let's Encrypt)
 
 ### Security Enhancements
+
 - Enable rate limiting for API endpoints
 - Add IP whitelisting for admin interfaces
 - Implement WAF (Web Application Firewall) rules
 - Configure proper logging and monitoring
 
 ### Performance Optimization
+
 - Enable gzip compression for static assets
 - Configure proper caching headers
 - Implement connection pooling
@@ -179,14 +190,18 @@ For production deployment (host environment):
 ## Configuration Files
 
 ### Nginx Configuration
+
 Edit `./config/nginx/default.dev.conf` to:
+
 - Add new service routes
 - Modify security settings
 - Configure caching policies
 - Add custom headers
 
 ### Docker Configuration
+
 Edit `./config/nginx/Dockerfile.dev` to:
+
 - Update Nginx version
 - Add additional modules
 - Include custom configurations

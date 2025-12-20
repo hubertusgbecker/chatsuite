@@ -25,6 +25,7 @@ The solution implements a comprehensive environment configuration system that:
 **File**: `tools/dev-scripts/cmd-resolve-env.js`
 
 This script provides centralized environment resolution with the following priority order:
+
 1. Process environment variable (if explicitly set by cross-env or similar)
 2. `.env` file in project root
 3. Fallback value (default: 'dev')
@@ -54,14 +55,14 @@ chatsuite/
 
 ### 4. Command Behavior Matrix
 
-| Command | Behavior | Environment File Used |
-|---------|----------|----------------------|
-| `pnpm start` | Uses .env setting | `./config/env/.env.$(from .env)` |
-| `pnpm start:workspace:dev` | Forces dev | `./config/env/.env.dev` |
-| `pnpm start:workspace:qa` | Forces qa | `./config/env/.env.qa` |
-| `pnpm start:workspace:host` | Forces host | `./config/env/.env.host` |
-| `pnpm start:workspace` | Uses .env setting | `./config/env/.env.$(from .env)` |
-| `pnpm nx:*` | Uses .env setting | Loads .env via dotenv-cli |
+| Command                     | Behavior          | Environment File Used            |
+| --------------------------- | ----------------- | -------------------------------- |
+| `pnpm start`                | Uses .env setting | `./config/env/.env.$(from .env)` |
+| `pnpm start:workspace:dev`  | Forces dev        | `./config/env/.env.dev`          |
+| `pnpm start:workspace:qa`   | Forces qa         | `./config/env/.env.qa`           |
+| `pnpm start:workspace:host` | Forces host       | `./config/env/.env.host`         |
+| `pnpm start:workspace`      | Uses .env setting | `./config/env/.env.$(from .env)` |
+| `pnpm nx:*`                 | Uses .env setting | Loads .env via dotenv-cli        |
 
 ## Usage Examples
 
@@ -111,6 +112,7 @@ pnpm env:test
 ```
 
 This validates:
+
 - Environment detection from .env file
 - Command behavior with different environments
 - Docker-compose environment file resolution
