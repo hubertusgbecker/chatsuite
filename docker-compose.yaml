@@ -347,7 +347,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://mcphub:3000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -373,6 +373,31 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - gateway
+
+  # MinIO - S3-compatible Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: chatsuite_minio
+    restart: unless-stopped
+    ports:
+      - '9000:9000'  # API
+      - '9001:9001'  # Console UI
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
+    volumes:
+      - ./data/minio:/data
+    command: server /data --console-address ':9001'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://minio:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
     networks:
       - gateway
 

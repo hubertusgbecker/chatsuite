@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.2.0 - 2025-12-20
+
+### Added
+- **MinIO Integration**: Added S3-compatible object storage service
+  - MinIO service with health checks on ports 9000 (API) and 9001 (Console)
+  - Comprehensive MinIO documentation in `config/minio/README.md`
+  - MinIO proxy routes in nginx (`/minio/` and `/minio-api/`)
+  - MinIO environment variables in all environment templates
+- **Security Infrastructure**: Automated security scanning with KICS and Trivy
+  - GitHub Actions workflow for weekly and on-demand security scans
+  - KICS configuration for Infrastructure-as-Code scanning
+  - Trivy integration for Docker image vulnerability scanning
+  - Automated PR creation for HIGH/CRITICAL security findings
+  - SARIF upload to GitHub Security tab
+- **Documentation Consolidation**: Merged all AI agent guidelines into single source of truth
+  - Consolidated `.github/copilot-instructions.md` into `AGENTS.md`
+  - Added comprehensive table of contents to `AGENTS.md`
+  - Added project metadata header with repository info and tech stack
+  - Enhanced `AGENTS.md` with 10 comprehensive development rules
+- **Enhanced Contributing Guidelines**: Complete rewrite of contribution documentation
+  - Comprehensive contribution workflow (fork and direct access)
+  - Detailed bug reporting and enhancement suggestion templates
+  - Development setup and testing requirements
+  - Git hooks, code style, and architecture contribution guidelines
+- **Standardized Code of Conduct**: Updated to industry standard
+  - Adopted Contributor Covenant v2.1
+  - Consistent "community leaders" terminology
+  - Four-tier enforcement guidelines
+  - Streamlined reporting mechanism
+
+### Changed
+- **Docker Configuration**: Fixed all localhost references to use proper container names
+  - Changed MinIO healthcheck from `localhost:9000` to `minio:9000`
+  - Changed MCPHub healthcheck from `localhost:3000` to `mcphub:3000`
+  - Ensures proper Docker networking between services
+- **Environment Files**: Synchronized all environment configurations
+  - Added MinIO variables to `.env.dev`, `.env.host`, and `.env.qa`
+  - Synchronized with templates `env.dev`, `env.host`, and `env.qa`
+- **README Enhancement**: Updated with security badges and service documentation
+  - Added KICS+Trivy security scanning badge
+  - Updated service architecture table with MinIO
+  - Enhanced project header with professional formatting
+
+### Removed
+- `.github/copilot-instructions.md` (merged into `AGENTS.md`)
+
+### Notes
+- All services now properly use Docker container names for inter-service communication
+- MinIO provides S3-compatible storage at `https://localhost:10443/minio/`
+- Security scanning runs weekly and on every push to main/develop branches
+- `AGENTS.md` is now the authoritative reference for all development standards
+
 ## v0.1.0 - 2025-11-23
 
 ### Changed

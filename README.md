@@ -1,18 +1,20 @@
 # ChatSuite
 
-**The Complete AI Collaboration Platform**
+<div align="center">
 
-Connect LibreChat, n8n automations, MindsDB, NocoDB, and MCPHub in a single platform for efficient collaboration, seamless productivity, and dynamic MCP server orchestration.
+[![GitHub](https://img.shields.io/badge/GitHub-hubertusgbecker-blue)](https://github.com/hubertusgbecker/chatsuite)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![Nx](https://img.shields.io/badge/Built%20with-Nx-lightgrey.svg)](https://nx.dev/)
+[![Security: KICS+Trivy](https://img.shields.io/badge/security-KICS%2BTrivy-green)](./.github/workflows/kics-security-scan.yml)
 
-Built on a modern full-stack monorepo with Nx, NestJS, and React for enterprise-grade development.
+**The Complete AI Collaboration Platform - Connect LibreChat, n8n, MindsDB, NocoDB, MinIO, and MCPHub for seamless productivity**
+
+</div>
 
 ---
 
 - Contributing: see [`CONTRIBUTING.md`](./CONTRIBUTING.md) and our [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
-
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
-[![Nx](https://img.shields.io/badge/Built%20with-Nx-lightgrey.svg)](https://nx.dev/)
 
 ## What is ChatSuite?
 
@@ -23,6 +25,7 @@ ChatSuite is a comprehensive AI collaboration platform that unifies multiple pow
 - **n8n** - Visual workflow automation and integration platform  
 - **MindsDB** - AI-powered database with ML capabilities
 - **NocoDB** - Smart spreadsheet interface for databases
+- **MinIO** - S3-compatible object storage for scalable file management
 - **MCPHub** - Model Context Protocol server orchestration
 - **MCP Email** - Email integration via Model Context Protocol
 
@@ -150,6 +153,7 @@ Once running, access these powerful productivity tools through your browser:
 | **n8n** | **Visual Workflow Automation** | [localhost:5678](http://localhost:5678) | **Productivity Automation** |
 | **NocoDB** | **Smart Database Interface** | [localhost:8080](http://localhost:8080) | **Data Management** |
 | **MindsDB** | **AI-Powered Database** | [localhost:47334](http://localhost:47334) | **ML Analytics** |
+| **MinIO** | **S3 Object Storage** | [localhost:9001](http://localhost:9001) | **File Storage & Management** |
 | **MCPHub** | **Protocol Orchestration** | [localhost:3000](http://localhost:3000) | **Service Integration** |
 | **Email MCP** | **Email Intelligence** | [localhost:9557](http://localhost:9557) | **Smart Email Processing** |
 | Client App | Development Starter | [localhost:4200](http://localhost:4200) | Custom Development |
@@ -167,6 +171,8 @@ Proxy routes (examples — see `config/nginx/default.dev.conf` for exact mapping
 - `/api/` → `api-customer-service:3333`
 - `/n8n/` → `n8n:5678`
 - `/nocodb/` → `nocodb:8080`
+- `/minio/` → `minio:9001` (Console)
+- `/minio-api/` → `minio:9000` (S3 API)
 - `/pgadmin/` → `pgadmin:80`
 
 ## Platform Commands
@@ -215,6 +221,7 @@ ChatSuite AI Productivity Platform
 ├── n8n (Visual Workflow Automation)
 ├── MindsDB (AI-Powered Database)
 ├── NocoDB (Smart Database Interface)
+├── MinIO (S3-Compatible Object Storage)
 ├── MCPHub (Protocol Orchestration Hub)
 ├── MCP Email (Intelligent Email Integration)
 ├── PostgreSQL (Primary Database)
@@ -237,6 +244,7 @@ Developer Guide: All development standards and guidelines are defined in [`AGENT
 - [x] **Visual Workflow Automation** - n8n with 200+ integrations for seamless productivity
 - [x] **AI-Powered Database Intelligence** - MindsDB with ML predictions and insights
 - [x] **Smart Data Management** - NocoDB for intuitive database operations
+- [x] **S3-Compatible Object Storage** - MinIO for scalable file and media storage
 - [x] **Dynamic Protocol Orchestration** - MCPHub for seamless service communication
 - [x] **Intelligent Email Processing** - MCP Email server for smart email automation
 

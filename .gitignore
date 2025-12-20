@@ -10,6 +10,11 @@ npm-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Security Scans
+kics-output/
+trivy-output/
+KICS_FINDINGS.md
+
 # System
 .DS_Store
 Thumbs.db
@@ -80,6 +85,9 @@ data/mcphub/**
 
 data/mindsdb/**
 !data/mindsdb/**/.gitkeep
+
+data/minio/**
+!data/minio/**/.gitkeep
 
 data/n8n/**
 !data/n8n/**/.gitkeep

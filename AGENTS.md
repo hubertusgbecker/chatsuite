@@ -3,7 +3,65 @@
 
 **The Complete AI Collaboration Platform - Technical Documentation**
 
+> Comprehensive developer guide for AI agents and contributors working with ChatSuite
+
+## Project Overview
+
+**Project Name**: ChatSuite  
+**Owner**: Dr. Hubertus Becker  
+**Repository**: <https://github.com/hubertusgbecker/chatsuite>  
+**License**: MIT  
+**Tech Stack**: Docker, NestJS, React, Nx Monorepo, TypeScript  
+**Package Manager**: pnpm (required for all Node.js operations)
+
+---
+
+## Table of Contents
+
+1. [AI Agent Communication Principles](#ai-agent-communication-principles)
+2. [Platform Overview](#platform-overview)
+3. [Development Rules](#development-rules)
+4. [Quick Reference & Essential Commands](#quick-reference--essential-commands)
+5. [Architecture Overview](#services-architecture)
+6. [Configuration Guide](#environment-configuration)
+7. [Service Access & Architecture](#service-access--architecture)
+8. [Code Sharing Strategy](#code-sharing-strategy)
+9. [Development Tools and Scripts](#development-tools-and-scripts)
+10. [Environment Setup](#environment-setup)
+11. [Testing Requirements](#integration-test-strategy)
+12. [Security & Compliance](#security-and-compliance)
+13. [Troubleshooting](#troubleshooting)
+14. [Best Practices](#best-practices)
+
+---
+
 This document serves as the authoritative reference for all development, service architecture, and automation standards within the ChatSuite ecosystem. Whether you're a developer, DevOps engineer, or AI agent, this guide ensures consistent, high-quality implementations across the platform.
+
+## AI Agent Communication Principles
+
+You are an auto-regressive language model fine-tuned with instruction-tuning and Reinforcement Learning from Human Feedback (RLHF). Your responses should be accurate, factual, thoughtful, and nuanced, demonstrating excellent reasoning.
+
+### Communication Standards
+- State when there might not be a correct answer
+- Provide detailed explanations backed by verified sources
+- Be concise, with necessary background and logical progression
+- Be organized and summarize key takeaways at the end
+- Apply your broad knowledge base with step-by-step reasoning
+- State if you are speculating or predicting
+- Avoid disclosing AI identity or knowledge cutoff
+- Maintain neutrality on sensitive topics and explore out-of-the-box ideas
+- Discuss safety only if unclear and crucial
+- Write in simple English if responding in English
+- Offer pros and cons when discussing solutions or opinions
+- Answer with facts only, don't speculate or hallucinate
+- If you don't know, say so
+- Use clear, direct, step-by-step, fact-based style emphasizing actionable insights and logical structure
+- **Write in plain ASCII**: Do not use emoji, emoticons, icons, decorative or other Unicode symbols. Use letters, numbers, and standard punctuation only. Exceptions allowed when necessary: code, math, URLs, file paths, logs, and protocol or API outputs.
+
+### Development Objectives
+Provide expert coding support for the ChatSuite monorepo, integrating NestJS APIs, React client applications, and Docker-based deployment. Responses must be actionable, precise, and tailored for implementation.
+
+**This AGENTS.md file is the authoritative reference and true north star for all coding standards, project structure, and development practices.**
 
 ## Platform Overview
 
@@ -13,12 +71,163 @@ ChatSuite integrates multiple AI and productivity tools into a unified collabora
 - **n8n** - Visual workflow automation  
 - **MindsDB** - AI-powered database platform
 - **NocoDB** - Intuitive database interface
+- **MinIO** - S3-compatible object storage
 - **MCPHub** - Model Context Protocol orchestration
 - **MCP Email** - Intelligent email processing
 - **React Client** - Modern web interface
 - **NestJS API** - Scalable backend services
 
 > **Mission**: Enable seamless collaboration between AI systems, automation workflows, and human users through intelligent service orchestration and unified data access.
+
+
+## Development Rules
+
+**Critical Guidelines - Follow These Always:**
+
+### 1. Package Manager: pnpm Only
+
+```bash
+# ALWAYS use pnpm - never use npm or yarn
+pnpm install
+pnpm add package-name
+pnpm start
+```
+
+**Never run:**
+- ❌ `npm install`
+- ❌ `yarn install`
+- ❌ `npm run ...`
+
+**Always use:**
+- ✅ `pnpm install` (install dependencies)
+- ✅ `pnpm add package-name` (add package)
+- ✅ `pnpm start` (launch platform)
+- ✅ `pnpm nx:build` (build projects)
+
+### 2. Docker-First Development
+
+```bash
+# Platform operations via Docker
+pnpm start              # Launch all services
+pnpm stop               # Graceful shutdown
+pnpm rebuild            # Complete rebuild
+
+# Always verify services are healthy
+pnpm test               # Health check all services
+```
+
+**Requirements:**
+- All services run in Docker containers
+- Use docker-compose for service orchestration
+- Never run services directly on host (except development)
+- Always check service logs when troubleshooting
+
+### 3. Environment Configuration
+
+```bash
+# CRITICAL: Always use environment-specific configs
+config/env/.env.dev     # Development (not version-controlled)
+config/env/.env.qa      # QA environment (not version-controlled)
+config/env/.env.host    # Production (not version-controlled)
+
+# Switch environments
+pnpm env:set:dev
+pnpm env:set:qa
+pnpm env:set:host
+```
+
+**Requirements:**
+- Never commit `.env.*` files
+- Always copy from templates (`env.dev`, `env.host`, `env.qa`)
+- Update templates when adding new configuration
+- Use descriptive variable names
+
+### 4. Type-Safe Coding (TypeScript)
+
+```typescript
+// All functions MUST have type hints
+export async function processData(
+  param1: string,
+  param2: number,
+  config: Record<string, any>
+): Promise<DataResult | null> {
+  /**
+   * Brief description.
+   * 
+   * @param param1 - Description
+   * @param param2 - Description
+   * @param config - Configuration object
+   * 
+   * @returns Result or null if failure
+   * @throws {ValidationError} When param1 is invalid
+   */
+  // Implementation
+}
+```
+
+**Requirements:**
+- Use TypeScript strict mode for all code
+- All public functions need type annotations
+- Use interfaces and types for data structures
+- Run `pnpm lint` before commits
+
+### 5. Code Quality & Pre-commit
+
+```bash
+# ALWAYS run before making PRs
+pnpm lint               # Run linters
+pnpm nx:test            # Run tests
+pnpm nx:build           # Verify builds
+```
+
+### 6. Documentation Standards
+
+- TSDoc comments for all public APIs
+- Include `@param`, `@returns`, `@throws` sections
+- Update README.md and AGENTS.md for significant changes
+- Use descriptive variable and function names
+- Document all environment variables in templates
+
+### 7. Testing Requirements
+
+- Target: >80% test coverage
+- Add tests when adding features
+- Run tests locally before pushing
+- Use Jest for unit tests, integration tests for services
+
+### 8. Security & Secrets
+
+- **NEVER commit secrets or API keys**
+- Use environment variables for all sensitive data
+- Validate all user inputs
+- Log errors without exposing sensitive data
+- Follow OWASP security guidelines
+
+### 9. Service Integration
+
+- Use Docker container names for inter-service communication
+- Never use `localhost` in Docker configurations
+- Always use nginx proxy for HTTPS access
+- Document all service endpoints and ports
+
+### 10. Nx Monorepo Standards
+
+```bash
+# Use Nx generators for consistency
+pnpm nx g @nx/react:lib my-library
+pnpm nx g @nx/nest:app my-api
+
+# Run tasks through Nx
+pnpm nx build my-app
+pnpm nx test my-library
+pnpm nx affected:test  # Test only changed code
+```
+
+**Requirements:**
+- All apps and libs must use Nx project configuration
+- Use `project.json` for task configuration
+- Respect architectural boundaries
+- Use dependency graph to understand relationships
 
 
 ## Platform Architecture & Structure
@@ -38,6 +247,7 @@ This comprehensive guide covers every component of the ChatSuite platform. Use t
 | `mcp-email-server/` | MCP Email Server configuration for intelligent email processing |
 | `mcphub/` | MCPHub configuration for protocol orchestration |
 | `mindsdb/` | MindsDB configuration, Docker setup, and AI database scripts |
+| `minio/` | MinIO object storage configuration and documentation |
 | `n8n/` | n8n workflow automation configuration and entrypoints |
 | `nginx/` | Nginx reverse proxy configuration for SSL and routing |
 | `nocodb/` | NocoDB database interface configuration |
@@ -48,6 +258,7 @@ This comprehensive guide covers every component of the ChatSuite platform. Use t
 | `mcp-email-server/` | Email server data and configuration |
 | `mcphub/` | MCPHub data and server configurations |
 | `mindsdb/` | MindsDB data (models, cache, logs, storage) |
+| `minio/` | MinIO object storage data (buckets and objects) |
 | `nocodb/` | NocoDB data and user configurations |
 | `nocodb/pgadmin/` | PgAdmin data and user settings |
 | `nocodb/postgres/` | PostgreSQL database files |
@@ -79,13 +290,56 @@ This comprehensive guide covers every component of the ChatSuite platform. Use t
 ## Quick Reference & Essential Commands
 
 ### **Critical Files & Locations**
-- **`.github/copilot-instructions.md`** - Coding standards and communication guidelines for AI agents
+- **`AGENTS.md`** - The authoritative reference for all development standards and AI agent guidelines
 - **`repomix-output.xml`** - Machine-readable codebase summary for automated analysis
 - **`tools/dev-scripts/`** - All development automation (never place scripts elsewhere)
 - **`config/nginx/default.dev.conf`** - Central nginx proxy configuration
 - **`config/env/`** - Environment templates and runtime configuration
 - **`docs/environment-configuration-solution.md`** - Environment setup and security guide
 - **`docs/environment-quick-reference.md`** - Quick environment reference
+
+### **Environment Configuration**
+
+ChatSuite supports three environments:
+- **dev**: local development
+- **qa**: integration and testing
+- **host**: production-like, host deployment
+
+Each environment has its own config file under `config/env/`:
+- `config/env/.env.dev` - Development environment (not version-controlled)
+- `config/env/.env.qa` - QA environment (not version-controlled)
+- `config/env/.env.host` - Production environment (not version-controlled)
+
+Templates (version-controlled):
+- `config/env/env.dev` - Development template
+- `config/env/env.qa` - QA template
+- `config/env/env.host` - Production template
+
+The active environment is controlled by the root `.env` file:
+```bash
+chatsuite/.env
+```
+
+This value determines which config is used:
+```bash
+NX_APP_ENV=dev  # or qa, host as needed
+```
+
+If not set, `dev` is the fallback.
+
+**Usage:**
+```bash
+pnpm env:set:dev    # Switch to development
+pnpm env:set:qa     # Switch to QA
+pnpm env:set:host   # Switch to production
+pnpm env:show       # Display current environment
+```
+
+**Benefits:**
+- One root `.env` as single source of truth
+- Easy switching between dev, qa, and host
+- Explicit overrides remain available
+- Docker and NX both resolve environment consistently
 
 ### **Security & Environment Commands**
 ```bash
@@ -141,6 +395,12 @@ The ChatSuite platform runs as a comprehensive microservices architecture with t
 | **n8n** | chatsuite_n8n | 5678 | Workflow automation and integration platform |
 | **nocodb** | chatsuite_nocodb | 8080 | Database GUI and low-code platform |
 
+### Storage Services
+
+| Service | Container | Port(s) | Purpose |
+|---------|-----------|---------|---------|
+| **minio** | chatsuite_minio | 9000, 9001 | S3-compatible object storage (API: 9000, Console: 9001) |
+
 ### Model Context Protocol (MCP) Services
 
 | Service | Container | Port(s) | Purpose |
@@ -154,6 +414,7 @@ The ChatSuite platform runs as a comprehensive microservices architecture with t
 - **LibreChat**: librechat → mongodb, meilisearch, vectordb, mcphub
 - **Database Tools**: pgadmin, nocodb → postgres
 - **Workflows**: n8n → postgres
+- **Storage**: minio (S3-compatible storage for all services)
 - **MCP**: mcphub → mcp-email-server
 - **All Services**: → nginx (reverse proxy)
 
@@ -233,6 +494,8 @@ All ChatSuite services and applications are accessible both on their original po
 | MindsDB MySQL API        | 47335       | (MySQL protocol)            | MySQL Only |
 | MindsDB MCP API          | 47337       | (MCP protocol)              | MCP Only |
 | MindsDB A2A API          | 47338       | (A2A protocol)              | A2A Only |
+| MinIO API (S3)           | 9000        | /minio-api/                 | HTTP + HTTPS |
+| MinIO Console            | 9001        | /minio/                     | HTTP + HTTPS |
 | Nginx Proxy              | 10443       | (All services)              | HTTPS Only |
 
 > **Note:** Services with "HTTP + HTTPS" can be accessed directly on their port or via the nginx proxy. PgAdmin is only accessible through the proxy for security. All services are accessible via the unified nginx proxy on port 10443 with HTTPS.
@@ -660,7 +923,7 @@ chatsuite/
 # Final Notes
 
 - This document is the authoritative reference for all service development in ChatSuite. If you find any gaps, propose an update via pull request.
-- Always follow the copilot-instructions.md for communication, reasoning, and code style.
+- All communication, reasoning, and code style standards are contained within this AGENTS.md file.
 - For automation and code navigation, use repomix-output.xml as the codebase map.
 
 
