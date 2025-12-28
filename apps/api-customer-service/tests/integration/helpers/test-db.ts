@@ -20,7 +20,7 @@ export async function setupTestDatabase(): Promise<DataSource> {
     port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
     username: process.env.POSTGRES_USER || 'admin',
     password: process.env.POSTGRES_PASSWORD || 'admin',
-    database: process.env.POSTGRES_DB || 'chatsuite_test',
+    database: process.env.POSTGRES_DB || 'chatsuite',
     entities: ['src/**/*.entity.ts'],
     synchronize: true, // Only for tests - auto-sync schema
     dropSchema: false,

@@ -9,33 +9,19 @@ const execAsync = promisify(exec);
  * Runs once before all test suites.
  * 
  * Responsibilities:
- * - Start Docker test containers (PostgreSQL, Redis, etc.)
- * - Wait for services to be ready
- * - Initialize database schema
+ * - Verify existing Docker services are running
+ * - Initialize database connection
  * - Set up test environment
  */
 export default async function globalSetup() {
   console.log('\n🔧 Setting up integration test environment...\n');
 
-  const useDockerCompose = process.env.USE_DOCKER_COMPOSE !== 'false';
+  console.log('ℹ️  Using existing docker-compose services');
+  console.log('ℹ️  Make sure services are running: pnpm start\n');
 
   try {
-    if (useDockerCompose) {
-      // Start test containers
-      console.log('📦 Starting Docker test containers...');
-      await execAsync('docker-compose -f docker-compose.test.yaml up -d postgres redis');
-      console.log('✅ Docker containers started');
-
-      // Wait for services to be ready
-      console.log('⏳ Waiting for services to be ready...');
-      await waitForPostgres();
-      console.log('✅ PostgreSQL is ready');
-    } else {
-      console.log('ℹ️  Using existing database (USE_DOCKER_COMPOSE=false)');
-    }
-
     // Initialize database connection
-    console.log('🗄️  Initializing test database...');
+    console.log('🗄️  Initializing database connection...');
     const db = await setupTestDatabase();
     
     // Sync schema (creates tables if they don't exist)

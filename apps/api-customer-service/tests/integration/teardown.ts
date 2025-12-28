@@ -12,13 +12,10 @@ const execAsync = promisify(exec);
  * Responsibilities:
  * - Close database connections
  * - Close test server
- * - Stop Docker test containers
- * - Clean up test artifacts
+ * - Clean up test resources (but leave Docker services running)
  */
 export default async function globalTeardown() {
   console.log('\n🧹 Tearing down integration test environment...\n');
-
-  const useDockerCompose = process.env.USE_DOCKER_COMPOSE !== 'false';
 
   try {
     // Close database connection
@@ -31,12 +28,7 @@ export default async function globalTeardown() {
     await closeTestServer();
     console.log('✅ Test server closed');
 
-    if (useDockerCompose) {
-      // Stop and remove test containers
-      console.log('📦 Stopping Docker test containers...');
-      await execAsync('docker-compose -f docker-compose.test.yaml down -v');
-      console.log('✅ Docker containers stopped and removed');
-    }
+    console.log('ℹ️  Leaving existing docker-compose services running');
 
     console.log('\n✨ Integration test environment cleaned up!\n');
   } catch (error) {
