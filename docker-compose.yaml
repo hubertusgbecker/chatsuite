@@ -29,8 +29,8 @@ services:
   postgres:
     container_name: chatsuite_postgres
     image: postgres:latest
-    #ports:
-    #  - '5432:5432'
+    ports:
+      - '54320:5432'
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql

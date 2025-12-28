@@ -80,3 +80,5 @@ declare global {
     }
   }
 }
+
+export {};
