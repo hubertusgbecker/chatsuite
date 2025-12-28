@@ -30,6 +30,13 @@ import {
   createTestBase,
   getTestBase,
 } from '../helpers/test-nocodb';
+import {
+  setupTestMindsDB,
+  cleanupTestMindsDB,
+  verifyMindsDBConnection,
+  executeMindsDBQuery,
+  listMindsDBDatabases,
+} from '../helpers/test-mindsdb';
 
 /**
  * Integration tests for the Customer Service API.
@@ -56,6 +63,9 @@ describe('API Customer Service Integration', () => {
     // Setup test NocoDB connection
     await setupTestNocodb();
 
+    // Setup test MindsDB connection
+    await setupTestMindsDB();
+
     // Create test NestJS application
     app = await createTestServer();
     httpServer = getHttpServer();
@@ -81,6 +91,9 @@ describe('API Customer Service Integration', () => {
 
     // Clean up NocoDB test data
     await cleanupTestNocodb();
+
+    // Clean up MindsDB test data
+    await cleanupTestMindsDB();
   });
 
   describe('GET /api', () => {
@@ -333,6 +346,25 @@ describe('API Customer Service Integration', () => {
       const retrieved = await getTestBase(base.id);
       expect(retrieved.id).toBe(base.id);
       expect(retrieved.title).toBe(baseName);
+    });
+  });
+
+  describe('AI Database Integration', () => {
+    it('should connect to MindsDB service', async () => {
+      // Verify MindsDB connectivity
+      const isConnected = await verifyMindsDBConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should execute SQL queries in MindsDB', async () => {
+      // List databases to verify SQL execution
+      const databases = await listMindsDBDatabases();
+
+      expect(databases).toBeDefined();
+      expect(Array.isArray(databases)).toBe(true);
+
+      // MindsDB should return some databases (at least information_schema or files)
+      expect(databases.length).toBeGreaterThan(0);
     });
   });
 });

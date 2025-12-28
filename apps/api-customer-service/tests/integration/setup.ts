@@ -48,6 +48,9 @@ export default async function globalSetup() {
   if (process.env.NOCODB_URL?.includes('nocodb:')) {
     process.env.NOCODB_URL = 'http://localhost:8080';
   }
+  if (process.env.MINDSDB_URL?.includes('mindsdb:')) {
+    process.env.MINDSDB_URL = 'http://localhost:47334';
+  }
 
   console.log('🔄 Adjusted service hostnames for local integration testing');
   console.log('ℹ️  Using existing docker-compose services');
