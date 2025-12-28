@@ -43,6 +43,12 @@ import {
   verifyMCPHubConnection,
   listMCPServers,
 } from '../helpers/test-mcphub';
+import {
+  setupTestMCPEmail,
+  cleanupTestMCPEmail,
+  verifyMCPEmailConnection,
+  checkMCPEmailSSEEndpoint,
+} from '../helpers/test-mcp-email';
 
 /**
  * Integration tests for the Customer Service API.
@@ -75,6 +81,9 @@ describe('API Customer Service Integration', () => {
     // Setup test MCPHub connection
     await setupTestMCPHub();
 
+    // Setup test MCP Email connection
+    await setupTestMCPEmail();
+
     // Create test NestJS application
     app = await createTestServer();
     httpServer = getHttpServer();
@@ -106,6 +115,9 @@ describe('API Customer Service Integration', () => {
 
     // Clean up MCPHub test data
     await cleanupTestMCPHub();
+
+    // Clean up MCP Email test data
+    await cleanupTestMCPEmail();
   });
 
   describe('GET /api', () => {
@@ -396,6 +408,24 @@ describe('API Customer Service Integration', () => {
 
       // MCPHub may or may not have servers configured
       // Just verify the API returns a valid array
+    });
+  });
+
+  describe('Email Processing Integration', () => {
+    it('should connect to MCP Email service', async () => {
+      // Verify MCP Email connectivity
+      const isConnected = await verifyMCPEmailConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should expose SSE endpoint for MCP protocol', async () => {
+      // Check SSE endpoint is configured correctly
+      const endpoint = await checkMCPEmailSSEEndpoint();
+
+      expect(endpoint).toBeDefined();
+      expect(endpoint.status).toBe(200);
+      expect(endpoint.isSSE).toBe(true);
+      expect(endpoint.contentType).toContain('text/event-stream');
     });
   });
 });

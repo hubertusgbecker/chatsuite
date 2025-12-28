@@ -54,6 +54,9 @@ export default async function globalSetup() {
   if (process.env.MCPHUB_URL?.includes('mcphub:')) {
     process.env.MCPHUB_URL = 'http://localhost:3000';
   }
+  if (process.env.MCP_EMAIL_URL?.includes('mcp-email-server:')) {
+    process.env.MCP_EMAIL_URL = 'http://localhost:9557';
+  }
 
   console.log('🔄 Adjusted service hostnames for local integration testing');
   console.log('ℹ️  Using existing docker-compose services');
