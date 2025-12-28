@@ -3,7 +3,7 @@ import { setupTestDatabase } from './helpers/test-db';
 /**
  * Global setup for integration tests.
  * Runs once before all test suites.
- * 
+ *
  * Responsibilities:
  * - Verify existing Docker services are running
  * - Initialize database connection
@@ -19,7 +19,7 @@ export default async function globalSetup() {
     // Initialize database connection
     console.log('🗄️  Initializing database connection...');
     const db = await setupTestDatabase();
-    
+
     // Sync schema (creates tables if they don't exist)
     await db.synchronize(true);
     console.log('✅ Database connection established');

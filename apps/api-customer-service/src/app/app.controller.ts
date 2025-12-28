@@ -11,4 +11,9 @@ export class AppController {
     // @INFO: Getting the date from services
     return this.appService.getData();
   }
+
+  @Get('health')
+  getHealth() {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+  }
 }

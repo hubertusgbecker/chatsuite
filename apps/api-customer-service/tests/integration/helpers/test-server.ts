@@ -25,7 +25,8 @@ export async function createTestServer(): Promise<INestApplication> {
 
     // Apply same configuration as production
     // app.useGlobalPipes(new ValidationPipe());
-    // app.setGlobalPrefix('api');
+    app.setGlobalPrefix('api');
+    app.enableCors();
 
     await app.init();
     console.log('✅ Test server initialized');
