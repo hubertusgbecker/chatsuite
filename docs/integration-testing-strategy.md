@@ -833,88 +833,118 @@ export default async function globalTeardown() {
 
 ## Environment Setup
 
-### Test Environment Variables
+### Automatic Environment Configuration
 
-Create `.env.test`:
+Integration tests automatically load configuration from `config/env/.env.${NX_APP_ENV}` using the setup.ts global setup file.
+
+**Key Features:**
+- ✅ Automatic dotenv loading from config/env directory
+- ✅ Hostname mapping (Docker services → localhost ports)
+- ✅ No manual environment variable passing needed
+- ✅ Uses existing docker-compose.yaml services
+- ✅ Graceful authentication handling (optional API keys/tokens)
+
+**Environment File** (`config/env/.env.dev`):
 ```bash
+# Active environment
+NX_APP_ENV=dev
+
 # Database
 POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=test_admin
-POSTGRES_PASSWORD=test_password
-POSTGRES_DB=chatsuite_test
+POSTGRES_PORT=54320
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=admin123
+POSTGRES_DB=chatsuite
 
 # MongoDB
-MONGODB_URI=mongodb://localhost:27017/chatsuite_test
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
+MONGO_HOST=localhost
+MONGO_PORT=27018
+MONGO_INITDB_ROOT_USERNAME=admin
+MONGO_INITDB_ROOT_PASSWORD=admin123
 
 # MinIO
 MINIO_ENDPOINT=localhost
 MINIO_PORT=9000
-MINIO_ACCESS_KEY=test_access
-MINIO_SECRET_KEY=test_secret
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin
+
+# n8n (optional API key)
+N8N_HOST=localhost
+N8N_PORT=5678
+N8N_API_KEY=  # Optional, tests skip gracefully if not set
+
+# NocoDB (optional auth token)
+NOCODB_HOST=localhost
+NOCODB_PORT=8080
+NOCODB_AUTH_TOKEN=  # Optional, tests skip gracefully if not set
+
+# MindsDB
+MINDSDB_HOST=localhost
+MINDSDB_PORT=47334
+
+# MCPHub
+MCPHUB_HOST=localhost
+MCPHUB_PORT=3000
+
+# MCP Email
+MCP_EMAIL_HOST=localhost
+MCP_EMAIL_PORT=9557
 
 # JWT
-JWT_SECRET=test_jwt_secret_key_for_testing_only
+JWT_SECRET=your_jwt_secret_key
 JWT_EXPIRES_IN=1h
-
-# API Keys (use test keys only)
-OPENAI_API_KEY=sk-test-key
-ANTHROPIC_API_KEY=sk-ant-test-key
 ```
 
-### Docker Compose for Tests
+### Hostname Mapping (setup.ts)
 
-**docker-compose.test.yaml**:
-```yaml
-services:
-  postgres:
-    image: postgres:latest
-    container_name: chatsuite_test_postgres
-    environment:
-      POSTGRES_USER: test_admin
-      POSTGRES_PASSWORD: test_password
-      POSTGRES_DB: chatsuite_test
-    ports:
-      - '5433:5432'
-    volumes:
-      - test_postgres_data:/var/lib/postgresql/data
+The global setup file automatically maps Docker hostnames to localhost:
 
-  mongodb:
-    image: mongo:latest
-    container_name: chatsuite_test_mongodb
-    ports:
-      - '27018:27017'
-    volumes:
-      - test_mongo_data:/data/db
+```typescript
+// tests/integration/setup.ts
+export default async function globalSetup() {
+  // Load environment from config/env/.env.${NX_APP_ENV}
+  const envFile = path.resolve(
+    __dirname,
+    `../../../config/env/.env.${process.env.NX_APP_ENV || 'dev'}`
+  );
+  dotenv.config({ path: envFile });
 
-  redis:
-    image: redis:latest
-    container_name: chatsuite_test_redis
-    ports:
-      - '6380:6379'
-
-  minio:
-    image: minio/minio:latest
-    container_name: chatsuite_test_minio
-    environment:
-      MINIO_ROOT_USER: test_access
-      MINIO_ROOT_PASSWORD: test_secret
-    ports:
-      - '9002:9000'
-      - '9003:9001'
-    command: server /data --console-address ':9001'
-    volumes:
-      - test_minio_data:/data
-
-volumes:
-  test_postgres_data:
-  test_mongo_data:
-  test_minio_data:
+  // Map Docker service hostnames to localhost ports
+  process.env.POSTGRES_HOST = 'localhost';
+  process.env.POSTGRES_PORT = '54320';
+  process.env.MONGO_HOST = 'localhost';
+  process.env.MONGO_PORT = '27018';
+  process.env.MINIO_ENDPOINT = 'localhost';
+  process.env.MINIO_PORT = '9000';
+  process.env.N8N_HOST = 'localhost';
+  process.env.N8N_PORT = '5678';
+  process.env.NOCODB_HOST = 'localhost';
+  process.env.NOCODB_PORT = '8080';
+  process.env.MINDSDB_HOST = 'localhost';
+  process.env.MINDSDB_PORT = '47334';
+  process.env.MCPHUB_HOST = 'localhost';
+  process.env.MCPHUB_PORT = '3000';
+  process.env.MCP_EMAIL_HOST = 'localhost';
+  process.env.MCP_EMAIL_PORT = '9557';
+}
 ```
+
+### Using Existing Docker Services
+
+Integration tests connect to the **existing docker-compose.yaml services** that are already running:
+
+```bash
+# Ensure all services are running
+pnpm start
+
+# Verify services are healthy
+pnpm test
+
+# Run integration tests (connects to existing services)
+pnpm nx:integration
+```
+
+**No separate test infrastructure needed!** Tests use the same services as development with automatic environment configuration.
 
 ---
 

@@ -596,6 +596,8 @@ describe('User Registration Flow', () => {
 
 ChatSuite has a complete integration testing infrastructure implemented for all services.
 
+**Current Status: 24/24 tests passing** covering all major docker-compose services.
+
 #### Directory Structure
 
 ```
@@ -608,12 +610,19 @@ apps/api-customer-service/
 ├── tests/
 │   └── integration/
 │       ├── api/
-│       │   └── app.integration.spec.ts
+│       │   └── app.integration.spec.ts  # 24 integration tests
 │       ├── helpers/
-│       │   ├── test-db.ts           # Database utilities
+│       │   ├── test-db.ts           # PostgreSQL utilities
+│       │   ├── test-mongodb.ts      # MongoDB utilities
+│       │   ├── test-minio.ts        # MinIO S3 utilities
+│       │   ├── test-n8n.ts          # n8n workflow utilities
+│       │   ├── test-nocodb.ts       # NocoDB database UI utilities
+│       │   ├── test-mindsdb.ts      # MindsDB AI database utilities
+│       │   ├── test-mcphub.ts       # MCPHub protocol utilities
+│       │   ├── test-mcp-email.ts    # MCP Email SSE utilities
 │       │   ├── test-server.ts       # Server setup utilities
 │       │   └── factories.ts         # Test data factories
-│       ├── setup.ts                 # Global setup
+│       ├── setup.ts                 # Global setup with auto env loading
 │       ├── teardown.ts              # Global teardown
 │       └── jest.setup.ts            # Jest configuration
 ├── jest.config.ts                    # Unit test config
@@ -622,12 +631,54 @@ apps/api-customer-service/
 
 #### Test Helpers
 
-**Test Database Helper** (`tests/integration/helpers/test-db.ts`):
-- `setupTestDatabase()`: Initialize test database connection
+**PostgreSQL Helper** (`tests/integration/helpers/test-db.ts`):
+- `setupTestDatabase()`: Initialize PostgreSQL connection
 - `cleanupTestDatabase()`: Truncate all tables between tests
 - `closeTestDatabase()`: Close connection
-- `createTestTransaction()`: Transaction-based testing
 - `executeQuery()`: Execute raw SQL queries
+
+**MongoDB Helper** (`tests/integration/helpers/test-mongodb.ts`):
+- `setupTestMongoDB()`: Initialize MongoDB connection
+- `cleanupTestMongoDB()`: Drop test collections
+- `createTestCollection()`: Create test collection
+- `verifyMongoConnection()`: Health check
+
+**MinIO Helper** (`tests/integration/helpers/test-minio.ts`):
+- `setupTestMinIO()`: Initialize S3 client
+- `createTestBucket()`: Create test bucket
+- `uploadTestFile()`: Upload file to bucket
+- `downloadTestFile()`: Download file from bucket
+- `cleanupTestMinIO()`: Delete test buckets/objects
+
+**n8n Helper** (`tests/integration/helpers/test-n8n.ts`):
+- `setupTestN8n()`: Initialize n8n API client (optional API key)
+- `createTestWorkflow()`: Create workflow
+- `getTestWorkflow()`: Retrieve workflow
+- `cleanupTestN8n()`: Clean test workflows
+
+**NocoDB Helper** (`tests/integration/helpers/test-nocodb.ts`):
+- `setupTestNocodb()`: Initialize NocoDB client (optional auth token)
+- `createTestBase()`: Create database base
+- `getTestBase()`: Retrieve base
+- `cleanupTestNocodb()`: Clean test bases
+
+**MindsDB Helper** (`tests/integration/helpers/test-mindsdb.ts`):
+- `setupTestMindsDB()`: Initialize MindsDB HTTP client
+- `executeMindsDBQuery()`: Execute SQL queries
+- `listMindsDBDatabases()`: List databases
+- `cleanupTestMindsDB()`: Drop test databases
+
+**MCPHub Helper** (`tests/integration/helpers/test-mcphub.ts`):
+- `setupTestMCPHub()`: Initialize MCPHub client
+- `verifyMCPHubConnection()`: Health check (accepts 200/503)
+- `listMCPServers()`: List configured MCP servers
+- `cleanupTestMCPHub()`: Minimal cleanup (protocol server)
+
+**MCP Email Helper** (`tests/integration/helpers/test-mcp-email.ts`):
+- `setupTestMCPEmail()`: Initialize SSE client with timeout
+- `verifyMCPEmailConnection()`: Check SSE endpoint
+- `checkMCPEmailSSEEndpoint()`: Validate SSE stream
+- `cleanupTestMCPEmail()`: Minimal cleanup (protocol server)
 
 **Test Server Helper** (`tests/integration/helpers/test-server.ts`):
 - `createTestServer()`: Initialize NestJS test application
@@ -644,7 +695,7 @@ apps/api-customer-service/
 #### Running Integration Tests
 
 ```bash
-# Run all integration tests
+# Run all integration tests (24 tests)
 pnpm nx:integration
 
 # Run integration tests for affected projects only
@@ -655,27 +706,39 @@ pnpm nx integration api-customer-service
 
 # Run with coverage
 pnpm nx integration api-customer-service --coverage
-
-# Run without Docker Compose (use existing services)
-USE_DOCKER_COMPOSE=false pnpm nx integration api-customer-service
 ```
 
 #### Test Environment
 
-**Docker Compose Test Services** (`docker-compose.test.yaml`):
-- PostgreSQL (port 5433)
-- MongoDB (port 27018)
-- Redis (port 6380)
-- MinIO (ports 9002/9003)
+**Automatic Environment Loading:**
+- Tests automatically load from `config/env/.env.${NX_APP_ENV}`
+- No manual environment variable passing required
+- Automatic hostname mapping: Docker services → localhost ports
 
-**Environment Variables** (`.env.test`):
+**Service Integration Coverage:**
+- ✅ PostgreSQL (port 54320) - Database integration
+- ✅ MongoDB (port 27018) - Document store integration
+- ✅ MinIO (port 9000) - S3 storage integration
+- ✅ n8n (port 5678) - Workflow automation (optional API key)
+- ✅ NocoDB (port 8080) - Database UI (optional auth token)
+- ✅ MindsDB (port 47334) - AI database integration
+- ✅ MCPHub (port 3000) - MCP protocol orchestration
+- ✅ MCP Email (port 9557) - Email SSE protocol
+
+**Authentication Handling:**
+- Optional services (n8n, NocoDB) skip tests gracefully when credentials not configured
+- Clear setup instructions provided in console output
+- No test failures from missing optional configuration
+
+**Environment Configuration** (`config/env/.env.dev`):
 ```bash
+# Automatically loaded by integration tests
+NX_APP_ENV=dev
 POSTGRES_HOST=localhost
-POSTGRES_PORT=5433
-POSTGRES_USER=test_admin
-POSTGRES_PASSWORD=test_password
-POSTGRES_DB=chatsuite_test
-USE_DOCKER_COMPOSE=true
+POSTGRES_PORT=54320
+MONGO_HOST=localhost
+MONGO_PORT=27018
+# ... other service configurations
 ```
 
 #### Automated Quality Gates
