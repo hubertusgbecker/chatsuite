@@ -57,6 +57,18 @@
         "jestConfig": "apps/api-customer-service/jest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/api-customer-service-integration"],
+      "options": {
+        "jestConfig": "apps/api-customer-service/jest.config.integration.ts",
+        "passWithNoTests": false,
+        "runInBand": true,
+        "coverage": true,
+        "coverageReporters": ["html", "json", "lcov", "text"],
+        "maxWorkers": 1
+      }
     }
   },
   "tags": []

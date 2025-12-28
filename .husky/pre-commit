@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-commit checks..."
+
+# Run linting
+echo "📝 Running linters..."
+pnpm lint
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed. Please fix errors before committing."
+  exit 1
+fi
+
+# Run unit tests for affected projects
+echo "🧪 Running unit tests on affected projects..."
+pnpm nx affected --target=test --base=HEAD~1 --parallel=3
+if [ $? -ne 0 ]; then
+  echo "❌ Unit tests failed. Please fix tests before committing."
+  exit 1
+fi
+
+# Skip integration tests in pre-commit (they require database setup)
+# Integration tests will run in CI/CD pipeline
+echo "ℹ️  Skipping integration tests (will run in CI/CD)"
+
+echo "✅ All pre-commit checks passed!"
+exit 0

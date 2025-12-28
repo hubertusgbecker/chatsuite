@@ -113,6 +113,36 @@ export async function processData(
 - Log errors without exposing sensitive data
 - Follow OWASP security guidelines
 
+### Test-Driven Development (TDD)
+
+- **ALWAYS write tests before implementation code**
+- Follow the Red-Green-Refactor cycle:
+  1. **Red**: Write a failing test that defines desired behavior
+  2. **Green**: Write minimal code to make the test pass
+  3. **Refactor**: Improve code quality while keeping tests green
+- Start with integration tests for new features
+- Add unit tests for complex business logic
+- Use tests as living documentation
+- Never skip tests "to save time" - they save time in the long run
+
+### Incremental Development
+
+- **Break all work into small, achievable steps**
+- Each step should be completable in 15-30 minutes
+- Commit after each working increment
+- Deploy small changes frequently rather than large batches
+- Example breakdown:
+  - ❌ BAD: "Implement user authentication system"
+  - ✅ GOOD: 
+    1. Create user model with tests (15 min)
+    2. Add password hashing with tests (20 min)
+    3. Implement login endpoint with tests (25 min)
+    4. Add JWT generation with tests (20 min)
+    5. Create auth middleware with tests (15 min)
+- If a task feels too big, break it down further
+- Focus on one failing test at a time
+- Validate each increment before moving forward
+
 ### Code Organization
 
 - Never create random example files to test features
@@ -158,10 +188,18 @@ You are an AI agent working with the ChatSuite codebase. Your responses should b
 
 - **Accurate and factual** - Answer with facts only, don't speculate or hallucinate
 - **Clear and concise** - Use step-by-step reasoning with actionable insights
+- **Test-driven** - Always write tests before implementation code
+- **Incremental** - Break work into small, achievable steps (15-30 min each)
 - **Type-safe** - Follow TypeScript and Pydantic conventions
 - **Security-conscious** - Never expose or hardcode secrets
 - **Documentation-driven** - Use TSDoc and clear comments
 - **Plain ASCII** - No emoji, emoticons, or Unicode symbols except in code, math, URLs, file paths
+
+**Development Approach:**
+- When implementing features, always propose a breakdown into 5-10 small incremental steps
+- Each step should include: test first, implementation, commit
+- Prioritize small working increments over large batches
+- Use TDD cycle (Red-Green-Refactor) for all new code
 
 **This AGENTS.md file is the authoritative reference and single source of truth for all coding standards, project structure, and development practices.**
 
@@ -236,7 +274,9 @@ chatsuite/
 | `tools/dev-scripts/` | All development automation |
 | `config/nginx/default.dev.conf` | Central nginx proxy configuration |
 | `config/env/` | Environment templates and runtime configuration |
-| `docs/environment-configuration-solution.md` | Environment setup guide |
+| `docs/integration-testing-strategy.md` | Comprehensive testing strategy |
+| `.husky/` | Git hooks for automated quality checks |
+| `.github/workflows/` | CI/CD pipeline definitions |
 
 ### Essential Commands
 
@@ -256,15 +296,21 @@ pnpm env:verify            # Verify security configuration
 
 # Development
 pnpm lint                  # Run linters
-pnpm nx:test               # Run tests
-pnpm nx:build              # Build projects
-pnpm nx affected:test      # Test only changed code
+pnpm format                # Format code with Prettier
+pnpm format:check          # Check code formatting
+pnpm nx:test               # Run all unit tests
+pnpm nx:test:affected      # Test only changed code
+pnpm nx:integration        # Run all integration tests
+pnpm nx:integration:affected # Run affected integration tests
+pnpm nx:build              # Build all projects
 
 # Nx Operations
 pnpm nx g @nx/react:lib my-library          # Generate React library
 pnpm nx g @nx/nest:app my-api               # Generate NestJS app
 pnpm nx build my-app                         # Build specific app
 pnpm nx run-many --target=integration --all  # Run all integration tests
+pnpm nx affected --target=test               # Run affected unit tests
+pnpm nx affected --target=integration        # Run affected integration tests
 ```
 
 ### Service Ports
@@ -357,23 +403,48 @@ pnpm test
 open https://localhost:10443
 ```
 
-### 5. Development Workflow
+### 5. Development Workflow (Test-Driven & Incremental)
 
 ```bash
 # Create new feature branch
 git checkout -b feature/my-feature
 
-# Make changes and test
-pnpm lint
-pnpm nx:test
-pnpm nx:build
+# STEP 1: Write failing test first (RED)
+pnpm nx test my-app --watch  # Watch mode for TDD
+# Write test that fails, defining desired behavior
 
-# Commit with conventional commits
-git commit -m "feat: add new feature"
+# STEP 2: Implement minimal code (GREEN)
+# Write just enough code to make test pass
+pnpm nx test my-app  # Verify test passes
+
+# STEP 3: Refactor if needed
+# Improve code quality while keeping tests green
+pnpm lint
+pnpm format
+
+# STEP 4: Commit this small increment
+git add .
+git commit -m "test: add test for feature X"
+git commit -m "feat: implement feature X (step 1/5)"
+
+# STEP 5: Repeat for next increment
+# Continue small steps until feature complete
+
+# STEP 6: Run full test suite
+pnpm nx:test
+pnpm nx:integration
+pnpm nx:build
 
 # Push and create PR
 git push origin feature/my-feature
 ```
+
+**Key Principles:**
+- Write test → Make it pass → Refactor → Commit
+- Each commit should be a working increment
+- Run tests continuously during development
+- Break large features into 5-10 small commits
+- Never commit broken tests
 
 ---
 
@@ -464,30 +535,40 @@ describe('DataProcessor', () => {
 
 #### 2. Integration Tests
 
+**Complete implementation available - see below for full details.**
+
 - **Location**: `tests/integration/` inside each project
 - **Tool**: Jest with Docker containers
 - **Purpose**: Test service interactions without mocking
+- **Configuration**: Separate Jest config (`jest.config.integration.ts`)
+- **Test Database**: Docker Compose test services (separate ports)
 
 ```typescript
 // Example integration test
 describe('API Integration', () => {
   beforeAll(async () => {
-    await startDockerServices(['postgres', 'redis']);
+    await setupTestDatabase();
+    await createTestServer();
+  });
+
+  afterEach(async () => {
+    await cleanupTestDatabase();
   });
 
   it('should create user and store in database', async () => {
-    const response = await request(app)
+    const response = await request(httpServer)
       .post('/api/users')
-      .send({ name: 'Test User' });
+      .send({ name: 'Test User', email: 'test@test.com' })
+      .expect(201);
     
-    expect(response.status).toBe(201);
+    expect(response.body.id).toBeDefined();
     
-    const dbUser = await db.users.findOne({ name: 'Test User' });
-    expect(dbUser).toBeDefined();
-  });
-
-  afterAll(async () => {
-    await stopDockerServices();
+    // Verify database persistence
+    const user = await executeQuery(
+      'SELECT * FROM users WHERE email = $1',
+      ['test@test.com']
+    );
+    expect(user.rows).toHaveLength(1);
   });
 });
 ```
@@ -511,23 +592,128 @@ describe('User Registration Flow', () => {
 });
 ```
 
+### Integration Test Implementation
+
+ChatSuite has a complete integration testing infrastructure implemented for all services.
+
+#### Directory Structure
+
+```
+apps/api-customer-service/
+├── src/
+│   └── app/
+│       ├── app.controller.ts
+│       ├── app.controller.spec.ts    # Unit test
+│       └── app.service.ts
+├── tests/
+│   └── integration/
+│       ├── api/
+│       │   └── app.integration.spec.ts
+│       ├── helpers/
+│       │   ├── test-db.ts           # Database utilities
+│       │   ├── test-server.ts       # Server setup utilities
+│       │   └── factories.ts         # Test data factories
+│       ├── setup.ts                 # Global setup
+│       ├── teardown.ts              # Global teardown
+│       └── jest.setup.ts            # Jest configuration
+├── jest.config.ts                    # Unit test config
+└── jest.config.integration.ts        # Integration test config
+```
+
+#### Test Helpers
+
+**Test Database Helper** (`tests/integration/helpers/test-db.ts`):
+- `setupTestDatabase()`: Initialize test database connection
+- `cleanupTestDatabase()`: Truncate all tables between tests
+- `closeTestDatabase()`: Close connection
+- `createTestTransaction()`: Transaction-based testing
+- `executeQuery()`: Execute raw SQL queries
+
+**Test Server Helper** (`tests/integration/helpers/test-server.ts`):
+- `createTestServer()`: Initialize NestJS test application
+- `closeTestServer()`: Shutdown test server
+- `getHttpServer()`: Get HTTP server for supertest
+- `getService()`: Access service instances from DI container
+
+**Test Data Factories** (`tests/integration/helpers/factories.ts`):
+- `UserFactory`: Generate realistic user test data
+- `ConversationFactory`: Generate conversation test data
+- `MessageFactory`: Generate message test data
+- `TestDataHelper`: Utility functions (unique emails, passwords, retry logic)
+
+#### Running Integration Tests
+
+```bash
+# Run all integration tests
+pnpm nx:integration
+
+# Run integration tests for affected projects only
+pnpm nx:integration:affected
+
+# Run integration tests for specific project
+pnpm nx integration api-customer-service
+
+# Run with coverage
+pnpm nx integration api-customer-service --coverage
+
+# Run without Docker Compose (use existing services)
+USE_DOCKER_COMPOSE=false pnpm nx integration api-customer-service
+```
+
+#### Test Environment
+
+**Docker Compose Test Services** (`docker-compose.test.yaml`):
+- PostgreSQL (port 5433)
+- MongoDB (port 27018)
+- Redis (port 6380)
+- MinIO (ports 9002/9003)
+
+**Environment Variables** (`.env.test`):
+```bash
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5433
+POSTGRES_USER=test_admin
+POSTGRES_PASSWORD=test_password
+POSTGRES_DB=chatsuite_test
+USE_DOCKER_COMPOSE=true
+```
+
+#### Automated Quality Gates
+
+**Pre-commit Hooks** (`.husky/pre-commit`):
+- ✅ Run linters (ESLint, Prettier)
+- ✅ Run unit tests on affected projects
+- ℹ️ Run integration tests (advisory, not blocking)
+
+**Pre-push Hooks** (`.husky/pre-push`):
+- ✅ Run all unit tests
+- ✅ Run integration tests on affected projects
+- ✅ Verify security configuration
+
+**CI/CD Pipeline** (`.github/workflows/`):
+- `integration-tests.yaml`: Dedicated integration test workflow
+- `ci.yaml`: Complete CI/CD pipeline with all checks
+- Runs on every PR and push to main/develop
+- Posts coverage reports to PRs
+- Uploads results to Codecov
+
 ### Integration Test Requirements
 
 Follow these rules for effective integration testing:
 
 1. **Test Environment Setup**
-   - Use `docker-compose` to start dependent services
+   - Use `docker-compose.test.yaml` to start test services
    - Ensure databases are migrated and seeded before tests
-   - Clean up state between test runs
+   - Clean up state between test runs using `cleanupTestDatabase()`
 
 2. **Test Location**
    - Place integration tests under `tests/integration/` inside each project
    - Keep tests close to the project they verify
-   - Use descriptive test file names
+   - Use descriptive test file names ending with `.integration.spec.ts`
 
 3. **Execution**
    - Define `integration` target in `project.json`
-   - Execute with: `pnpm nx run-many --target=integration --all`
+   - Execute with: `pnpm nx integration <project-name>`
    - Run on every PR using Nx affected commands
 
 4. **Cross-Service Scenarios**
@@ -537,48 +723,36 @@ Follow these rules for effective integration testing:
    - Verify data consistency across services
 
 5. **Continuous Integration**
-   - Run integration tests on every pull request
-   - Fail pipeline when any integration test fails
-   - Generate coverage reports
-   - Track test execution time
+   - Integration tests run automatically on every pull request
+   - Pipeline fails when any integration test fails
+   - Coverage reports generated and posted to PRs
+   - Test execution time tracked and monitored
 
 6. **Coverage Requirement**
    - Every service must have at least one integration test
    - Target >80% coverage for business logic
-   - Document test scenarios in README
-
-### Running Tests
-
-```bash
-# Run all tests
-pnpm nx:test
-
-# Run tests for specific project
-pnpm nx test api-customer-service
-
-# Run only changed tests
-pnpm nx affected:test
-
-# Run integration tests
-pnpm nx run-many --target=integration --all
-
-# Run with coverage
-pnpm nx test --coverage
-
-# Watch mode for development
-pnpm nx test --watch
-```
+   - Document test scenarios in project README
 
 ### Test Best Practices
 
-- **Write tests first** (TDD when appropriate)
+- **ALWAYS write tests first** (TDD is mandatory, not optional)
+  - Start every feature with a failing test
+  - Let tests guide your implementation
+  - Tests document expected behavior
 - **Test behavior, not implementation**
-- **Use descriptive test names**
-- **Keep tests independent**
+- **Use descriptive test names** that explain what should happen
+- **Keep tests independent** with proper cleanup
 - **Mock external dependencies** in unit tests
 - **Use real services** in integration tests
-- **Clean up resources** after tests
-- **Document complex test scenarios**
+- **Clean up resources** after tests using `afterEach` hooks
+- **Document complex test scenarios** with comments
+- **Use test data factories** for realistic, varied data
+- **Handle async operations** properly with proper timeouts
+- **Follow incremental test development**:
+  1. Write simplest test case first
+  2. Add edge cases incrementally
+  3. Test error paths separately
+  4. Build complexity gradually
 
 ---
 

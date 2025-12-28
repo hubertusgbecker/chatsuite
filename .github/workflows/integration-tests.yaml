@@ -1,0 +1,194 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: test_admin
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: chatsuite_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mongodb:
+        image: mongo:latest
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test_admin
+          MONGO_INITDB_ROOT_PASSWORD: test_password
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linting
+        run: pnpm lint
+
+      - name: Run unit tests
+        run: pnpm nx affected --target=test --base=origin/${{ github.base_ref || 'main' }} --parallel=3
+
+      - name: Run integration tests
+        run: pnpm nx affected --target=integration --base=origin/${{ github.base_ref || 'main' }} --parallel=1
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: test_admin
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: chatsuite_test
+          MONGODB_URI: mongodb://test_admin:test_password@localhost:27017/chatsuite_test?authSource=admin
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          USE_DOCKER_COMPOSE: 'false'
+
+      - name: Generate coverage report
+        run: pnpm nx affected --target=integration --base=origin/${{ github.base_ref || 'main' }} --coverage
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: test_admin
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: chatsuite_test
+          MONGODB_URI: mongodb://test_admin:test_password@localhost:27017/chatsuite_test?authSource=admin
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          USE_DOCKER_COMPOSE: 'false'
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/**/coverage-final.json
+          flags: integration
+          name: integration-tests
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            coverage/
+            junit.xml
+          retention-days: 7
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 🧪 Integration Test Results\n\n';
+
+            try {
+              const coverageFiles = fs.readdirSync('./coverage');
+              let totalCoverage = 0;
+              let projectCount = 0;
+
+              for (const file of coverageFiles) {
+                const summaryPath = `./coverage/${file}/coverage-summary.json`;
+                if (fs.existsSync(summaryPath)) {
+                  const coverage = JSON.parse(fs.readFileSync(summaryPath));
+                  const pct = coverage.total.lines.pct;
+                  totalCoverage += pct;
+                  projectCount++;
+
+                  comment += `### ${file}\n`;
+                  comment += `- **Lines**: ${coverage.total.lines.pct}%\n`;
+                  comment += `- **Statements**: ${coverage.total.statements.pct}%\n`;
+                  comment += `- **Functions**: ${coverage.total.functions.pct}%\n`;
+                  comment += `- **Branches**: ${coverage.total.branches.pct}%\n\n`;
+                }
+              }
+
+              if (projectCount > 0) {
+                const avgCoverage = (totalCoverage / projectCount).toFixed(2);
+                comment = `## 📊 Average Coverage: ${avgCoverage}%\n\n` + comment;
+
+                if (avgCoverage < 80) {
+                  comment += '\n⚠️ **Warning**: Coverage is below 80% target.\n';
+                } else {
+                  comment += '\n✅ **Great!** Coverage meets or exceeds 80% target.\n';
+                }
+              }
+            } catch (error) {
+              comment += `\n⚠️ Could not read coverage report: ${error.message}\n`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Check coverage threshold
+        run: |
+          echo "Checking coverage thresholds..."
+          # Add coverage threshold check logic here if needed
+          # For now, we'll make it advisory
+          exit 0

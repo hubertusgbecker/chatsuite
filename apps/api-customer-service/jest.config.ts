@@ -14,4 +14,6 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/api-customer-service',
+  // Exclude integration tests from unit test runs
+  testPathIgnorePatterns: ['/node_modules/', '/tests/integration/'],
 };

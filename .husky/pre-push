@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push checks..."
+
+# Run all unit tests
+echo "🧪 Running all unit tests..."
+pnpm nx:test
+if [ $? -ne 0 ]; then
+  echo "❌ Unit tests failed. Please fix tests before pushing."
+  exit 1
+fi
+
+# Run integration tests on affected projects
+echo "🔄 Running integration tests on all affected projects..."
+pnpm nx affected --target=integration --base=origin/main --parallel=1
+if [ $? -ne 0 ]; then
+  echo "⚠️  Integration tests failed."
+  echo "❌ Please fix integration tests before pushing."
+  exit 1
+fi
+
+# Verify security
+echo "🔒 Verifying security configuration..."
+pnpm env:verify
+if [ $? -ne 0 ]; then
+  echo "❌ Security verification failed. Please fix security issues before pushing."
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed!"
+exit 0

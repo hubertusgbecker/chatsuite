@@ -153,9 +153,9 @@ const checkDependencies = () => {
         return false;
       const nvm = data.nvmNodeVersion.trim().replace(/^v/, '');
       const node = data.nodeVersion.trim().replace(/^v/, '');
-      // If .nvmrc is just '24', allow any 24.x.x version
-      if (/^24(\.|$)/.test(nvm)) {
-        return node.startsWith('24.');
+      // If .nvmrc is just '25', allow any 25.x.x version
+      if (/^25(\.|$)/.test(nvm)) {
+        return node.startsWith('25.');
       }
       // Otherwise require exact match
       return node === nvm;

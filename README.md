@@ -431,10 +431,23 @@ Pro Tip: All libraries are importable as `@chatsuite/library-name` for clean imp
 
 ## Contributing & Support
 
+### Development Philosophy
+
+ChatSuite follows strict **Test-Driven Development (TDD)** and **Incremental Development** practices:
+
+- **TDD**: Always write tests before implementation (Red-Green-Refactor cycle)
+- **Incremental**: Break all work into small steps (15-30 minutes each)
+- **Quality**: Every commit should include tests and pass all checks
+- **Documentation**: Code changes require documentation updates
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed workflow and examples.
+
 ### Documentation
 
 - [AGENTS.md](./AGENTS.md) - Complete development guidelines and architecture
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - TDD workflow and contribution process
 - [Environment Docs](./docs/) - Configuration and deployment guides
+- [Integration Testing Strategy](./docs/integration-testing-strategy.md) - Comprehensive testing guide
 - [Nx Documentation](https://nx.dev) - Monorepo tooling and best practices
 
 ### Issues & Support

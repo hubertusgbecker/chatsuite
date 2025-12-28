@@ -107,23 +107,93 @@ suggesting enhancements. Include:
 
 ## Development Process
 
+### Test-Driven Development (TDD)
+
+ChatSuite strictly follows Test-Driven Development for all contributions:
+
+**The Red-Green-Refactor Cycle:**
+
+1. 🔴 **RED**: Write a failing test first
+   - Define what you want to build
+   - Test fails because feature doesn't exist yet
+   - Clarifies requirements before coding
+
+2. 🟢 **GREEN**: Write minimal code to pass the test
+   - Focus on making it work
+   - Don't optimize prematurely
+   - Keep it simple
+
+3. 🔵 **REFACTOR**: Improve code quality
+   - Clean up implementation
+   - Remove duplication
+   - Keep all tests green
+
+**Example TDD Workflow:**
+```bash
+# 1. Write failing test
+pnpm nx test my-app --watch
+# Write test, see it fail (RED)
+
+# 2. Implement feature
+# Write code to make test pass (GREEN)
+
+# 3. Refactor if needed
+# Clean up code, tests stay green (REFACTOR)
+
+# 4. Commit increment
+git add .
+git commit -m "test: add user creation validation"
+git commit -m "feat: implement user creation (step 1/5)"
+```
+
+### Incremental Development
+
+**Break work into small, achievable steps (15-30 minutes each):**
+
+✅ **GOOD Example**: "Add User Authentication"
+1. Create user model with tests (20 min)
+2. Add password hashing with tests (15 min)
+3. Implement login endpoint with tests (25 min)
+4. Add JWT generation with tests (20 min)
+5. Create auth middleware with tests (15 min)
+
+Result: 5 small commits, fully tested, easy to review
+
+❌ **BAD Example**: "Add User Authentication"
+1. Implement entire auth system (4 hours)
+2. Write tests at the end
+3. One massive commit
+
+Result: Hard to review, likely has bugs, difficult to debug
+
+### Contribution Workflow
+
 1. **Pick an issue** to work on or create a new one
 2. **Comment on the issue** to let others know you're working on it
-3. **Create a branch** with a descriptive name:
+3. **Break down the work** into 5-10 small incremental steps
+   - Each step should take 15-30 minutes
+   - Each step should include tests
+4. **Create a branch** with a descriptive name:
    - Feature: `feature/your-feature-name`
    - Bug fix: `fix/bug-description`
    - Documentation: `docs/what-you-are-documenting`
-4. **Write your code** following our style guidelines in [AGENTS.md](AGENTS.md)
-5. **Add tests** for new functionality
-6. **Update documentation** as needed
-7. **Run local checks** before submitting:
+5. **Follow TDD cycle for each step**:
+   - Write test first (RED)
+   - Make it pass (GREEN)
+   - Refactor (REFACTOR)
+   - Commit the increment
+6. **Write your code** following our style guidelines in [AGENTS.md](AGENTS.md)
+7. **Add tests** for new functionality (tests come FIRST, not after)
+8. **Update documentation** as needed
+9. **Run local checks** before submitting:
    ```bash
    pnpm lint
    pnpm nx:test
+   pnpm nx:integration
    pnpm nx:build
    ```
-8. **Submit a pull request**
-9. **Respond to code review feedback**
+10. **Submit a pull request** with clear description
+11. **Respond to code review feedback**
 
 ## Development Setup
 
