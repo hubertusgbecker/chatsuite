@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.1 - 2025-12-28
+
+### Added
+
+- **LibreChat Nginx Configuration**: Added reverse proxy support for LibreChat service
+  - LibreChat upstream block with proper port mapping (3080)
+  - Location block `/librechat` with WebSocket support
+  - Full HTTP/1.1 upgrade headers for real-time chat functionality
+
+### Fixed
+
+- **Nginx Startup Reliability**: Resolved container crash loop on service startup
+  - Commented out static n8n upstream that caused "host not found" errors
+  - Implemented dynamic DNS resolution for n8n service (`set $n8n_backend n8n:5678`)
+  - Prevents nginx failures when services start in different order
+  - Resolves repeated container restart issues on Synology DiskStation
+
+### Security
+
+- **Template Credential Hardening**: Replaced actual password values with secure placeholders
+  - Changed `minioadmin123` to `CHANGE_ME_MinIO_Dev_Password` in env.dev
+  - Changed production passwords to `CHANGE_ME_MinIO_Production_Password` in env.host
+  - Changed QA passwords to `CHANGE_ME_MinIO_QA_Password` in env.qa
+  - Added security warnings for all password fields
+  - Resolves GitGuardian security alert for Generic Password exposure
+
+### Notes
+
+- Nginx now uses Docker's embedded DNS resolver (127.0.0.11) for runtime hostname resolution
+- All services (pgadmin, minio, n8n, librechat) now use dynamic resolution pattern
+- Template files are safe to commit; actual credentials remain in `.env.*` (not tracked)
+
 ## v0.3.0 - 2025-12-21
 
 ### Added
