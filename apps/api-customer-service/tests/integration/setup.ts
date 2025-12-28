@@ -1,3 +1,5 @@
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { setupTestDatabase } from './helpers/test-db';
 
 /**
@@ -5,6 +7,7 @@ import { setupTestDatabase } from './helpers/test-db';
  * Runs once before all test suites.
  *
  * Responsibilities:
+ * - Load environment variables from .env files
  * - Verify existing Docker services are running
  * - Initialize database connection
  * - Set up test environment
@@ -12,6 +15,38 @@ import { setupTestDatabase } from './helpers/test-db';
 export default async function globalSetup() {
   console.log('\n🔧 Setting up integration test environment...\n');
 
+  // Load environment variables from .env files
+  const appEnv = process.env.NX_APP_ENV || 'dev';
+  const envPath = resolve(__dirname, `../../../../config/env/.env.${appEnv}`);
+  
+  console.log(`📁 Loading environment from: .env.${appEnv}`);
+  const result = config({ path: envPath });
+  
+  if (result.error) {
+    console.error('❌ Failed to load environment file:', result.error);
+    throw result.error;
+  }
+  
+  console.log('✅ Environment variables loaded');
+  
+  // Override Docker hostnames and ports with localhost for integration tests
+  // (tests run on host machine, not in Docker containers)
+  if (process.env.POSTGRES_HOST?.includes('postgres')) {
+    process.env.POSTGRES_HOST = 'localhost';
+    process.env.POSTGRES_PORT = '54320'; // Exposed port for tests
+  }
+  if (process.env.MONGO_HOST?.includes('mongodb')) {
+    process.env.MONGO_HOST = 'localhost';
+    process.env.MONGO_PORT = '27018'; // Exposed port for tests
+  }
+  if (process.env.MINIO_ENDPOINT?.includes('minio:')) {
+    process.env.MINIO_ENDPOINT = 'http://localhost:9000';
+  }
+  if (process.env.N8N_BASE_URL?.includes('n8n:')) {
+    process.env.N8N_BASE_URL = 'http://localhost:5678';
+  }
+  
+  console.log('🔄 Adjusted service hostnames for local integration testing');
   console.log('ℹ️  Using existing docker-compose services');
   console.log('ℹ️  Make sure services are running: pnpm start\n');
 

@@ -50,6 +50,7 @@
     "rebuild": "bash ./tools/dev-scripts/cmd-rebuild.sh",
     "test": "bash ./tools/dev-scripts/cmd-test.sh",
     "lint": "pnpm nx affected --target=lint --parallel=3",
+    "lint:all": "pnpm nx run-many --target=lint --all --parallel=3",
     "format": "pnpm prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "format:check": "pnpm prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\""
   },
@@ -91,6 +92,7 @@
     "calver": "^22.8.4",
     "cross-env": "7.0.3",
     "cross-spawn": "7.0.3",
+    "dotenv": "^17.2.3",
     "dotenv-cli": "^10.0.0",
     "eslint": "~8.57.0",
     "eslint-config-prettier": "10.1.8",
