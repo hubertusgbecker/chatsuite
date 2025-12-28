@@ -37,6 +37,12 @@ import {
   executeMindsDBQuery,
   listMindsDBDatabases,
 } from '../helpers/test-mindsdb';
+import {
+  setupTestMCPHub,
+  cleanupTestMCPHub,
+  verifyMCPHubConnection,
+  listMCPServers,
+} from '../helpers/test-mcphub';
 
 /**
  * Integration tests for the Customer Service API.
@@ -66,6 +72,9 @@ describe('API Customer Service Integration', () => {
     // Setup test MindsDB connection
     await setupTestMindsDB();
 
+    // Setup test MCPHub connection
+    await setupTestMCPHub();
+
     // Create test NestJS application
     app = await createTestServer();
     httpServer = getHttpServer();
@@ -94,6 +103,9 @@ describe('API Customer Service Integration', () => {
 
     // Clean up MindsDB test data
     await cleanupTestMindsDB();
+
+    // Clean up MCPHub test data
+    await cleanupTestMCPHub();
   });
 
   describe('GET /api', () => {
@@ -365,6 +377,25 @@ describe('API Customer Service Integration', () => {
 
       // MindsDB should return some databases (at least information_schema or files)
       expect(databases.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('MCP Protocol Integration', () => {
+    it('should connect to MCPHub service', async () => {
+      // Verify MCPHub connectivity
+      const isConnected = await verifyMCPHubConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should list configured MCP servers', async () => {
+      // List MCP servers to verify orchestration capabilities
+      const servers = await listMCPServers();
+
+      expect(servers).toBeDefined();
+      expect(Array.isArray(servers)).toBe(true);
+
+      // MCPHub may or may not have servers configured
+      // Just verify the API returns a valid array
     });
   });
 });

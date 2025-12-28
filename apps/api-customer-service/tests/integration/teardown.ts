@@ -5,6 +5,7 @@ import { closeTestMinIO } from './helpers/test-minio';
 import { closeTestN8n } from './helpers/test-n8n';
 import { closeTestNocodb } from './helpers/test-nocodb';
 import { closeTestMindsDB } from './helpers/test-mindsdb';
+import { closeTestMCPHub } from './helpers/test-mcphub';
 
 /**
  * Global teardown for integration tests.
@@ -27,6 +28,7 @@ export default async function globalTeardown() {
     await closeTestN8n();
     await closeTestNocodb();
     await closeTestMindsDB();
+    await closeTestMCPHub();
     console.log('✅ Database connections closed');
 
     // Close test server
