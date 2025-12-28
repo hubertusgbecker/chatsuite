@@ -23,13 +23,13 @@ const getMongoConfig = () => ({
  */
 function getMongoUri(): string {
   const config = getMongoConfig();
-  
+
   // If MongoDB is running with --noauth (no username/password configured)
   // connect without authentication
   if (!config.username || !config.password) {
     return `mongodb://${config.host}:${config.port}/${config.database}`;
   }
-  
+
   return `mongodb://${config.username}:${config.password}@${config.host}:${config.port}/${config.database}?authSource=${config.authSource}`;
 }
 
@@ -100,7 +100,7 @@ export async function cleanupTestMongoDB(): Promise<void> {
 
   try {
     const collections = await mongoDb.collections();
-    
+
     // Drop all collections except system collections
     for (const collection of collections) {
       if (!collection.collectionName.startsWith('system.')) {
@@ -150,7 +150,7 @@ export async function createTestCollection(
 ): Promise<void> {
   const db = getMongoDatabase();
   const collection = db.collection(collectionName);
-  
+
   if (documents.length > 0) {
     await collection.insertMany(documents);
   }

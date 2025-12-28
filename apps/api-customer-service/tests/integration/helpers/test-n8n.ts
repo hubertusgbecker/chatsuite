@@ -5,7 +5,7 @@ let n8nClient: AxiosInstance | null = null;
 /**
  * n8n API connection configuration for integration tests.
  * Uses existing docker-compose n8n service with API key authentication.
- * 
+ *
  * To generate an API key:
  * 1. Open n8n UI at http://localhost:5678
  * 2. Login with Basic Auth (admin/admin123)
@@ -54,7 +54,7 @@ export async function setupTestN8n(): Promise<void> {
 
     // Test connection by checking health endpoint
     const response = await n8nClient.get('/healthz');
-    
+
     if (response.status !== 200) {
       throw new Error(`n8n health check failed with status ${response.status}`);
     }
@@ -87,7 +87,7 @@ export function getN8nClient(): AxiosInstance {
  */
 export async function createTestWorkflow(workflowName: string): Promise<any> {
   const client = getN8nClient();
-  
+
   // Simple workflow with manual trigger and set node
   const workflow = {
     name: workflowName,
@@ -136,7 +136,7 @@ export async function createTestWorkflow(workflowName: string): Promise<any> {
   };
 
   const response = await client.post('/api/v1/workflows', workflow);
-  
+
   if (response.status !== 200 && response.status !== 201) {
     throw new Error(`Failed to create workflow: ${response.status} ${response.statusText}`);
   }
@@ -152,7 +152,7 @@ export async function createTestWorkflow(workflowName: string): Promise<any> {
  */
 export async function deleteTestWorkflow(workflowId: string): Promise<void> {
   const client = getN8nClient();
-  
+
   await client.delete(`/api/v1/workflows/${workflowId}`);
 }
 
@@ -164,9 +164,9 @@ export async function deleteTestWorkflow(workflowId: string): Promise<void> {
  */
 export async function getTestWorkflow(workflowId: string): Promise<any> {
   const client = getN8nClient();
-  
+
   const response = await client.get(`/api/v1/workflows/${workflowId}`);
-  
+
   if (response.status !== 200) {
     throw new Error(`Failed to get workflow: ${response.status}`);
   }
@@ -181,9 +181,9 @@ export async function getTestWorkflow(workflowId: string): Promise<any> {
  */
 export async function listTestWorkflows(): Promise<any[]> {
   const client = getN8nClient();
-  
+
   const response = await client.get('/api/v1/workflows');
-  
+
   if (response.status !== 200) {
     throw new Error(`Failed to list workflows: ${response.status}`);
   }

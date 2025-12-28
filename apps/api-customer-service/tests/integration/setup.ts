@@ -18,17 +18,17 @@ export default async function globalSetup() {
   // Load environment variables from .env files
   const appEnv = process.env.NX_APP_ENV || 'dev';
   const envPath = resolve(__dirname, `../../../../config/env/.env.${appEnv}`);
-  
+
   console.log(`📁 Loading environment from: .env.${appEnv}`);
   const result = config({ path: envPath });
-  
+
   if (result.error) {
     console.error('❌ Failed to load environment file:', result.error);
     throw result.error;
   }
-  
+
   console.log('✅ Environment variables loaded');
-  
+
   // Override Docker hostnames and ports with localhost for integration tests
   // (tests run on host machine, not in Docker containers)
   if (process.env.POSTGRES_HOST?.includes('postgres')) {
@@ -45,7 +45,10 @@ export default async function globalSetup() {
   if (process.env.N8N_BASE_URL?.includes('n8n:')) {
     process.env.N8N_BASE_URL = 'http://localhost:5678';
   }
-  
+  if (process.env.NOCODB_URL?.includes('nocodb:')) {
+    process.env.NOCODB_URL = 'http://localhost:8080';
+  }
+
   console.log('🔄 Adjusted service hostnames for local integration testing');
   console.log('ℹ️  Using existing docker-compose services');
   console.log('ℹ️  Make sure services are running: pnpm start\n');

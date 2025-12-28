@@ -2,11 +2,11 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { createTestServer, closeTestServer, getHttpServer } from '../helpers/test-server';
 import { setupTestDatabase, cleanupTestDatabase } from '../helpers/test-db';
-import { 
-  setupTestMongoDB, 
-  cleanupTestMongoDB, 
+import {
+  setupTestMongoDB,
+  cleanupTestMongoDB,
   verifyMongoConnection,
-  createTestCollection 
+  createTestCollection
 } from '../helpers/test-mongodb';
 import {
   setupTestMinIO,
@@ -23,6 +23,13 @@ import {
   createTestWorkflow,
   getTestWorkflow,
 } from '../helpers/test-n8n';
+import {
+  setupTestNocodb,
+  cleanupTestNocodb,
+  verifyNocodbConnection,
+  createTestBase,
+  getTestBase,
+} from '../helpers/test-nocodb';
 
 /**
  * Integration tests for the Customer Service API.
@@ -36,15 +43,18 @@ describe('API Customer Service Integration', () => {
   beforeAll(async () => {
     // Setup test database connection
     await setupTestDatabase();
-    
+
     // Setup test MongoDB connection
     await setupTestMongoDB();
-    
+
     // Setup test MinIO connection
     await setupTestMinIO();
-    
+
     // Setup test n8n connection
     await setupTestN8n();
+
+    // Setup test NocoDB connection
+    await setupTestNocodb();
 
     // Create test NestJS application
     app = await createTestServer();
@@ -59,15 +69,18 @@ describe('API Customer Service Integration', () => {
   beforeEach(async () => {
     // Clean database before each test for isolation
     await cleanupTestDatabase();
-    
+
     // Clean MongoDB before each test for isolation
     await cleanupTestMongoDB();
-    
+
     // Clean MinIO before each test for isolation
     await cleanupTestMinIO();
-    
+
     // Clean n8n before each test for isolation
     await cleanupTestN8n();
+
+    // Clean up NocoDB test data
+    await cleanupTestNocodb();
   });
 
   describe('GET /api', () => {
@@ -204,9 +217,9 @@ describe('API Customer Service Integration', () => {
         { name: 'Test User 1', email: 'user1@test.com', createdAt: new Date() },
         { name: 'Test User 2', email: 'user2@test.com', createdAt: new Date() }
       ];
-      
+
       await createTestCollection('test_users', testDocs);
-      
+
       // Verify data was inserted (this would normally be done through API endpoints)
       // For now, just verify the operation completed without errors
       expect(testDocs).toHaveLength(2);
@@ -238,9 +251,9 @@ describe('API Customer Service Integration', () => {
 
     it('should handle multiple files in MinIO bucket', async () => {
       const bucketName = 'test-multi-bucket';
-      
+
       await createTestBucket(bucketName);
-      
+
       // Upload multiple files
       await uploadTestFile(bucketName, 'file1.txt', 'Content 1');
       await uploadTestFile(bucketName, 'file2.txt', 'Content 2');
@@ -287,6 +300,39 @@ describe('API Customer Service Integration', () => {
       const retrieved = await getTestWorkflow(workflow.id);
       expect(retrieved.id).toBe(workflow.id);
       expect(retrieved.name).toBe(workflowName);
+    });
+  });
+
+  describe('Database UI Integration', () => {
+    it('should connect to NocoDB service', async () => {
+      if (!process.env.NOCODB_AUTH_TOKEN) {
+        console.log('ℹ️  Skipped: NOCODB_AUTH_TOKEN not configured - see helper for setup instructions');
+        return;
+      }
+
+      // Verify NocoDB connectivity
+      const isConnected = await verifyNocodbConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should create and retrieve bases in NocoDB', async () => {
+      if (!process.env.NOCODB_AUTH_TOKEN) {
+        console.log('ℹ️  Skipped: NOCODB_AUTH_TOKEN not configured - see helper for setup instructions');
+        return;
+      }
+
+      // Create a test base
+      const baseName = 'test-base-' + Date.now();
+      const base = await createTestBase(baseName);
+
+      expect(base).toBeDefined();
+      expect(base.id).toBeDefined();
+      expect(base.title).toBe(baseName);
+
+      // Retrieve the base to verify it was created
+      const retrieved = await getTestBase(base.id);
+      expect(retrieved.id).toBe(base.id);
+      expect(retrieved.title).toBe(baseName);
     });
   });
 });

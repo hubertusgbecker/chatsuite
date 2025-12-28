@@ -73,7 +73,7 @@ export function getMinioClient(): S3Client {
  */
 export async function createTestBucket(bucketName: string): Promise<void> {
   const client = getMinioClient();
-  
+
   try {
     // Check if bucket already exists
     await client.send(new HeadBucketCommand({ Bucket: bucketName }));
@@ -83,7 +83,7 @@ export async function createTestBucket(bucketName: string): Promise<void> {
     await client.send(new CreateBucketCommand({ Bucket: bucketName }));
     console.log(`✅ Created test bucket: ${bucketName}`);
   }
-  
+
   testBuckets.add(bucketName);
 }
 
@@ -101,7 +101,7 @@ export async function uploadTestFile(
   body: string | Buffer
 ): Promise<void> {
   const client = getMinioClient();
-  
+
   await client.send(
     new PutObjectCommand({
       Bucket: bucketName,
@@ -123,7 +123,7 @@ export async function downloadTestFile(
   key: string
 ): Promise<string> {
   const client = getMinioClient();
-  
+
   const response = await client.send(
     new GetObjectCommand({
       Bucket: bucketName,
@@ -134,11 +134,11 @@ export async function downloadTestFile(
   // Convert stream to string
   const stream = response.Body as Readable;
   const chunks: Buffer[] = [];
-  
+
   for await (const chunk of stream) {
     chunks.push(Buffer.from(chunk));
   }
-  
+
   return Buffer.concat(chunks).toString('utf-8');
 }
 
@@ -154,7 +154,7 @@ export async function deleteTestFile(
   key: string
 ): Promise<void> {
   const client = getMinioClient();
-  
+
   await client.send(
     new DeleteObjectCommand({
       Bucket: bucketName,
