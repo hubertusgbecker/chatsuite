@@ -1,8 +1,133 @@
-# ChatSuite - Developer & Agent Guidelines
+# AGENTS.md
 
-**The Complete AI Collaboration Platform - Technical Documentation**
+<guidelines>
+ChatSuite is a comprehensive AI collaboration platform that orchestrates multiple AI services, workflow automation tools, and database systems into a unified ecosystem. It uses Docker-based microservices architecture with NestJS APIs, React frontends, and an Nx monorepo structure to enable seamless collaboration between AI systems, automation workflows, and human users.
 
-> Comprehensive developer guide for AI agents and contributors working with ChatSuite
+This document serves as the authoritative reference for all development, service architecture, and automation standards within the ChatSuite ecosystem. Whether you're a developer, DevOps engineer, or AI agent, this guide ensures consistent, high-quality implementations across the platform.
+
+**Mission**: Enable seamless collaboration between AI systems, automation workflows, and human users through intelligent service orchestration and unified data access.
+</guidelines>
+
+---
+
+## Table of Contents
+
+1. [Development Rules](#development-rules)
+2. [Project Overview](#project-overview)
+3. [Repository Structure](#repository-structure)
+4. [Quick Reference](#quick-reference--essential-commands)
+5. [Getting Started](#getting-started)
+6. [Development Workflow](#development-workflow)
+7. [Testing Strategy](#testing-strategy)
+8. [Code Quality Standards](#code-quality-standards)
+9. [Architecture & Services](#architecture--services)
+10. [Security & Compliance](#security--compliance)
+11. [Deployment & Operations](#deployment--operations)
+12. [Troubleshooting](#troubleshooting)
+
+---
+
+## Development Rules
+
+**Critical guidelines that must be followed at all times:**
+
+### Package Management
+
+- **Always use `pnpm`** - Never use npm or yarn
+  ```bash
+  pnpm install              # Install dependencies
+  pnpm add package-name     # Add package
+  pnpm start                # Launch platform
+  ```
+
+- **Never use `pip`, `poetry`, or `conda`** - Always use `uv` for Python
+  ```bash
+  uv venv --python 3.11
+  source .venv/bin/activate
+  uv sync
+  ```
+
+### Type-Safe Coding
+
+- Use **TypeScript strict mode** for all code
+- Use **Pydantic v2 models** for all Python internal schemas, task inputs/outputs, and tools I/O
+- All public functions MUST have type annotations
+- Use interfaces and types for data structures
+
+```typescript
+// ✅ GOOD - Type-safe function with documentation
+export async function processData(
+  param1: string,
+  param2: number,
+  config: Record<string, any>
+): Promise<DataResult | null> {
+  /**
+   * Processes data with specified parameters.
+   *
+   * @param param1 - Input data string
+   * @param param2 - Processing threshold
+   * @param config - Configuration object
+   * @returns Processed data or null if processing fails
+   * @throws {ValidationError} When param1 is invalid
+   */
+  // Implementation
+}
+```
+
+### Pre-Commit Requirements
+
+- **ALWAYS run pre-commit checks** before making PRs
+  ```bash
+  pnpm lint        # Run linters
+  pnpm nx:test     # Run tests
+  pnpm nx:build    # Verify builds
+  ```
+
+- Git hooks automatically enforce quality standards
+- All commits must pass linting and security checks
+
+### Documentation Standards
+
+- Use TSDoc comments for all public APIs
+- Include `@param`, `@returns`, `@throws` sections
+- Update README.md and AGENTS.md for significant changes
+- Use descriptive variable and function names
+- Document all environment variables in templates
+
+### Environment Configuration
+
+- **NEVER commit `.env.*` files** - These contain secrets
+- Always copy from templates (`env.dev`, `env.host`, `env.qa`)
+- Use environment-specific configurations:
+  ```bash
+  pnpm env:set:dev   # Development environment
+  pnpm env:set:qa    # QA environment
+  pnpm env:set:host  # Production environment
+  ```
+
+### Security Rules
+
+- **NEVER commit secrets or API keys**
+- Use environment variables for all sensitive data
+- Validate all user inputs
+- Log errors without exposing sensitive data
+- Follow OWASP security guidelines
+
+### Code Organization
+
+- Never create random example files to test features
+- If testing is needed, use inline code in terminal
+- Place all development scripts in `tools/dev-scripts/` with `cmd-` prefix
+- Extract reusable code into appropriate library categories
+
+### Docker-First Development
+
+- All services run in Docker containers
+- Use docker-compose for service orchestration
+- Never run services directly on host (except local development)
+- Always check service logs when troubleshooting
+
+---
 
 ## Project Overview
 
@@ -10,63 +135,12 @@
 **Owner**: Dr. Hubertus Becker  
 **Repository**: <https://github.com/hubertusgbecker/chatsuite>  
 **License**: MIT  
-**Tech Stack**: Docker, NestJS, React, Nx Monorepo, TypeScript  
-**Package Manager**: pnpm (required for all Node.js operations)
+**Tech Stack**: Docker, NestJS, React, Nx Monorepo, TypeScript, Python  
+**Package Managers**: pnpm (Node.js), uv (Python)
 
----
+### Platform Components
 
-## Table of Contents
-
-1. [AI Agent Communication Principles](#ai-agent-communication-principles)
-2. [Platform Overview](#platform-overview)
-3. [Development Rules](#development-rules)
-4. [Quick Reference & Essential Commands](#quick-reference--essential-commands)
-5. [Architecture Overview](#services-architecture)
-6. [Configuration Guide](#environment-configuration)
-7. [Service Access & Architecture](#service-access--architecture)
-8. [Code Sharing Strategy](#code-sharing-strategy)
-9. [Development Tools and Scripts](#development-tools-and-scripts)
-10. [Environment Setup](#environment-setup)
-11. [Testing Requirements](#integration-test-strategy)
-12. [Security & Compliance](#security-and-compliance)
-13. [Troubleshooting](#troubleshooting)
-14. [Best Practices](#best-practices)
-
----
-
-This document serves as the authoritative reference for all development, service architecture, and automation standards within the ChatSuite ecosystem. Whether you're a developer, DevOps engineer, or AI agent, this guide ensures consistent, high-quality implementations across the platform.
-
-## AI Agent Communication Principles
-
-You are an auto-regressive language model fine-tuned with instruction-tuning and Reinforcement Learning from Human Feedback (RLHF). Your responses should be accurate, factual, thoughtful, and nuanced, demonstrating excellent reasoning.
-
-### Communication Standards
-
-- State when there might not be a correct answer
-- Provide detailed explanations backed by verified sources
-- Be concise, with necessary background and logical progression
-- Be organized and summarize key takeaways at the end
-- Apply your broad knowledge base with step-by-step reasoning
-- State if you are speculating or predicting
-- Avoid disclosing AI identity or knowledge cutoff
-- Maintain neutrality on sensitive topics and explore out-of-the-box ideas
-- Discuss safety only if unclear and crucial
-- Write in simple English if responding in English
-- Offer pros and cons when discussing solutions or opinions
-- Answer with facts only, don't speculate or hallucinate
-- If you don't know, say so
-- Use clear, direct, step-by-step, fact-based style emphasizing actionable insights and logical structure
-- **Write in plain ASCII**: Do not use emoji, emoticons, icons, decorative or other Unicode symbols. Use letters, numbers, and standard punctuation only. Exceptions allowed when necessary: code, math, URLs, file paths, logs, and protocol or API outputs.
-
-### Development Objectives
-
-Provide expert coding support for the ChatSuite monorepo, integrating NestJS APIs, React client applications, and Docker-based deployment. Responses must be actionable, precise, and tailored for implementation.
-
-**This AGENTS.md file is the authoritative reference and true north star for all coding standards, project structure, and development practices.**
-
-## Platform Overview
-
-ChatSuite integrates multiple AI and productivity tools into a unified collaboration platform:
+ChatSuite integrates multiple AI and productivity tools:
 
 - **LibreChat** - Multi-model AI chat interface
 - **n8n** - Visual workflow automation
@@ -78,904 +152,887 @@ ChatSuite integrates multiple AI and productivity tools into a unified collabora
 - **React Client** - Modern web interface
 - **NestJS API** - Scalable backend services
 
-> **Mission**: Enable seamless collaboration between AI systems, automation workflows, and human users through intelligent service orchestration and unified data access.
+### AI Agent Communication Principles
 
-## Development Rules
+You are an AI agent working with the ChatSuite codebase. Your responses should be:
 
-**Critical Guidelines - Follow These Always:**
+- **Accurate and factual** - Answer with facts only, don't speculate or hallucinate
+- **Clear and concise** - Use step-by-step reasoning with actionable insights
+- **Type-safe** - Follow TypeScript and Pydantic conventions
+- **Security-conscious** - Never expose or hardcode secrets
+- **Documentation-driven** - Use TSDoc and clear comments
+- **Plain ASCII** - No emoji, emoticons, or Unicode symbols except in code, math, URLs, file paths
 
-### 1. Package Manager: pnpm Only
+**This AGENTS.md file is the authoritative reference and single source of truth for all coding standards, project structure, and development practices.**
+
+---
+
+## Repository Structure
+
+```
+chatsuite/
+├── apps/                          # Deployable applications
+│   ├── api-customer-service/     # NestJS backend API
+│   └── client-app/               # React frontend application
+├── libs/                          # Shared libraries (future expansion)
+│   ├── core/                     # Core business logic
+│   ├── data/                     # Data access and models
+│   ├── features/                 # Complete shareable features
+│   ├── ui/                       # Reusable UI components
+│   └── utils/                    # Utility functions
+├── config/                        # Centralized configuration
+│   ├── env/                      # Environment templates
+│   ├── librechat/               # LibreChat configuration
+│   ├── mindsdb/                 # MindsDB configuration
+│   ├── nginx/                   # Nginx proxy configuration
+│   ├── mcp-email-server/        # MCP Email Server config
+│   ├── mcphub/                  # MCPHub configuration
+│   ├── nocodb/                  # NocoDB configuration
+│   ├── n8n/                     # n8n configuration
+│   ├── minio/                   # MinIO configuration
+│   ├── postgres/                # PostgreSQL configuration
+│   └── pnpm/                    # pnpm settings
+├── data/                          # Persistent data volumes
+│   ├── librechat/               # LibreChat data
+│   ├── mindsdb/                 # MindsDB models and cache
+│   ├── minio/                   # Object storage data
+│   ├── nocodb/                  # NocoDB database
+│   └── postgres/                # PostgreSQL data
+├── schema/                        # Database schemas & migrations
+│   ├── consumer/                # Consumer database
+│   ├── customer/                # Customer database
+│   └── orchestrator/            # Orchestrator database
+├── tools/                         # Development tools
+│   └── dev-scripts/             # Build and automation scripts
+├── docs/                          # Documentation
+├── tmp/                           # Temporary build artifacts
+├── docker-compose.yaml           # Service orchestration
+├── nx.json                       # Nx workspace configuration
+├── package.json                  # Node.js dependencies
+└── pnpm-workspace.yaml           # pnpm workspace config
+```
+
+### Directory Standards
+
+- **`apps/`** - All new applications created using Nx generators
+- **`config/`** - All configuration and Docker assets
+- **`data/`** - All persistent data mapped to subdirectories
+- **`docs/`** - All documentation
+- **`libs/`** - All reusable code extracted as libraries
+- **`schema/`** - All database changes with proper migrations
+- **`tools/dev-scripts/`** - All development scripts with `cmd-` prefix
+- **`tmp/`** - Temporary files only, never production code
+
+---
+
+## Quick Reference & Essential Commands
+
+### Critical Files & Locations
+
+| File/Directory | Purpose |
+|---------------|---------|
+| `AGENTS.md` | Authoritative reference for all development standards |
+| `repomix-output.xml` | Machine-readable codebase summary |
+| `tools/dev-scripts/` | All development automation |
+| `config/nginx/default.dev.conf` | Central nginx proxy configuration |
+| `config/env/` | Environment templates and runtime configuration |
+| `docs/environment-configuration-solution.md` | Environment setup guide |
+
+### Essential Commands
 
 ```bash
-# ALWAYS use pnpm - never use npm or yarn
+# Platform Operations
+pnpm start                  # Launch all services
+pnpm stop                   # Graceful shutdown
+pnpm rebuild               # Complete system rebuild
+pnpm test                  # Health checks and verification
+
+# Environment Management
+pnpm env:show              # Display current environment
+pnpm env:set:dev           # Switch to development
+pnpm env:set:qa            # Switch to QA
+pnpm env:set:host          # Switch to production
+pnpm env:verify            # Verify security configuration
+
+# Development
+pnpm lint                  # Run linters
+pnpm nx:test               # Run tests
+pnpm nx:build              # Build projects
+pnpm nx affected:test      # Test only changed code
+
+# Nx Operations
+pnpm nx g @nx/react:lib my-library          # Generate React library
+pnpm nx g @nx/nest:app my-api               # Generate NestJS app
+pnpm nx build my-app                         # Build specific app
+pnpm nx run-many --target=integration --all  # Run all integration tests
+```
+
+### Service Ports
+
+| Service | Direct Port | Proxy Route (10443) | Status |
+|---------|------------|---------------------|--------|
+| Client App | 4200 | /app/ | HTTP + HTTPS |
+| API Customer Service | 3333 | /api/customer/ | HTTP + HTTPS |
+| LibreChat | 3080 | /librechat/ | HTTP + HTTPS |
+| PgAdmin | (internal) | /pgadmin/ | HTTPS Only |
+| N8N | 5678 | /n8n/ | HTTP + HTTPS |
+| NocoDB | 8080 | /nocodb/ | HTTP + HTTPS |
+| MCPHub | 3000 | /mcphub/ | HTTP + HTTPS |
+| MCP Email | 9557 | /mcp-email/ | HTTP + HTTPS |
+| MindsDB HTTP | 47334 | /mindsdb/ | HTTP + HTTPS |
+| MinIO API | 9000 | /minio-api/ | HTTP + HTTPS |
+| MinIO Console | 9001 | /minio/ | HTTP + HTTPS |
+| Nginx Proxy | 10443 | (All services) | HTTPS Only |
+
+---
+
+## Getting Started
+
+### 1. Prerequisites
+
+- **Docker** & **Docker Compose** installed
+- **Node.js 18+** and **pnpm** installed
+- **Python 3.11+** and **uv** installed
+- **Git** configured with SSH keys
+
+### 2. Initial Setup
+
+```bash
+# Clone repository
+git clone git@github.com:hubertusgbecker/chatsuite.git
+cd chatsuite
+
+# Install pnpm (if not already installed)
+npm install -g pnpm
+
+# Install Python uv (if not already installed)
+pip install uv
+
+# Install dependencies
 pnpm install
-pnpm add package-name
-pnpm start
+
+# Setup environment configuration
+cp config/env/env.dev config/env/.env.dev
+cp config/env/env.host config/env/.env.host
+cp config/env/env.qa config/env/.env.qa
+
+# Update .env.* files with actual credentials
+# NEVER commit .env.* files to git
 ```
-
-**Never run:**
-
-- ❌ `npm install`
-- ❌ `yarn install`
-- ❌ `npm run ...`
-
-**Always use:**
-
-- ✅ `pnpm install` (install dependencies)
-- ✅ `pnpm add package-name` (add package)
-- ✅ `pnpm start` (launch platform)
-- ✅ `pnpm nx:build` (build projects)
-
-### 2. Docker-First Development
-
-```bash
-# Platform operations via Docker
-pnpm start              # Launch all services
-pnpm stop               # Graceful shutdown
-pnpm rebuild            # Complete rebuild
-
-# Always verify services are healthy
-pnpm test               # Health check all services
-```
-
-**Requirements:**
-
-- All services run in Docker containers
-- Use docker-compose for service orchestration
-- Never run services directly on host (except development)
-- Always check service logs when troubleshooting
 
 ### 3. Environment Configuration
 
-```bash
-# CRITICAL: Always use environment-specific configs
-config/env/.env.dev     # Development (not version-controlled)
-config/env/.env.qa      # QA environment (not version-controlled)
-config/env/.env.host    # Production (not version-controlled)
+Each environment has its own config file:
 
-# Switch environments
-pnpm env:set:dev
-pnpm env:set:qa
-pnpm env:set:host
+- **`config/env/.env.dev`** - Development (localhost, not in git)
+- **`config/env/.env.qa`** - QA/Testing (not in git)
+- **`config/env/.env.host`** - Production (not in git)
+
+Templates (version-controlled):
+
+- **`config/env/env.dev`** - Development template
+- **`config/env/env.qa`** - QA template
+- **`config/env/env.host`** - Production template
+
+The active environment is controlled by root `.env`:
+
+```bash
+# chatsuite/.env
+NX_APP_ENV=dev  # or qa, host
 ```
 
-**Requirements:**
+### 4. Launch Platform
 
-- Never commit `.env.*` files
-- Always copy from templates (`env.dev`, `env.host`, `env.qa`)
-- Update templates when adding new configuration
-- Use descriptive variable names
+```bash
+# Set environment
+pnpm env:set:dev
 
-### 4. Type-Safe Coding (TypeScript)
+# Launch all services
+pnpm start
+
+# Verify all services healthy
+pnpm test
+
+# Access platform
+open https://localhost:10443
+```
+
+### 5. Development Workflow
+
+```bash
+# Create new feature branch
+git checkout -b feature/my-feature
+
+# Make changes and test
+pnpm lint
+pnpm nx:test
+pnpm nx:build
+
+# Commit with conventional commits
+git commit -m "feat: add new feature"
+
+# Push and create PR
+git push origin feature/my-feature
+```
+
+---
+
+## Development Workflow
+
+### Pre-Commit Workflow
+
+All commits automatically run:
+
+1. **ESLint** - Code quality and security checks
+2. **Prettier** - Code formatting
+3. **TypeScript** - Type checking
+4. **Tests** - Unit and integration tests
+5. **Security Scans** - KICS and Trivy scans
+
+```bash
+# Manual pre-commit check
+./bin/lint.sh      # Run all linting
+./bin/test.sh      # Run core tests
+```
+
+### Git Hooks
+
+Configured via Husky:
+
+- **pre-commit**: Linting, formatting, security checks
+- **commit-msg**: Commit message validation (conventional commits)
+- **pre-push**: Full test suite execution
+
+### Branching Strategy
+
+- **`main`** - Production-ready code
+- **`feature/*`** - New features
+- **`fix/*`** - Bug fixes
+- **`docs/*`** - Documentation updates
+- **`refactor/*`** - Code refactoring
+
+### Commit Convention
+
+Follow Conventional Commits:
+
+```bash
+feat: add new feature            # New feature
+fix: resolve bug                 # Bug fix
+docs: update documentation       # Documentation
+refactor: restructure code       # Refactoring
+test: add tests                  # Testing
+chore: update dependencies       # Maintenance
+perf: improve performance        # Performance
+ci: update CI/CD                # CI/CD changes
+```
+
+### Pull Request Process
+
+1. Create feature branch
+2. Implement changes with tests
+3. Run `pnpm lint` and `pnpm nx:test`
+4. Push and create PR
+5. Address review comments
+6. Squash and merge
+
+---
+
+## Testing Strategy
+
+### Test Types
+
+ChatSuite implements comprehensive testing at multiple levels:
+
+#### 1. Unit Tests
+
+- **Location**: `src/**/*.spec.ts`
+- **Tool**: Jest
+- **Coverage Target**: >80%
+- **Purpose**: Test individual functions and components
 
 ```typescript
-// All functions MUST have type hints
-export async function processData(param1: string, param2: number, config: Record<string, any>): Promise<DataResult | null> {
-  /**
-   * Brief description.
-   *
-   * @param param1 - Description
-   * @param param2 - Description
-   * @param config - Configuration object
-   *
-   * @returns Result or null if failure
-   * @throws {ValidationError} When param1 is invalid
-   */
+// Example unit test
+describe('DataProcessor', () => {
+  it('should process data correctly', async () => {
+    const processor = new DataProcessor();
+    const result = await processor.process('input');
+    expect(result).toBeDefined();
+    expect(result.status).toBe('success');
+  });
+});
+```
+
+#### 2. Integration Tests
+
+- **Location**: `tests/integration/` inside each project
+- **Tool**: Jest with Docker containers
+- **Purpose**: Test service interactions without mocking
+
+```typescript
+// Example integration test
+describe('API Integration', () => {
+  beforeAll(async () => {
+    await startDockerServices(['postgres', 'redis']);
+  });
+
+  it('should create user and store in database', async () => {
+    const response = await request(app)
+      .post('/api/users')
+      .send({ name: 'Test User' });
+    
+    expect(response.status).toBe(201);
+    
+    const dbUser = await db.users.findOne({ name: 'Test User' });
+    expect(dbUser).toBeDefined();
+  });
+
+  afterAll(async () => {
+    await stopDockerServices();
+  });
+});
+```
+
+#### 3. End-to-End Tests
+
+- **Location**: `apps/*/e2e/`
+- **Tool**: Cypress or Playwright
+- **Purpose**: Test complete user workflows
+
+```typescript
+// Example e2e test
+describe('User Registration Flow', () => {
+  it('should register new user successfully', () => {
+    cy.visit('/register');
+    cy.get('[data-testid="name-input"]').type('John Doe');
+    cy.get('[data-testid="email-input"]').type('john@example.com');
+    cy.get('[data-testid="submit-button"]').click();
+    cy.url().should('include', '/dashboard');
+  });
+});
+```
+
+### Integration Test Requirements
+
+Follow these rules for effective integration testing:
+
+1. **Test Environment Setup**
+   - Use `docker-compose` to start dependent services
+   - Ensure databases are migrated and seeded before tests
+   - Clean up state between test runs
+
+2. **Test Location**
+   - Place integration tests under `tests/integration/` inside each project
+   - Keep tests close to the project they verify
+   - Use descriptive test file names
+
+3. **Execution**
+   - Define `integration` target in `project.json`
+   - Execute with: `pnpm nx run-many --target=integration --all`
+   - Run on every PR using Nx affected commands
+
+4. **Cross-Service Scenarios**
+   - Cover interactions between APIs, workers, and databases
+   - Validate shared libraries integrate correctly
+   - Test authentication flows end-to-end
+   - Verify data consistency across services
+
+5. **Continuous Integration**
+   - Run integration tests on every pull request
+   - Fail pipeline when any integration test fails
+   - Generate coverage reports
+   - Track test execution time
+
+6. **Coverage Requirement**
+   - Every service must have at least one integration test
+   - Target >80% coverage for business logic
+   - Document test scenarios in README
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm nx:test
+
+# Run tests for specific project
+pnpm nx test api-customer-service
+
+# Run only changed tests
+pnpm nx affected:test
+
+# Run integration tests
+pnpm nx run-many --target=integration --all
+
+# Run with coverage
+pnpm nx test --coverage
+
+# Watch mode for development
+pnpm nx test --watch
+```
+
+### Test Best Practices
+
+- **Write tests first** (TDD when appropriate)
+- **Test behavior, not implementation**
+- **Use descriptive test names**
+- **Keep tests independent**
+- **Mock external dependencies** in unit tests
+- **Use real services** in integration tests
+- **Clean up resources** after tests
+- **Document complex test scenarios**
+
+---
+
+## Code Quality Standards
+
+### Linting & Formatting
+
+- **ESLint** - Enterprise-grade linting
+  - Security plugins (@microsoft/eslint-plugin-sdl, eslint-plugin-security)
+  - TypeScript strict checking
+  - React best practices
+  - Accessibility checks (eslint-plugin-jsx-a11y)
+
+- **Prettier** - Consistent code formatting
+  - 100-character line width
+  - Single quotes, trailing commas
+  - Automatic formatting on save
+
+### Type Safety
+
+- **TypeScript Strict Mode** enabled
+- **No `any` types** without justification
+- **Explicit return types** for all functions
+- **Interface-first design** for data structures
+
+```typescript
+// ✅ GOOD
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
+
+function getUser(id: string): Promise<UserData | null> {
+  // Implementation
+}
+
+// ❌ BAD
+function getUser(id) {
   // Implementation
 }
 ```
 
-**Requirements:**
+### Security Standards
 
-- Use TypeScript strict mode for all code
-- All public functions need type annotations
-- Use interfaces and types for data structures
-- Run `pnpm lint` before commits
+- **Input validation** on all entry points
+- **Output sanitization** for all user-facing data
+- **Parameterized queries** to prevent SQL injection
+- **Content Security Policy** headers
+- **Rate limiting** on all APIs
+- **TLS 1.2+** for all communications
 
-### 5. Code Quality & Pre-commit
+### Performance Standards
 
-```bash
-# ALWAYS run before making PRs
-pnpm lint               # Run linters
-pnpm nx:test            # Run tests
-pnpm nx:build           # Verify builds
-```
+- **Bundle size optimization** - Code splitting, tree shaking
+- **Database indexing** - Query optimization
+- **Caching strategies** - Redis, in-memory caching
+- **Connection pooling** - Database connections
+- **API pagination** - Cursor-based pagination
 
-### 6. Documentation Standards
+---
 
-- TSDoc comments for all public APIs
-- Include `@param`, `@returns`, `@throws` sections
-- Update README.md and AGENTS.md for significant changes
-- Use descriptive variable and function names
-- Document all environment variables in templates
+## Architecture & Services
 
-### 7. Testing Requirements
+### Microservices Architecture
 
-- Target: >80% test coverage
-- Add tests when adding features
-- Run tests locally before pushing
-- Use Jest for unit tests, integration tests for services
+ChatSuite follows domain-driven microservices architecture:
 
-### 8. Security & Secrets
+- **Service Boundaries**: Domain contexts with clear separation
+- **Communication**: REST APIs via nginx proxy
+- **Data Storage**: PostgreSQL, MongoDB, Redis
+- **File Storage**: MinIO S3-compatible storage
+- **Authentication**: JWT-based with refresh tokens
 
-- **NEVER commit secrets or API keys**
-- Use environment variables for all sensitive data
-- Validate all user inputs
-- Log errors without exposing sensitive data
-- Follow OWASP security guidelines
+### Core Services
 
-### 9. Service Integration
+| Service | Purpose | Technology | Port |
+|---------|---------|------------|------|
+| Client App | Web frontend | React, TypeScript | 4200 |
+| API Customer Service | Backend API | NestJS, TypeScript | 3333 |
+| LibreChat | AI chat interface | Node.js, MongoDB | 3080 |
+| n8n | Workflow automation | Node.js, PostgreSQL | 5678 |
+| MindsDB | AI database | Python, PostgreSQL | 47334 |
+| NocoDB | Database GUI | Node.js, PostgreSQL | 8080 |
+| MCPHub | Protocol orchestration | Node.js | 3000 |
+| MCP Email | Email processing | Python | 9557 |
+| MinIO | Object storage | Go | 9000/9001 |
+| Nginx | Reverse proxy | Nginx | 10443 |
 
-- Use Docker container names for inter-service communication
-- Never use `localhost` in Docker configurations
-- Always use nginx proxy for HTTPS access
-- Document all service endpoints and ports
+### Nginx Reverse Proxy
 
-### 10. Nx Monorepo Standards
+All services accessible via unified nginx proxy (port 10443):
 
-```bash
-# Use Nx generators for consistency
-pnpm nx g @nx/react:lib my-library
-pnpm nx g @nx/nest:app my-api
+- **SSL Termination**: HTTPS for all external traffic
+- **WebSocket Support**: Full HTTP/1.1 upgrade headers
+- **Dynamic DNS Resolution**: Prevents startup failures
+- **Health Checks**: Automatic service health monitoring
+- **Path-based routing**: All services under unified domain
 
-# Run tasks through Nx
-pnpm nx build my-app
-pnpm nx test my-library
-pnpm nx affected:test  # Test only changed code
-```
+### Database Architecture
 
-**Requirements:**
+- **PostgreSQL**: Primary relational database
+  - NocoDB data
+  - n8n workflows
+  - Application data
+  
+- **MongoDB**: Document storage
+  - LibreChat conversations
+  - User preferences
 
-- All apps and libs must use Nx project configuration
-- Use `project.json` for task configuration
-- Respect architectural boundaries
-- Use dependency graph to understand relationships
+- **VectorDB**: Embeddings and semantic search
+  - pgvector extension
+  - LibreChat semantic search
 
-## Platform Architecture & Structure
+### Code Sharing Strategy
 
-This comprehensive guide covers every component of the ChatSuite platform. Use this as your navigation map for development, deployment, and troubleshooting.
+Libraries organized by category:
 
-### **Repository Structure**
+1. **UI Components** (`libs/ui/*`)
+   - Reusable UI components
+   - Design system implementation
+   - Zero business logic
+   - Atomic design principles
 
-| Directory                          | Purpose & Contents                                                                   |
-| ---------------------------------- | ------------------------------------------------------------------------------------ |
-| **apps/**                          | All deployable applications and services                                             |
-| `api-customer-service/`            | **NestJS** backend API with business logic, controllers, services, and configuration |
-| `client-app/`                      | **React** frontend application with components, routing, and user interface          |
-| **config/**                        | Centralized configuration for all platform services                                  |
-| `env/`                             | Environment templates (`env.dev`, `env.host`, `env.qa`) and runtime configuration    |
-| `librechat/`                       | LibreChat configuration including MongoDB and vector database setup                  |
-| `mcp-email-server/`                | MCP Email Server configuration for intelligent email processing                      |
-| `mcphub/`                          | MCPHub configuration for protocol orchestration                                      |
-| `mindsdb/`                         | MindsDB configuration, Docker setup, and AI database scripts                         |
-| `minio/`                           | MinIO object storage configuration and documentation                                 |
-| `n8n/`                             | n8n workflow automation configuration and entrypoints                                |
-| `nginx/`                           | Nginx reverse proxy configuration for SSL and routing                                |
-| `nocodb/`                          | NocoDB database interface configuration                                              |
-| `pnpm/`                            | Package manager configuration for dependency caching                                 |
-| `postgres/`                        | PostgreSQL database initialization and setup scripts                                 |
-| **data/**                          | Persistent data volumes for all containerized services                               |
-| `librechat/`                       | LibreChat data (images, logs, search index, MongoDB, uploads)                        |
-| `mcp-email-server/`                | Email server data and configuration                                                  |
-| `mcphub/`                          | MCPHub data and server configurations                                                |
-| `mindsdb/`                         | MindsDB data (models, cache, logs, storage)                                          |
-| `minio/`                           | MinIO object storage data (buckets and objects)                                      |
-| `nocodb/`                          | NocoDB data and user configurations                                                  |
-| `nocodb/pgadmin/`                  | PgAdmin data and user settings                                                       |
-| `nocodb/postgres/`                 | PostgreSQL database files                                                            |
-| **docs/**                          | Platform documentation, guides, and reference materials                              |
-| ** libs/**                         | Shared libraries and reusable modules (future expansion)                             |
-| **schema/**                        | Database schemas and migration management                                            |
-| schema/consumer/, schema/customer/ | Prisma ORM schemas and database migrations                                           |
-| schema/orchestrator/               | Master database schema and environment templates                                     |
-| **tools/**                         | Development tools, automation scripts, and CI/CD utilities                           |
-| tools/dev-scripts/                 | All development scripts (prefixed with `cmd-`)                                       |
-| tools/tsconfig.tools.json          | TypeScript configuration for tooling                                                 |
-| **tmp/**                           | Temporary workspace for build artifacts and generated files                          |
+2. **Features** (`libs/features/*`)
+   - Complete reusable features
+   - Business logic + UI
+   - Encapsulated state management
+   - Self-contained modules
 
-### **Development Standards**
+3. **Core Libraries** (`libs/core/*`)
+   - Business logic
+   - Domain models
+   - Pure TypeScript
+   - Framework-agnostic
 
-- All new applications must be created in `apps/` using Nx generators
-- All persistent data must be mapped to appropriate `data/` subdirectories
-- All configuration and Docker assets must be placed in `config/`
-- All documentation must be stored in the `docs/` directory
-- All reusable code must be extracted to `libs/` as the codebase grows
-- All database changes must be reflected in `schema/` with proper migrations
-- All development scripts must be placed in `tools/dev-scripts/` with `cmd-` prefix
-- Never place production code in `tmp/` or create `external/` unless specifically required
-- **CRITICAL**: Always verify environment configuration using `docs/environment-configuration-solution.md`
+4. **Data Libraries** (`libs/data/*`)
+   - API clients
+   - Database connectors
+   - Data transformation
+   - Caching utilities
 
-> **This document is the single source of truth for all development standards within the ChatSuite platform.**
+5. **Utility Libraries** (`libs/utils/*`)
+   - Pure functions
+   - Helper utilities
+   - Type guards
+   - Framework-agnostic
 
-## Quick Reference & Essential Commands
+---
 
-### **Critical Files & Locations**
+## Security & Compliance
 
-- **`AGENTS.md`** - The authoritative reference for all development standards and AI agent guidelines
-- **`repomix-output.xml`** - Machine-readable codebase summary for automated analysis
-- **`tools/dev-scripts/`** - All development automation (never place scripts elsewhere)
-- **`config/nginx/default.dev.conf`** - Central nginx proxy configuration
-- **`config/env/`** - Environment templates and runtime configuration
-- **`docs/environment-configuration-solution.md`** - Environment setup and security guide
-- **`docs/environment-quick-reference.md`** - Quick environment reference
+### Authentication & Authorization
 
-### **Environment Configuration**
+- **JWT-based authentication** with short-lived access tokens
+- **Refresh token rotation** for security
+- **Role-based access control** (RBAC)
+- **Principle of least privilege**
+- **HttpOnly cookies** (never localStorage)
 
-ChatSuite supports three environments:
+### Data Protection
 
-- **dev**: local development
-- **qa**: integration and testing
-- **host**: production-like, host deployment
+- **Field-level encryption** for sensitive data
+- **Input sanitization** for all user inputs
+- **Strong password hashing** (Argon2)
+- **Data retention policies**
+- **GDPR compliance** features
 
-Each environment has its own config file under `config/env/`:
+### Security Scanning
 
-- `config/env/.env.dev` - Development environment (not version-controlled)
-- `config/env/.env.qa` - QA environment (not version-controlled)
-- `config/env/.env.host` - Production environment (not version-controlled)
+- **KICS** - Infrastructure-as-Code security
+- **Trivy** - Docker image vulnerability scanning
+- **ESLint Security Plugins** - Code security analysis
+- **Automated scans** on every PR
 
-Templates (version-controlled):
+### Compliance Standards
 
-- `config/env/env.dev` - Development template
-- `config/env/env.qa` - QA template
-- `config/env/env.host` - Production template
+- **GDPR**: Data minimization, right to be forgotten
+- **SOC2**: Logging, access control, audit trails
+- **OWASP**: Top 10 security best practices
 
-The active environment is controlled by the root `.env` file:
+### API Security Best Practices
+
+- Rate limiting to prevent abuse
+- TLS 1.2+ for all communications
+- Proper CORS configuration
+- CSRF protection for browser-based clients
+- Parameterized queries to prevent injection attacks
+
+---
+
+## Deployment & Operations
+
+### Docker Deployment
 
 ```bash
-chatsuite/.env
+# Production deployment
+pnpm env:set:host
+pnpm rebuild
+pnpm test
+
+# Verify all services healthy
+docker ps -a | grep chatsuite
+
+# Check logs
+docker logs chatsuite_nginx
+docker logs chatsuite_api-customer-service
 ```
 
-This value determines which config is used:
+### Environment Management
+
+All sensitive data in `.env.*` files:
+
+- Database credentials
+- API keys
+- JWT secrets
+- Service URLs
+
+### Health Checks
+
+Built into docker-compose for all services:
+
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:3333/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+```
+
+### Monitoring & Logging
+
+- **Service logs**: `docker logs <container_name>`
+- **Aggregated logs**: (Future: ELK stack)
+- **Health checks**: Built into docker-compose
+- **Performance metrics**: (Future: Prometheus/Grafana)
+
+### Backup Strategy
+
+- **Database backups**: Daily automated backups
+- **Volume snapshots**: Docker volume backups
+- **Configuration backups**: Version-controlled templates
+- **Recovery procedures**: Documented in ops guide
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### Service Won't Start
 
 ```bash
-NX_APP_ENV=dev  # or qa, host as needed
+# Check container status
+docker ps -a | grep chatsuite
+
+# Check logs
+docker logs chatsuite_<service_name>
+
+# Restart service
+docker restart chatsuite_<service_name>
+
+# Rebuild if necessary
+pnpm rebuild
 ```
 
-If not set, `dev` is the fallback.
-
-**Usage:**
+#### Environment Variables Not Loading
 
 ```bash
-pnpm env:set:dev    # Switch to development
-pnpm env:set:qa     # Switch to QA
-pnpm env:set:host   # Switch to production
-pnpm env:show       # Display current environment
+# Verify environment file exists
+ls -la config/env/.env.*
+
+# Check active environment
+pnpm env:show
+
+# Recreate container to reload env
+docker stop chatsuite_<service_name>
+docker rm chatsuite_<service_name>
+docker-compose up -d <service_name>
 ```
 
-**Benefits:**
-
-- One root `.env` as single source of truth
-- Easy switching between dev, qa, and host
-- Explicit overrides remain available
-- Docker and NX both resolve environment consistently
-
-### **Security & Environment Commands**
+#### Nginx Proxy Errors
 
 ```bash
-pnpm env:verify     # Verify security configuration
-pnpm env:show       # Display current environment
-pnpm env:set:host   # Set production environment (required before deployment)
-pnpm env:set:dev    # Set development environment
-pnpm env:set:qa     # Set QA environment
+# Check nginx config syntax
+docker exec chatsuite_nginx nginx -t
+
+# Reload nginx
+docker exec chatsuite_nginx nginx -s reload
+
+# Check nginx logs
+docker logs chatsuite_nginx --tail 100
+
+# Test service connectivity
+curl -k https://localhost:10443/health
 ```
 
-### **Core Platform Operations**
+#### Database Connection Issues
 
 ```bash
-pnpm start          # Launch all services
-pnpm stop           # Graceful shutdown
-pnpm rebuild        # Complete system rebuild (stops, pulls, starts)
-pnpm test           # Comprehensive health checks and verification
-pnpm rebuild && pnpm test  # Full deployment workflow
+# Check PostgreSQL status
+docker logs chatsuite_postgres
+
+# Verify connection from container
+docker exec chatsuite_api-customer-service pg_isready -h postgres -p 5432
+
+# Check environment variables
+docker exec chatsuite_api-customer-service env | grep POSTGRES
+
+# Test direct connection
+docker exec -it chatsuite_postgres psql -U admin -d chatsuite
 ```
 
-## Services Architecture
-
-The ChatSuite platform runs as a comprehensive microservices architecture with the following components:
-
-### Core Application Services
-
-| Service                  | Container                      | Port(s) | Purpose                                                              |
-| ------------------------ | ------------------------------ | ------- | -------------------------------------------------------------------- |
-| **nginx**                | chatsuite_nginx                | 10443   | Reverse proxy, SSL termination, and unified routing for all services |
-| **api-customer-service** | chatsuite_api-customer-service | 3333    | NestJS backend API for customer-related operations                   |
-| **client-app**           | chatsuite_client-app           | 4200    | React frontend application                                           |
-
-### Database Services
-
-| Service         | Container             | Port(s) | Purpose                                               |
-| --------------- | --------------------- | ------- | ----------------------------------------------------- |
-| **postgres**    | chatsuite_postgres    | 5432    | Primary PostgreSQL database for all services          |
-| **pgadmin**     | chatsuite_pgadmin     | 8080    | Web-based PostgreSQL administration interface         |
-| **mongodb**     | chatsuite_mongodb     | 27017   | MongoDB database for LibreChat                        |
-| **vectordb**    | chatsuite_vectordb    | -       | PostgreSQL with pgvector extension for vector storage |
-| **meilisearch** | chatsuite_meilisearch | 7700    | Search engine for LibreChat                           |
-
-### AI & Chat Services
-
-| Service       | Container           | Port(s)                    | Purpose                                            |
-| ------------- | ------------------- | -------------------------- | -------------------------------------------------- |
-| **librechat** | chatsuite_librechat | 3080                       | AI chat interface and conversation management      |
-| **mindsdb**   | chatsuite_mindsdb   | 47334, 47335, 47337, 47338 | AI/ML database with HTTP, MySQL, MCP, and A2A APIs |
-
-### Workflow & Integration Services
-
-| Service    | Container        | Port(s) | Purpose                                      |
-| ---------- | ---------------- | ------- | -------------------------------------------- |
-| **n8n**    | chatsuite_n8n    | 5678    | Workflow automation and integration platform |
-| **nocodb** | chatsuite_nocodb | 8080    | Database GUI and low-code platform           |
-
-### Storage Services
-
-| Service   | Container       | Port(s)    | Purpose                                                 |
-| --------- | --------------- | ---------- | ------------------------------------------------------- |
-| **minio** | chatsuite_minio | 9000, 9001 | S3-compatible object storage (API: 9000, Console: 9001) |
-
-### Model Context Protocol (MCP) Services
-
-| Service              | Container                  | Port(s) | Purpose                                                      |
-| -------------------- | -------------------------- | ------- | ------------------------------------------------------------ |
-| **mcphub**           | chatsuite_mcphub           | 3000    | Unified hub for multiple MCP servers and protocol management |
-| **mcp-email-server** | chatsuite_mcp-email-server | 9557    | MCP server for IMAP/SMTP email operations                    |
-
-### Service Dependencies
-
-- **Core Apps**: client-app → api-customer-service → postgres
-- **LibreChat**: librechat → mongodb, meilisearch, vectordb, mcphub
-- **Database Tools**: pgadmin, nocodb → postgres
-- **Workflows**: n8n → postgres
-- **Storage**: minio (S3-compatible storage for all services)
-- **MCP**: mcphub → mcp-email-server
-- **All Services**: → nginx (reverse proxy)
-
-### Port Mapping Strategy
-
-- **Direct Ports**: Each service exposes its native port for direct access
-- **Nginx Proxy**: All services accessible via port 10443 with path-based routing
-- **HTTPS**: All external communication secured via nginx SSL termination
-- **Internal**: Services communicate via Docker networks (gateway, database_pg)
-
-# Agent and Service Development Guidelines
-
-## Service Development Principles
-
-- Use NX generators for new services and libraries.
-- Place all service code in the correct app or library directory.
-- Use TypeScript strict mode for all code.
-- Use shared libraries (`libs/core`, `libs/features`, etc.) for business logic and data models.
-- Log all actions using the core logging library.
-- Handle errors gracefully and provide actionable error messages.
-- Never duplicate code—extract reusable logic into libraries.
-- Document all public APIs and endpoints in the service's README.
-- Always use named exports for TypeScript modules.
-
-## Security
-
-- Store secrets in environment variables or a secure vault; never commit secrets to the repository.
-- Never log sensitive data (e.g., passwords, tokens).
-- Validate all inputs and outputs for type and content.
-- Use HTTPS endpoints exclusively for all communication (see [Service Access & HTTPS Architecture](#service-access--https-architecture)).
-- Implement role-based access control and principle of least privilege.
-
-## Communication Patterns
-
-- Use recommended HTTP clients (e.g., Axios, fetch) with HTTPS URLs from the nginx proxy.
-- Implement error handling, retries, and timeouts for all outbound calls.
-- Prefer unified proxy routes (port 10443) for maximum compatibility and security.
-- Document all endpoints and expected request/response formats.
-
-## Testing Requirements
-
-- Implement unit tests for all business logic (minimum 80% coverage recommended).
-- Add integration tests for all endpoints and workflows.
-- Place integration tests under `tests/integration/` in the service's project.
-- Run all tests locally and in CI using the prescribed commands.
-
-## Service Access & Architecture
-
-### Overview
-
-All ChatSuite services and applications are accessible both on their original ports and via a unified nginx reverse proxy. This ensures consistent access patterns for all internal and external service interactions, including agent-to-service calls, API requests, and web UI access.
-
-### Nginx Reverse Proxy & Port Mapping
-
-- **nginx** acts as a central routing point, proxying traffic to all services.
-- Each service is exposed on:
-  - Its original port (for direct access)
-  - Unified proxy routes on port `10443` (e.g., `/api/customer/`, `/pgadmin/`, `/n8n/`, etc.)
-- All nginx configuration is in `config/nginx/default.dev.conf`.
-
-#### Port Mapping
-
-| Service              | Direct Port | Unified Proxy Route (10443) | Status       |
-| -------------------- | ----------- | --------------------------- | ------------ |
-| Client App           | 4200        | /app/                       | HTTP + HTTPS |
-| API Customer Service | 3333        | /api/customer/              | HTTP + HTTPS |
-| LibreChat            | 3080        | /librechat/                 | HTTP + HTTPS |
-| PgAdmin              | (internal)  | /pgadmin/                   | HTTPS Only   |
-| N8N                  | 5678        | /n8n/                       | HTTP + HTTPS |
-| NocoDB               | 8080        | /nocodb/                    | HTTP + HTTPS |
-| MCPHub               | 3000        | /mcphub/                    | HTTP + HTTPS |
-| MCP Email Server     | 9557        | /mcp-email/                 | HTTP + HTTPS |
-| MindsDB HTTP API     | 47334       | /mindsdb/                   | HTTP + HTTPS |
-| MindsDB MySQL API    | 47335       | (MySQL protocol)            | MySQL Only   |
-| MindsDB MCP API      | 47337       | (MCP protocol)              | MCP Only     |
-| MindsDB A2A API      | 47338       | (A2A protocol)              | A2A Only     |
-| MinIO API (S3)       | 9000        | /minio-api/                 | HTTP + HTTPS |
-| MinIO Console        | 9001        | /minio/                     | HTTP + HTTPS |
-| Nginx Proxy          | 10443       | (All services)              | HTTPS Only   |
-
-> **Note:** Services with "HTTP + HTTPS" can be accessed directly on their port or via the nginx proxy. PgAdmin is only accessible through the proxy for security. All services are accessible via the unified nginx proxy on port 10443 with HTTPS.
-
-### Best Practices for Service Development
-
-- **Always use HTTPS endpoints** for all inter-service and agent-to-service communication when possible.
-- Prefer the nginx proxy routes (port 10443) for maximum compatibility and security.
-- Update all health checks, integration tests, and service discovery logic to use appropriate URLs.
-- When developing new services, document both the direct and proxy endpoints in your README.
-
-### Testing & Debugging Access
-
-- Use `curl http://localhost:<port>` to test direct access to any service.
-- Use `curl https://localhost:10443/<route>` to test access via the nginx proxy.
-- Check nginx logs (`docker logs chatsuite_nginx`) for proxy errors.
-- If a service is not reachable, verify:
-  - The service is healthy and running
-  - The correct port is mapped in `docker-compose.yaml`
-  - The nginx config includes a server block for the service
-- For services that call other services, always use the HTTPS URL (proxy or unified route) in configuration and code.
-
-### Service Communication
-
-- The nginx proxy provides unified access to all services through port 10443.
-- Services can communicate directly via their exposed ports or through the proxy.
-- The nginx proxy can be configured for rate limiting, authentication, and advanced routing as needed.
-
-## Example: Creating a New Service (NestJS/TypeScript)
+#### Port Conflicts
 
 ```bash
-pnpm nx g @nx/nest:app api-example-service --directory=apps --importPath=@chatsuite/api-example-service
+# Check if port is in use
+lsof -i :10443
+netstat -an | grep 10443
+
+# Stop conflicting service or change port in docker-compose.yaml
 ```
 
-## Example: Minimal Service Controller
+### Debug Workflows
 
-```typescript
-import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+#### Enable Debug Logging
 
-@ApiTags('example-service')
-@Controller('example-service')
-export class ExampleServiceController {
-  @Get('health')
-  healthCheck() {
-    return { status: 'ok' };
-  }
-}
+```bash
+# Set debug level in .env file
+BROWSER_USE_LOGGING_LEVEL=debug
+
+# Restart services
+pnpm rebuild
 ```
 
-## Example: Service Communication
+#### Inspect Container State
 
-```typescript
-import axios from 'axios';
+```bash
+# Enter running container
+docker exec -it chatsuite_<service_name> /bin/sh
 
-// Direct service communication
-const response = await axios.get('http://localhost:3333/api');
+# Check process list
+docker top chatsuite_<service_name>
 
-// Via nginx proxy
-const response = await axios.get('https://localhost:10443/api/customer/');
+# View container resource usage
+docker stats chatsuite_<service_name>
 ```
 
-## Code Sharing Strategy
-
-The ChatSuite monorepo implements a structured code sharing strategy through categorized libraries in the `libs/` directory. This strategy enforces architectural boundaries, prevents code duplication, and ensures proper dependency flow.
-
-### Library Categories
-
-1. **UI Components** (`libs/ui/*`):
-
-   - Reusable UI components implementing the design system
-   - Purely presentational components with no business logic dependencies
-   - Zero state management beyond component-level useState
-   - Implements atomic design principles for consistent composition
-   - Examples: Buttons, Forms, Cards, Tables, Layout components, UI utility hooks
-
-2. **Features** (`libs/features/*`):
-
-   - Complete reusable features spanning multiple components
-   - Includes UI, business logic, and encapsulated state management
-   - Self-contained modules with clear external APIs
-   - Examples: Authentication flows, Data grids, File uploads, Search interfaces
-
-3. **Core Libraries** (`libs/core/*`):
-
-   - Fundamental business logic and domain models
-   - Pure TypeScript with no framework dependencies
-   - Highly stable APIs with semantic versioning
-   - Examples: Business rules, Domain entities, Core algorithms, Validation logic
-
-4. **Data Libraries** (`libs/data/*`):
-
-   - Data access patterns and API clients
-   - Database schemas and migration utilities
-   - Caching strategies and data transformation
-   - Examples: API clients, Database connectors, Data mappers, Cache utilities
-
-5. **Utility Libraries** (`libs/utils/*`):
-   - Pure functions and helper utilities
-   - Framework-agnostic code with zero external dependencies
-   - Highly reusable across different contexts
-   - Examples: Date utilities, String formatters, Math helpers, Type guards
-
-### Library Design Principles
-
-1. **Single Responsibility**: Each library should have a clear, focused purpose
-2. **Dependency Direction**: Libraries can only depend on other libraries, never on apps
-3. **Minimal API Surface**: Expose only what consumers actually need
-4. **Framework Agnostic**: Core business logic should not depend on UI frameworks
-5. **Comprehensive Testing**: All libraries must have extensive unit and integration tests
-6. **Documentation**: Include README, API docs, and usage examples
-7. **Semantic Versioning**: Use proper versioning for breaking changes
-8. **Security First**:
-   - Validate all inputs and sanitize outputs
-   - Follow secure coding practices (e.g., no eval, no innerHTML)
-   - Address common vulnerabilities (XSS, CSRF) in relevant libraries
-   - Document security assumptions for library consumers
-
-### Development Tools and Scripts
-
-All development tools, scripts, and utilities must be placed in the `tools/` directory, following these guidelines:
-
-1. **Script Location**:
-
-   - All scripts must be located in the `tools/dev-scripts/` directory
-   - Never place scripts in root, `.github/`, or other non-standard locations
-   - Configuration files for tools should go in designated configuration directories
-
-2. **Naming Convention**:
-
-   - CLI scripts should use the prefix `cmd-` (e.g., `cmd-generate-calver.js`)
-   - Scripts primarily used in CI/CD pipelines must use the prefix `cmd-ci-` (e.g., `cmd-ci-update-semantic-release.sh`)
-   - Use kebab-case for script names
-   - Use appropriate file extensions (.sh for shell scripts, .js for JavaScript, etc.)
-
-3. **Script Standards**:
-
-   - Make scripts executable (`chmod +x`)
-   - Include proper shebang line (`#!/bin/bash`, `#!/usr/bin/env node`, etc.)
-   - Add comprehensive header documentation
-   - Include help/usage instructions for all scripts
-   - Use relative paths, never hard-coded absolute paths
-   - Always implement proper error handling
-
-4. **Script Architecture**:
-   - Scripts should be able to run from any directory (use project root detection)
-   - Follow the principle of doing one thing well
-   - Break complex scripts into modular components
-   - Provide clear logging and status output
-
-### General Principles
-
-1. **Follow NX Workspace Conventions**:
-
-   - Use NX commands for generating, building, and testing components
-   - Leverage NX dependency graph for efficient builds
-   - Utilize NX affected commands for CI optimization
-
-2. **Respect Architectural Boundaries**:
-
-   - Maintain clear separation between apps and libs
-   - Enforce one-way dependency flow (apps → libs, never libs → apps)
-   - Never create circular dependencies between libraries
-
-3. **Share Code Through Libraries**:
-
-   - Don't duplicate functionality across apps
-   - Extract reusable code into appropriate library categories
-   - Follow the code sharing strategy for all shared functionality
-
-4. **Design for Performance**:
-
-   - Optimize bundle sizes through code splitting and lazy loading
-   - Implement proper memoization for expensive operations
-   - Design components with rendering performance in mind
-
-5. **Security by Design**:
-
-   - Implement authorization checks at appropriate levels
-   - Follow OWASP guidelines for secure coding
-   - Validate all user inputs and sanitize outputs
-
-6. **Code Quality Standards**:
-
-   - Write clear, maintainable code with minimal comments
-   - Use TypeScript with strict mode enabled
-   - Follow ESLint and Prettier configurations
-
-7. **Comprehensive Testing**:
-
-   - Implement unit tests for all business logic
-   - Add integration tests for API endpoints and features
-   - Maintain high test coverage for libraries
-
-8. **Careful Library Design**:
-   - Design libraries with clear responsibilities
-   - Minimize API surface to reduce breaking changes
-   - Provide comprehensive type definitions
-
-## Environment Setup
-
-1. **Docker-based Development**:
-
-   - Use `docker-compose` for local development
-   - All required services are defined in docker-compose files
-   - Configuration is managed via files in `config/env/`
-
-2. **Environment Configuration Strategy**:
-
-   - **Version-controlled templates** (`env.*`):
-   - `env.dev`: Template for local development (localhost)
-   - `env.host`: Template for production hosting machine
-   - `env.qa`: Template for QA environment (reserved for future use)
-   - **Local configuration files** (`.env.*`, not version-controlled, always with a dot prefix):
-   - `.env.dev`: Your actual development configuration
-   - `.env.host`: Your actual production configuration
-   - `.env.qa`: Your actual QA configuration (when needed)
-   - **Always use the dot-prefixed `.env.*` files for all runtime and script loading.**
-   - Configuration files are referenced in docker-compose files and all scripts must reflect this naming convention.
-
-3. **Environment Setup Process**:
-
-   - Create local configuration files from templates:
-     ```bash
-     cp config/env/env.dev config/env/.env.dev
-     cp config/env/env.host config/env/.env.host
-     cp config/env/env.qa config/env/.env.qa
-     ```
-   - Update local files with actual credentials and settings
-   - Keep template files updated with structure changes only
-   - Never commit sensitive information to template files
-
-4. **Environment Purpose**:
-
-   - `.env.dev`: Always configured for localhost development
-   - `.env.host`: Always configured for production hosting machine
-   - `.env.qa`: Reserved for future QA environment
-
-5. **Package Management**:
-   - Always use `pnpm` for package management
-   - Never use npm or yarn
-   - Run `pnpm install` after pulling changes that modify dependencies
-
-## Integration Test Strategy
-
-Follow these rules to maintain effective integration testing across services, databases, applications and libraries:
-
-1. **Test Environment Setup**:
-
-   - Use `docker-compose` to start all dependent services for the tests.
-   - Ensure databases are migrated and seeded before running any suite.
-
-2. **Test Location**:
-
-   - Place integration tests under `tests/integration/` inside each project.
-   - Keep tests close to the project they verify (apps or libs).
-
-3. **Execution**:
-
-   - Define an `integration` target in `project.json` to run these tests with Jest.
-   - Execute all suites with `pnpm nx run-many --target=integration --all`.
-
-4. **Cross-Service Scenarios**:
-
-   - Cover interactions between APIs, workers and databases without mocking.
-   - Validate that shared libraries integrate correctly when consumed by apps.
-
-5. **Continuous Integration**:
-
-   - Run integration tests on every pull request using Nx affected commands.
-   - Fail the pipeline when any integration test does not pass.
-
-6. **Coverage Requirement**:
-   - Every service, application, database and library must contain at least one integration test.
-
-## Python Development Rules
-
-- Use `uv` for all Python dependency management, installation, execution, and script running—no exceptions unless explicitly documented in this repository.
-- Do NOT use `pip`, `poetry`, `conda`, or any other Python package manager or runner. Any PR introducing non-`uv` Python commands will be rejected.
-- All documentation, scripts, and developer instructions MUST use `uv` commands (e.g., `uv pip install -e .`, `uv run ...`).
-- If you add a new Python service or script, ensure the README and all developer instructions use `uv` exclusively.
-
-## Integration Test Strategy
-
-Follow these rules to maintain effective integration testing across services,
-databases, applications and libraries:
-
-1. **Test Environment Setup**:
-
-   - Use `docker-compose` to start all dependent services for the tests.
-   - Ensure databases are migrated and seeded before running any suite.
-
-2. **Test Location**:
-
-   - Place integration tests under `tests/integration/` inside each project.
-   - Keep tests close to the project they verify (apps or libs).
-
-3. **Execution**:
-
-   - Define an `integration` target in `project.json` to run these tests with Jest.
-   - Execute all suites with `pnpm nx run-many --target=integration --all`.
-
-4. **Cross-Service Scenarios**:
-
-   - Cover interactions between APIs, workers and databases without mocking.
-   - Validate that shared libraries integrate correctly when consumed by apps.
-
-5. **Continuous Integration**:
-   - Run integration tests on every pull request using Nx affected commands.
-   - Fail the pipeline when any integration test does not pass.
-6. **Coverage Requirement**:
-   - Every service, application, database and library must contain at least one integration test.
-
-### Security and Compliance
-
-Implement these security and compliance measures across all components:
-
-1. **Authentication and Authorization**:
-
-   - JWT-based authentication with short-lived access tokens
-   - Secure refresh token implementation with rotation
-   - Role-based access control with principle of least privilege
-   - Permission verification at API and service boundaries
-   - Proper token storage in HttpOnly cookies, never in localStorage
-
-2. **Data Protection**:
-
-   - Implement field-level encryption for sensitive data
-   - Apply proper data sanitization for all user inputs
-   - Validate request parameters with strong typing
-   - Store passwords using strong cryptographic hashing (Argon2)
-   - Implement proper data retention and deletion policies
-
-3. **GDPR Compliance**:
-
-   - Design schemas with data minimization principles
-   - Implement user consent tracking and management
-   - Provide data export functionality for subject access requests
-   - Support right-to-be-forgotten with complete data removal
-   - Maintain audit logs for all data access and modification
-
-4. **SOC2 Controls**:
-
-   - Implement comprehensive logging for all security events
-   - Enforce strict access control to production systems
-   - Maintain separation of duties through role limitations
-   - Conduct regular security testing and vulnerability scanning
-   - Document and enforce change management procedures
-
-5. **API Security**:
-   - Implement rate limiting to prevent abuse
-   - Use TLS 1.2+ for all communications
-   - Apply proper CORS configuration
-   - Implement CSRF protection for browser-based clients
-   - Use parameterized queries to prevent injection attacks
-
-### Performance Optimization
-
-Follow these principles to ensure optimal performance across the platform:
-
-1. **Frontend Performance**:
-
-   - Implement code splitting at route level using React.lazy and Suspense
-   - Use React.memo for expensive render operations
-   - Apply virtualization for long lists (react-window or react-virtualized)
-   - Optimize bundle size through proper tree-shaking configuration
-   - Use service worker for caching static assets in production
-
-2. **Backend Performance**:
-
-   - Implement appropriate database indexing based on query patterns
-   - Use query optimization techniques for complex database operations
-   - Apply in-memory caching for frequently accessed data
-   - Implement connection pooling for database connections
-   - Use proper pagination for list endpoints (cursor-based where appropriate)
-
-3. **API Communication**:
-
-   - Implement data compression for API responses (gzip/brotli)
-   - Use HTTP/2 for multiplexed connections
-   - Apply proper cache headers for cacheable resources
-   - Implement batching for related API calls
-   - Use GraphQL for flexible data requirements when appropriate
-
-4. **Docker Optimization**:
-
-   - Use multi-stage builds to reduce image size
-   - Implement layer caching strategy for faster builds
-   - Set appropriate container resource limits
-   - Order Dockerfile commands by change frequency
-   - Use production-optimized base images
-
-5. **Monitoring and Profiling**:
-   - Implement performance metrics collection
-   - Use profiling tools to identify bottlenecks
-   - Set up performance alerting for degradation detection
-   - Benchmark critical operations and track over time
-   - Document performance expectations for key user flows
-
-## Technical Architecture Overview
-
-ChatSuite follows a domain-driven microservices architecture using a structured monorepo approach:
-
-- **Modular Architecture**: Service boundaries follow domain contexts, with clear separation between APIs and clients
-- **Library-First Development**: Common functionality is extracted into specialized, shareable libraries
-- **Dependency Flow Control**: One-way dependencies from apps to libs with no circular references
-- **Type-Safe Contracts**: TypeScript interfaces define all API boundaries and data models
-- **Containerization**: All services run in Docker containers for consistent development and deployment
-- **Secure by Default**: Authentication, authorization, and data protection built into core architecture
-
-## Repository Structure
-
-The ChatSuite monorepo follows a standardized structure with clear separation of concerns:
-
-```
-chatsuite/
-├── apps/                    # Application implementations
-│   ├── api-customer-service/   # NestJS API service
-│   ├── client-app/             # React client application
-├── libs/                    # Shared libraries and modules
-│   ├── core/                 # Core business logic and services
-│   ├── data/                 # Data access and models
-│   ├── features/             # Complete shareable features
-│   ├── ui/                   # Reusable UI components
-│   └── utils/                # Utility functions and helpers
-├── tools/                   # Build and development tools
-│   └── dev-scripts/         # Development utility scripts
-├── config/                  # Environment and configuration files
-│   ├── env/                 # Environment-specific templates
-│   ├── librechat/           # LibreChat configuration
-│   ├── mindsdb/             # MindsDB configuration
-│   ├── nginx/               # Nginx configurations
-│   ├── mcp-email-server/    # MCP Email Server configuration
-│   ├── mcphub/              # MCPHub configuration
-│   ├── nocodb/              # NocoDB configuration
-│   ├── pnpm/                # pnpm settings
-│   └── postgres/            # PostgreSQL configuration
-├── schema/                  # Database schemas and migrations
-└── data/                    # Local volumes for Docker services
-```
-
-## Change Management Process
-
-1. Propose changes to AGENTS.md via pull request.
-2. All changes must be reviewed by at least one maintainer or lead developer.
-3. Document all breaking changes and update service READMEs as needed.
-4. Keep this file up to date with all architectural, security, and process changes.
-5. For any new service, update this file to reflect new best practices or requirements.
-
-## Glossary
-
-- **Service**: API or backend component, typically exposed via HTTP/HTTPS.
-- **Feature**: Reusable business logic, often spanning multiple components.
-- **Library**: Shared code, categorized as core, features, ui, utils, or data.
-- **Unified Route**: Endpoint exposed via nginx proxy on port 10443.
-- **repomix-output.xml**: Machine-readable, up-to-date summary of the codebase for automation and analysis.
-
-# Final Notes
-
-- This document is the authoritative reference for all service development in ChatSuite. If you find any gaps, propose an update via pull request.
-- All communication, reasoning, and code style standards are contained within this AGENTS.md file.
-- For automation and code navigation, use repomix-output.xml as the codebase map.
+### Getting Help
+
+1. Check [GitHub Issues](https://github.com/hubertusgbecker/chatsuite/issues)
+2. Review service-specific README files in `config/` directories
+3. Check Docker logs for detailed error messages
+4. Verify environment configuration matches templates
+5. Search closed issues for similar problems
+6. Open new issue with:
+   - Error messages and logs
+   - Steps to reproduce
+   - Environment details (OS, Docker version)
+   - Expected vs actual behavior
+
+---
+
+## Nx Workspace Guidelines
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
-# General Guidelines for working with Nx
+### General Guidelines for Working with Nx
 
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- You have access to the Nx MCP server and its tools, use them to help the user
-- When answering questions about the repository, use the `nx_workspace` tool first to gain an understanding of the workspace architecture where applicable.
-- When working in individual projects, use the `nx_project_details` mcp tool to analyze and understand the specific project structure and dependencies
-- For questions around nx configuration, best practices or if you're unsure, use the `nx_docs` tool to get relevant, up-to-date docs. Always use this instead of assuming things about nx configuration
-- If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
+- When running tasks (build, lint, test, e2e), always prefer `nx` commands over direct tooling
+- Use `nx_workspace` tool to understand workspace architecture
+- Use `nx_project_details` tool to analyze specific projects
+- Use `nx_docs` tool for configuration questions (never assume)
+- Run affected commands to optimize CI: `nx affected:test`, `nx affected:build`
+
+### Nx Commands Reference
+
+```bash
+# Generate new apps/libs
+nx g @nx/react:lib my-library
+nx g @nx/nest:app my-api
+
+# Run tasks
+nx build my-app
+nx test my-library
+nx lint my-app
+
+# Affected commands (CI optimization)
+nx affected:test
+nx affected:build
+nx affected:lint
+
+# Run multiple targets
+nx run-many --target=test --all
+nx run-many --target=integration --all
+
+# Dependency graph
+nx graph
+```
 
 <!-- nx configuration end-->
+
+---
+
+## Change Management
+
+### Process for Updating AGENTS.md
+
+1. Propose changes via pull request
+2. Review by maintainer or lead developer required
+3. Document all breaking changes
+4. Update service READMEs as needed
+5. Keep file synchronized with architectural changes
+
+### Versioning
+
+- Follow [Semantic Versioning](https://semver.org/)
+- Update CHANGELOG.md for each release
+- Tag releases in git
+- Create GitHub releases with release notes
+
+---
+
+## Glossary
+
+| Term | Definition |
+|------|-----------|
+| **Service** | API or backend component exposed via HTTP/HTTPS |
+| **Feature** | Reusable business logic spanning multiple components |
+| **Library** | Shared code (core, features, ui, utils, data) |
+| **Unified Route** | Endpoint exposed via nginx proxy on port 10443 |
+| **Integration Test** | Test covering service interactions without mocks |
+| **Nx Workspace** | Monorepo structure with apps and libraries |
+| **Docker Compose** | Multi-container orchestration tool |
+| **Environment Template** | Version-controlled config file (env.dev, env.host, env.qa) |
+| **Runtime Config** | Actual configuration file (.env.dev, .env.host, .env.qa) not in git |
+| **MCP** | Model Context Protocol for AI agent communication |
+| **TSDoc** | TypeScript documentation standard |
+| **RBAC** | Role-Based Access Control |
+
+---
+
+## Final Notes
+
+- This document is the **authoritative reference** for all ChatSuite development
+- All communication, reasoning, and code standards are contained within AGENTS.md
+- For automation and navigation, use `repomix-output.xml` as the codebase map
+- If you find gaps or improvements, submit a pull request
+- Follow the development rules religiously - they exist for platform stability and security
+
+---
+
+**Last Updated**: 2025-12-28  
+**Version**: 2.0  
+**Document Owner**: Dr. Hubertus Becker
