@@ -16,6 +16,13 @@ import {
   uploadTestFile,
   downloadTestFile,
 } from '../helpers/test-minio';
+import {
+  setupTestN8n,
+  cleanupTestN8n,
+  verifyN8nConnection,
+  createTestWorkflow,
+  getTestWorkflow,
+} from '../helpers/test-n8n';
 
 /**
  * Integration tests for the Customer Service API.
@@ -35,6 +42,9 @@ describe('API Customer Service Integration', () => {
     
     // Setup test MinIO connection
     await setupTestMinIO();
+    
+    // Setup test n8n connection
+    await setupTestN8n();
 
     // Create test NestJS application
     app = await createTestServer();
@@ -55,6 +65,9 @@ describe('API Customer Service Integration', () => {
     
     // Clean MinIO before each test for isolation
     await cleanupTestMinIO();
+    
+    // Clean n8n before each test for isolation
+    await cleanupTestN8n();
   });
 
   describe('GET /api', () => {
@@ -241,6 +254,39 @@ describe('API Customer Service Integration', () => {
       expect(content1).toBe('Content 1');
       expect(content2).toBe('Content 2');
       expect(content3).toBe('Content 3');
+    });
+  });
+
+  describe('Workflow Automation Integration', () => {
+    it('should connect to n8n service', async () => {
+      if (!process.env.N8N_API_KEY) {
+        console.log('ℹ️  Skipped: N8N_API_KEY not configured - see helper for setup instructions');
+        return;
+      }
+
+      // Verify n8n connectivity
+      const isConnected = await verifyN8nConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should create and retrieve workflows in n8n', async () => {
+      if (!process.env.N8N_API_KEY) {
+        console.log('ℹ️  Skipped: N8N_API_KEY not configured - see helper for setup instructions');
+        return;
+      }
+
+      // Create a test workflow
+      const workflowName = 'test-workflow-' + Date.now();
+      const workflow = await createTestWorkflow(workflowName);
+
+      expect(workflow).toBeDefined();
+      expect(workflow.id).toBeDefined();
+      expect(workflow.name).toBe(workflowName);
+
+      // Retrieve the workflow to verify it was created
+      const retrieved = await getTestWorkflow(workflow.id);
+      expect(retrieved.id).toBe(workflow.id);
+      expect(retrieved.name).toBe(workflowName);
     });
   });
 });

@@ -2,6 +2,7 @@ import { closeTestDatabase } from './helpers/test-db';
 import { closeTestServer } from './helpers/test-server';
 import { closeTestMongoDB } from './helpers/test-mongodb';
 import { closeTestMinIO } from './helpers/test-minio';
+import { closeTestN8n } from './helpers/test-n8n';
 
 /**
  * Global teardown for integration tests.
@@ -21,6 +22,7 @@ export default async function globalTeardown() {
     await closeTestDatabase();
     await closeTestMongoDB();
     await closeTestMinIO();
+    await closeTestN8n();
     console.log('✅ Database connections closed');
 
     // Close test server
