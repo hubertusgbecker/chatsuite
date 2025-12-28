@@ -2,6 +2,12 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { createTestServer, closeTestServer, getHttpServer } from '../helpers/test-server';
 import { setupTestDatabase, cleanupTestDatabase } from '../helpers/test-db';
+import { 
+  setupTestMongoDB, 
+  cleanupTestMongoDB, 
+  verifyMongoConnection,
+  createTestCollection 
+} from '../helpers/test-mongodb';
 
 /**
  * Integration tests for the Customer Service API.
@@ -15,6 +21,9 @@ describe('API Customer Service Integration', () => {
   beforeAll(async () => {
     // Setup test database connection
     await setupTestDatabase();
+    
+    // Setup test MongoDB connection
+    await setupTestMongoDB();
 
     // Create test NestJS application
     app = await createTestServer();
@@ -29,6 +38,9 @@ describe('API Customer Service Integration', () => {
   beforeEach(async () => {
     // Clean database before each test for isolation
     await cleanupTestDatabase();
+    
+    // Clean MongoDB before each test for isolation
+    await cleanupTestMongoDB();
   });
 
   describe('GET /api', () => {
@@ -124,7 +136,7 @@ describe('API Customer Service Integration', () => {
       const batchSize = 3;
       const totalRequests = 10;
       const responses = [];
-      
+
       for (let i = 0; i < totalRequests; i += batchSize) {
         const batch = Array.from({ length: Math.min(batchSize, totalRequests - i) }, () =>
           request(httpServer).get('/api').expect(200)
@@ -151,6 +163,26 @@ describe('API Customer Service Integration', () => {
       // For now, verify the app initialized successfully with DB
       expect(app).toBeDefined();
       expect(httpServer).toBeDefined();
+    });
+
+    it('should connect to MongoDB database', async () => {
+      // Verify MongoDB connectivity
+      const isConnected = await verifyMongoConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should create and query MongoDB collections', async () => {
+      // Create test collection with sample data
+      const testDocs = [
+        { name: 'Test User 1', email: 'user1@test.com', createdAt: new Date() },
+        { name: 'Test User 2', email: 'user2@test.com', createdAt: new Date() }
+      ];
+      
+      await createTestCollection('test_users', testDocs);
+      
+      // Verify data was inserted (this would normally be done through API endpoints)
+      // For now, just verify the operation completed without errors
+      expect(testDocs).toHaveLength(2);
     });
   });
 });

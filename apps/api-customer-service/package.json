@@ -15,5 +15,8 @@
     "regenerator-runtime": "0.13.7",
     "rxjs": "^7.1.0",
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "mongodb": "^6.21.0"
   }
 }
