@@ -8,6 +8,14 @@ import {
   verifyMongoConnection,
   createTestCollection 
 } from '../helpers/test-mongodb';
+import {
+  setupTestMinIO,
+  cleanupTestMinIO,
+  verifyMinioConnection,
+  createTestBucket,
+  uploadTestFile,
+  downloadTestFile,
+} from '../helpers/test-minio';
 
 /**
  * Integration tests for the Customer Service API.
@@ -24,6 +32,9 @@ describe('API Customer Service Integration', () => {
     
     // Setup test MongoDB connection
     await setupTestMongoDB();
+    
+    // Setup test MinIO connection
+    await setupTestMinIO();
 
     // Create test NestJS application
     app = await createTestServer();
@@ -41,6 +52,9 @@ describe('API Customer Service Integration', () => {
     
     // Clean MongoDB before each test for isolation
     await cleanupTestMongoDB();
+    
+    // Clean MinIO before each test for isolation
+    await cleanupTestMinIO();
   });
 
   describe('GET /api', () => {
@@ -183,6 +197,50 @@ describe('API Customer Service Integration', () => {
       // Verify data was inserted (this would normally be done through API endpoints)
       // For now, just verify the operation completed without errors
       expect(testDocs).toHaveLength(2);
+    });
+  });
+
+  describe('File Storage Integration', () => {
+    it('should connect to MinIO storage', async () => {
+      // Verify MinIO connectivity
+      const isConnected = await verifyMinioConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should upload and download files from MinIO', async () => {
+      const bucketName = 'test-bucket';
+      const fileKey = 'test-file.txt';
+      const fileContent = 'Hello from MinIO integration test!';
+
+      // Create test bucket
+      await createTestBucket(bucketName);
+
+      // Upload file
+      await uploadTestFile(bucketName, fileKey, fileContent);
+
+      // Download and verify file
+      const downloadedContent = await downloadTestFile(bucketName, fileKey);
+      expect(downloadedContent).toBe(fileContent);
+    });
+
+    it('should handle multiple files in MinIO bucket', async () => {
+      const bucketName = 'test-multi-bucket';
+      
+      await createTestBucket(bucketName);
+      
+      // Upload multiple files
+      await uploadTestFile(bucketName, 'file1.txt', 'Content 1');
+      await uploadTestFile(bucketName, 'file2.txt', 'Content 2');
+      await uploadTestFile(bucketName, 'folder/file3.txt', 'Content 3');
+
+      // Verify files can be downloaded
+      const content1 = await downloadTestFile(bucketName, 'file1.txt');
+      const content2 = await downloadTestFile(bucketName, 'file2.txt');
+      const content3 = await downloadTestFile(bucketName, 'folder/file3.txt');
+
+      expect(content1).toBe('Content 1');
+      expect(content2).toBe('Content 2');
+      expect(content3).toBe('Content 3');
     });
   });
 });
