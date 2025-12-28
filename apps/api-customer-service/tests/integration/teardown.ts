@@ -1,9 +1,5 @@
 import { closeTestDatabase } from './helpers/test-db';
 import { closeTestServer } from './helpers/test-server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 /**
  * Global teardown for integration tests.
@@ -12,7 +8,7 @@ const execAsync = promisify(exec);
  * Responsibilities:
  * - Close database connections
  * - Close test server
- * - Clean up test resources (but leave Docker services running)
+ * - Clean up test resources (Docker services remain running)
  */
 export default async function globalTeardown() {
   console.log('\n🧹 Tearing down integration test environment...\n');
@@ -28,13 +24,10 @@ export default async function globalTeardown() {
     await closeTestServer();
     console.log('✅ Test server closed');
 
-    console.log('ℹ️  Leaving existing docker-compose services running');
-
-    console.log('\n✨ Integration test environment cleaned up!\n');
+    console.log('ℹ️  Leaving docker-compose services running for reuse');
+    console.log('\n✅ Integration test environment cleaned up!\n');
   } catch (error) {
     console.error('\n❌ Failed to teardown test environment:', error);
-
-    // Don't throw - allow tests to complete even if cleanup fails
-    console.warn('⚠️  Some cleanup operations failed, but tests completed');
+    // Don't throw - teardown errors shouldn't fail tests
   }
 }

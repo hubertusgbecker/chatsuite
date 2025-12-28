@@ -1,8 +1,4 @@
 import { setupTestDatabase } from './helpers/test-db';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 /**
  * Global setup for integration tests.
@@ -26,56 +22,11 @@ export default async function globalSetup() {
     
     // Sync schema (creates tables if they don't exist)
     await db.synchronize(true);
-    console.log('✅ Test database initialized');
+    console.log('✅ Database connection established');
 
     console.log('\n✨ Integration test environment ready!\n');
   } catch (error) {
     console.error('\n❌ Failed to setup test environment:', error);
-    
-    // Cleanup on failure
-    try {
-      if (useDockerCompose) {
-        await execAsync('docker-compose -f docker-compose.test.yaml down');
-      }
-    } catch (cleanupError) {
-      console.error('❌ Cleanup failed:', cleanupError);
-    }
-    
     throw error;
   }
-}
-
-/**
- * Waits for PostgreSQL to be ready to accept connections.
- * Retries with exponential backoff.
- */
-async function waitForPostgres(maxAttempts = 30, initialDelay = 1000): Promise<void> {
-  let attempt = 0;
-  let delay = initialDelay;
-
-  while (attempt < maxAttempts) {
-    try {
-      // Try to connect
-      await setupTestDatabase();
-      return;
-    } catch (error) {
-      attempt++;
-      if (attempt >= maxAttempts) {
-        throw new Error(`PostgreSQL not ready after ${maxAttempts} attempts`);
-      }
-      
-      console.log(`⏳ Waiting for PostgreSQL... (attempt ${attempt}/${maxAttempts})`);
-      await sleep(delay);
-      
-      // Exponential backoff with max 5 seconds
-      delay = Math.min(delay * 1.5, 5000);
-    }
-  }
-}
-
-/**
- * Sleep helper for async waiting.
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
