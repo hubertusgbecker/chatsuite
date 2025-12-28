@@ -62,7 +62,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run unit tests
-        run: pnpm nx affected --target=test --base=origin/${{ github.base_ref || 'main' }} --parallel=3 --coverage
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            pnpm nx affected --target=test --base=origin/${{ github.base_ref }} --parallel=3 --coverage
+          else
+            pnpm nx affected --target=test --base=HEAD~1 --parallel=3 --coverage
+          fi
 
       - name: Upload unit test coverage
         uses: codecov/codecov-action@v3
@@ -97,7 +102,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build affected projects
-        run: pnpm nx affected --target=build --base=origin/${{ github.base_ref || 'main' }} --parallel=3
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            pnpm nx affected --target=build --base=origin/${{ github.base_ref }} --parallel=3
+          else
+            pnpm nx affected --target=build --base=HEAD~1 --parallel=3
+          fi
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
