@@ -95,7 +95,9 @@ export async function closeTestDatabase(): Promise<void> {
  */
 export function getTestDatabase(): DataSource {
   if (!dataSource?.isInitialized) {
-    throw new Error('Test database not initialized. Call setupTestDatabase() first.');
+    throw new Error(
+      'Test database not initialized. Call setupTestDatabase() first.'
+    );
   }
   return dataSource;
 }

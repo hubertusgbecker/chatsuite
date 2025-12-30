@@ -82,7 +82,9 @@ export function getMongoDatabase(): Db {
  */
 export function getMongoClient(): MongoClient {
   if (!mongoClient) {
-    throw new Error('MongoDB client not initialized. Call setupTestMongoDB() first.');
+    throw new Error(
+      'MongoDB client not initialized. Call setupTestMongoDB() first.'
+    );
   }
   return mongoClient;
 }

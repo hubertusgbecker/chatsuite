@@ -5,10 +5,10 @@ let nocodbClient: AxiosInstance | null = null;
 /**
  * NocoDB API connection configuration for integration tests.
  * Uses existing docker-compose NocoDB service.
- * 
+ *
  * NocoDB uses token-based authentication for API access.
  * First-time setup requires creating an admin user via UI, then generating API token.
- * 
+ *
  * To generate an API token:
  * 1. Open NocoDB UI at http://localhost:8080
  * 2. Sign up/Login as admin
@@ -39,8 +39,12 @@ export async function setupTestNocodb(): Promise<void> {
 
     // Skip setup if auth token not configured
     if (!config.authToken) {
-      console.warn('⚠️  NOCODB_AUTH_TOKEN not configured - NocoDB tests will be skipped');
-      console.warn('ℹ️  To enable NocoDB tests, create an API token from NocoDB UI and set NOCODB_AUTH_TOKEN environment variable');
+      console.warn(
+        '⚠️  NOCODB_AUTH_TOKEN not configured - NocoDB tests will be skipped'
+      );
+      console.warn(
+        'ℹ️  To enable NocoDB tests, create an API token from NocoDB UI and set NOCODB_AUTH_TOKEN environment variable'
+      );
       return;
     }
 
@@ -55,9 +59,11 @@ export async function setupTestNocodb(): Promise<void> {
 
     // Test connection by checking health endpoint
     const response = await nocodbClient.get('/api/v1/health');
-    
+
     if (response.status !== 200) {
-      throw new Error(`NocoDB health check failed with status ${response.status}`);
+      throw new Error(
+        `NocoDB health check failed with status ${response.status}`
+      );
     }
 
     console.log('✅ Test NocoDB connected');
@@ -75,7 +81,9 @@ export async function setupTestNocodb(): Promise<void> {
  */
 export function getNocodbClient(): AxiosInstance {
   if (!nocodbClient) {
-    throw new Error('NocoDB client not initialized. Call setupTestNocodb() first.');
+    throw new Error(
+      'NocoDB client not initialized. Call setupTestNocodb() first.'
+    );
   }
   return nocodbClient;
 }
@@ -95,7 +103,9 @@ export async function createTestBase(baseName: string): Promise<any> {
   });
 
   if (response.status !== 200 && response.status !== 201) {
-    throw new Error(`Failed to create base: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to create base: ${response.status} ${response.statusText}`
+    );
   }
 
   return response.data;

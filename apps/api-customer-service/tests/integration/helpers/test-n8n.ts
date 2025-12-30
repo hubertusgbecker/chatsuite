@@ -38,8 +38,12 @@ export async function setupTestN8n(): Promise<void> {
 
     // Skip setup if API key not configured
     if (!config.apiKey) {
-      console.warn('⚠️  N8N_API_KEY not configured - n8n tests will be skipped');
-      console.warn('ℹ️  To enable n8n tests, create an API key from n8n UI and set N8N_API_KEY environment variable');
+      console.warn(
+        '⚠️  N8N_API_KEY not configured - n8n tests will be skipped'
+      );
+      console.warn(
+        'ℹ️  To enable n8n tests, create an API key from n8n UI and set N8N_API_KEY environment variable'
+      );
       return;
     }
 
@@ -138,7 +142,9 @@ export async function createTestWorkflow(workflowName: string): Promise<any> {
   const response = await client.post('/api/v1/workflows', workflow);
 
   if (response.status !== 200 && response.status !== 201) {
-    throw new Error(`Failed to create workflow: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to create workflow: ${response.status} ${response.statusText}`
+    );
   }
 
   return response.data;

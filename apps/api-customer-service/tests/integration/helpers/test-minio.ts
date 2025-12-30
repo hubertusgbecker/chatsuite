@@ -1,4 +1,15 @@
-import { S3Client, CreateBucketCommand, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, DeleteBucketCommand, ListBucketsCommand, HeadBucketCommand, ListObjectsV2Command, _Object } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  CreateBucketCommand,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  DeleteBucketCommand,
+  ListBucketsCommand,
+  HeadBucketCommand,
+  ListObjectsV2Command,
+  _Object,
+} from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 
 let s3Client: S3Client | null = null;
@@ -60,7 +71,9 @@ export async function setupTestMinIO(): Promise<void> {
  */
 export function getMinioClient(): S3Client {
   if (!s3Client) {
-    throw new Error('MinIO client not initialized. Call setupTestMinIO() first.');
+    throw new Error(
+      'MinIO client not initialized. Call setupTestMinIO() first.'
+    );
   }
   return s3Client;
 }

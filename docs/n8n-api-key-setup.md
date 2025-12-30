@@ -14,16 +14,19 @@ The n8n workflow automation integration tests require an API key for authenticat
 ### 1. Access n8n UI
 
 Open your browser and navigate to:
+
 - **Via nginx proxy**: `https://localhost:10443/n8n/`
 - **Direct access**: `http://localhost:5678`
 
 ### 2. Login
 
 Use the Basic Auth credentials from your environment configuration:
+
 - **Username**: `admin` (default)
 - **Password**: `admin123` (default)
 
 These values are configured in `config/env/.env.dev`:
+
 ```bash
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=admin123
@@ -47,6 +50,7 @@ N8N_BASIC_AUTH_PASSWORD=admin123
 Add the API key to your environment configuration:
 
 **Option A: Per-session** (temporary, for testing)
+
 ```bash
 export N8N_API_KEY=your_api_key_here
 pnpm nx integration api-customer-service
@@ -54,12 +58,14 @@ pnpm nx integration api-customer-service
 
 **Option B: Persistent** (recommended)
 Add to `config/env/.env.dev` (⚠️ NEVER commit this file):
+
 ```bash
 # n8n API Configuration (for integration tests)
 N8N_API_KEY=your_api_key_here
 ```
 
 Then restart services:
+
 ```bash
 pnpm rebuild
 ```
@@ -73,6 +79,7 @@ pnpm nx integration api-customer-service
 ```
 
 You should see:
+
 ```
 ✅ Test n8n connected
 ✓ should connect to n8n service (35 ms)
@@ -80,6 +87,7 @@ You should see:
 ```
 
 Instead of:
+
 ```
 ⚠️  N8N_API_KEY not configured - n8n tests will be skipped
 ℹ️  Skipped: N8N_API_KEY not configured
@@ -104,6 +112,7 @@ Instead of:
 **Cause**: API key not configured or invalid
 
 **Solution**:
+
 1. Verify `N8N_API_KEY` is set in environment
 2. Check key is valid (hasn't been deleted from n8n)
 3. Regenerate key if necessary
@@ -113,6 +122,7 @@ Instead of:
 **Cause**: n8n service not running or misconfigured
 
 **Solution**:
+
 ```bash
 # Check n8n container status
 docker ps | grep n8n
@@ -129,6 +139,7 @@ docker restart chatsuite_n8n
 **Cause**: Environment variable not loaded
 
 **Solution**:
+
 ```bash
 # Verify environment variable
 echo $N8N_API_KEY
@@ -148,6 +159,7 @@ For local development only, you can disable API key requirement:
 **⚠️ WARNING**: This reduces security and is not recommended for production.
 
 Add to `config/env/.env.dev`:
+
 ```bash
 N8N_PUBLIC_API_DISABLED=false
 N8N_PUBLIC_API_SWAGGERUI_DISABLED=false

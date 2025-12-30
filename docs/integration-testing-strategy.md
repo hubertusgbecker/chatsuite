@@ -58,11 +58,13 @@ ChatSuite follows strict Test-Driven Development for all new features and bug fi
 **The TDD Cycle (Red-Green-Refactor):**
 
 1. **RED**: Write a failing test
+
    - Define expected behavior before writing code
    - Test should fail for the right reason
    - Clarifies requirements and interface design
 
 2. **GREEN**: Make the test pass
+
    - Write minimal code to pass the test
    - Don't optimize prematurely
    - Focus on making it work first
@@ -73,6 +75,7 @@ ChatSuite follows strict Test-Driven Development for all new features and bug fi
    - Keep all tests passing
 
 **Benefits:**
+
 - ✅ Tests serve as living documentation
 - ✅ Prevents regression bugs
 - ✅ Encourages better design
@@ -80,15 +83,16 @@ ChatSuite follows strict Test-Driven Development for all new features and bug fi
 - ✅ Reduces debugging time
 
 **Example TDD Workflow:**
+
 ```typescript
 // STEP 1 (RED): Write failing test
 describe('UserService', () => {
   it('should create user with hashed password', async () => {
     const user = await userService.create({
       email: 'test@example.com',
-      password: 'plain-password'
+      password: 'plain-password',
     });
-    
+
     expect(user.password).not.toBe('plain-password');
     expect(user.password).toMatch(/^\$2[ayb]\$.{56}$/); // bcrypt format
   });
@@ -101,7 +105,7 @@ class UserService {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     return this.repository.save({
       ...data,
-      password: hashedPassword
+      password: hashedPassword,
     });
   }
 }
@@ -110,15 +114,15 @@ class UserService {
 // STEP 3 (REFACTOR): Improve if needed
 class UserService {
   private readonly SALT_ROUNDS = 10;
-  
+
   async create(data: CreateUserDto): Promise<User> {
     const hashedPassword = await this.hashPassword(data.password);
     return this.repository.save({
       ...data,
-      password: hashedPassword
+      password: hashedPassword,
     });
   }
-  
+
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.SALT_ROUNDS);
   }
@@ -140,31 +144,37 @@ Every feature should be implemented in small, testable increments:
 **Example: "Add User Authentication"**
 
 ❌ **BAD** (monolithic approach):
+
 - Implement entire auth system in one go (4+ hours)
 - Write all tests at the end
 - One massive commit
 - High risk of bugs
 
 ✅ **GOOD** (incremental approach):
+
 1. **Step 1** (20 min): User model + tests
+
    ```
    test: add user model validation tests
    feat: create user model with email/password
    ```
 
 2. **Step 2** (15 min): Password hashing + tests
+
    ```
    test: add password hashing tests
    feat: implement bcrypt password hashing
    ```
 
 3. **Step 3** (25 min): Login endpoint + tests
+
    ```
    test: add login endpoint integration tests
    feat: implement POST /auth/login endpoint
    ```
 
 4. **Step 4** (20 min): JWT generation + tests
+
    ```
    test: add JWT token generation tests
    feat: implement JWT signing and validation
@@ -179,6 +189,7 @@ Every feature should be implemented in small, testable increments:
 Total: 5 commits, 95 minutes, fully tested at each step
 
 **Benefits of Incremental Development:**
+
 - Easy to review (small PRs)
 - Easy to test (one thing at a time)
 - Easy to debug (small change surface)
@@ -188,6 +199,7 @@ Total: 5 commits, 95 minutes, fully tested at each step
 ### What Makes a Good Integration Test
 
 ✅ **DO:**
+
 - Test real service interactions without mocks
 - Use Docker containers for dependencies (databases, Redis, etc.)
 - Validate end-to-end workflows
@@ -197,6 +209,7 @@ Total: 5 commits, 95 minutes, fully tested at each step
 - Verify side effects (database changes, API calls)
 
 ❌ **DON'T:**
+
 - Mock database calls (that's a unit test)
 - Skip cleanup (causes test pollution)
 - Use production credentials
@@ -299,6 +312,7 @@ ChatSuite Test Environment
 **Location**: `apps/api-customer-service/tests/integration/`
 
 **Covers**:
+
 - HTTP endpoint behavior with real database
 - Request/response validation
 - Authentication middleware
@@ -306,6 +320,7 @@ ChatSuite Test Environment
 - CRUD operations with data persistence
 
 **Example**:
+
 ```typescript
 describe('User API Integration', () => {
   let app: INestApplication;
@@ -323,14 +338,11 @@ describe('User API Integration', () => {
 
   afterEach(async () => {
     // Clean up test data
-    await db.query('DELETE FROM users WHERE email LIKE \'%@test.com\'');
+    await db.query("DELETE FROM users WHERE email LIKE '%@test.com'");
   });
 
   it('should create user and persist to database', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/api/users')
-      .send({ name: 'Test User', email: 'test@test.com' })
-      .expect(201);
+    const response = await request(app.getHttpServer()).post('/api/users').send({ name: 'Test User', email: 'test@test.com' }).expect(201);
 
     expect(response.body).toMatchObject({
       name: 'Test User',
@@ -338,10 +350,7 @@ describe('User API Integration', () => {
     });
 
     // Verify database persistence
-    const user = await db.query(
-      'SELECT * FROM users WHERE email = $1',
-      ['test@test.com']
-    );
+    const user = await db.query('SELECT * FROM users WHERE email = $1', ['test@test.com']);
     expect(user.rows).toHaveLength(1);
   });
 });
@@ -352,6 +361,7 @@ describe('User API Integration', () => {
 **Location**: `apps/*/tests/integration/database/`
 
 **Covers**:
+
 - Connection pooling
 - Transaction handling
 - Schema migrations
@@ -359,6 +369,7 @@ describe('User API Integration', () => {
 - Foreign key constraints
 
 **Example**:
+
 ```typescript
 describe('Database Transactions', () => {
   it('should rollback on error', async () => {
@@ -367,17 +378,11 @@ describe('Database Transactions', () => {
     await queryRunner.startTransaction();
 
     try {
-      await queryRunner.query(
-        'INSERT INTO users (name, email) VALUES ($1, $2)',
-        ['User 1', 'user1@test.com']
-      );
-      
+      await queryRunner.query('INSERT INTO users (name, email) VALUES ($1, $2)', ['User 1', 'user1@test.com']);
+
       // This should fail due to duplicate email
-      await queryRunner.query(
-        'INSERT INTO users (name, email) VALUES ($1, $2)',
-        ['User 2', 'user1@test.com']
-      );
-      
+      await queryRunner.query('INSERT INTO users (name, email) VALUES ($1, $2)', ['User 2', 'user1@test.com']);
+
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -386,10 +391,7 @@ describe('Database Transactions', () => {
     }
 
     // Verify no data was persisted
-    const users = await db.query(
-      'SELECT * FROM users WHERE email = $1',
-      ['user1@test.com']
-    );
+    const users = await db.query('SELECT * FROM users WHERE email = $1', ['user1@test.com']);
     expect(users.rows).toHaveLength(0);
   });
 });
@@ -400,6 +402,7 @@ describe('Database Transactions', () => {
 **Location**: `apps/*/tests/integration/services/`
 
 **Covers**:
+
 - API-to-API calls
 - Service discovery
 - Error propagation
@@ -407,6 +410,7 @@ describe('Database Transactions', () => {
 - Retry logic
 
 **Example**:
+
 ```typescript
 describe('LibreChat to MindsDB Integration', () => {
   it('should query MindsDB for predictions', async () => {
@@ -437,6 +441,7 @@ describe('LibreChat to MindsDB Integration', () => {
 **Location**: `apps/*/tests/integration/auth/`
 
 **Covers**:
+
 - JWT token generation/validation
 - Session management
 - Role-based access control
@@ -444,30 +449,22 @@ describe('LibreChat to MindsDB Integration', () => {
 - OAuth flows
 
 **Example**:
+
 ```typescript
 describe('Authentication Flow', () => {
   it('should authenticate user and return JWT', async () => {
     // Create test user
-    await db.query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2)',
-      ['user@test.com', await hashPassword('password123')]
-    );
+    await db.query('INSERT INTO users (email, password_hash) VALUES ($1, $2)', ['user@test.com', await hashPassword('password123')]);
 
     // Login
-    const loginResponse = await request(app.getHttpServer())
-      .post('/api/auth/login')
-      .send({ email: 'user@test.com', password: 'password123' })
-      .expect(200);
+    const loginResponse = await request(app.getHttpServer()).post('/api/auth/login').send({ email: 'user@test.com', password: 'password123' }).expect(200);
 
     const { accessToken, refreshToken } = loginResponse.body;
     expect(accessToken).toBeDefined();
     expect(refreshToken).toBeDefined();
 
     // Use token to access protected route
-    const protectedResponse = await request(app.getHttpServer())
-      .get('/api/users/me')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .expect(200);
+    const protectedResponse = await request(app.getHttpServer()).get('/api/users/me').set('Authorization', `Bearer ${accessToken}`).expect(200);
 
     expect(protectedResponse.body.email).toBe('user@test.com');
   });
@@ -479,6 +476,7 @@ describe('Authentication Flow', () => {
 **Location**: `apps/*/tests/integration/storage/`
 
 **Covers**:
+
 - MinIO S3 operations
 - File validation
 - Streaming uploads
@@ -486,16 +484,14 @@ describe('Authentication Flow', () => {
 - File metadata
 
 **Example**:
+
 ```typescript
 describe('MinIO File Operations', () => {
   it('should upload file and generate download URL', async () => {
     const testFile = Buffer.from('test content');
 
     // Upload to MinIO via API
-    const uploadResponse = await request(app.getHttpServer())
-      .post('/api/files/upload')
-      .attach('file', testFile, 'test.txt')
-      .expect(201);
+    const uploadResponse = await request(app.getHttpServer()).post('/api/files/upload').attach('file', testFile, 'test.txt').expect(201);
 
     const { fileId, url } = uploadResponse.body;
 
@@ -515,6 +511,7 @@ describe('MinIO File Operations', () => {
 **Location**: `apps/*/tests/integration/websockets/`
 
 **Covers**:
+
 - Connection establishment
 - Message broadcasting
 - Room management
@@ -522,6 +519,7 @@ describe('MinIO File Operations', () => {
 - Error handling
 
 **Example**:
+
 ```typescript
 describe('LibreChat WebSocket', () => {
   it('should stream chat responses', (done) => {
@@ -557,6 +555,7 @@ describe('LibreChat WebSocket', () => {
 **Location**: `apps/*/tests/integration/workflows/`
 
 **Covers**:
+
 - Workflow execution
 - Webhook triggers
 - Data transformation
@@ -564,17 +563,14 @@ describe('LibreChat WebSocket', () => {
 - External API calls
 
 **Example**:
+
 ```typescript
 describe('n8n Workflow Integration', () => {
   it('should execute email processing workflow', async () => {
     // Create test workflow
     const workflow = await n8nClient.createWorkflow({
       name: 'Test Email Processing',
-      nodes: [
-        { type: 'webhook', parameters: { path: 'test-webhook' } },
-        { type: 'email-parser' },
-        { type: 'database-insert' },
-      ],
+      nodes: [{ type: 'webhook', parameters: { path: 'test-webhook' } }, { type: 'email-parser' }, { type: 'database-insert' }],
     });
 
     // Activate workflow
@@ -591,10 +587,7 @@ describe('n8n Workflow Integration', () => {
       .expect(200);
 
     // Verify data was inserted
-    const result = await db.query(
-      'SELECT * FROM emails WHERE subject = $1',
-      ['Test Email']
-    );
+    const result = await db.query('SELECT * FROM emails WHERE subject = $1', ['Test Email']);
     expect(result.rows).toHaveLength(1);
   });
 });
@@ -633,6 +626,7 @@ apps/api-customer-service/
 ### Test Configuration
 
 **jest.config.integration.ts**:
+
 ```typescript
 export default {
   displayName: 'api-customer-service-integration',
@@ -643,9 +637,12 @@ export default {
   globalTeardown: '<rootDir>/tests/integration/teardown.ts',
   setupFilesAfterEnv: ['<rootDir>/tests/integration/jest.setup.ts'],
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
-    }],
+    '^.+\\.[tj]s$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+      },
+    ],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/api-customer-service-integration',
@@ -657,6 +654,7 @@ export default {
 ### Test Helpers
 
 **tests/integration/helpers/test-db.ts**:
+
 ```typescript
 import { DataSource } from 'typeorm';
 
@@ -683,7 +681,7 @@ export async function setupTestDatabase(): Promise<DataSource> {
 
 export async function cleanupTestDatabase(): Promise<void> {
   if (!dataSource) return;
-  
+
   const entities = dataSource.entityMetadatas;
   for (const entity of entities) {
     const repository = dataSource.getRepository(entity.name);
@@ -700,6 +698,7 @@ export async function closeTestDatabase(): Promise<void> {
 ```
 
 **tests/integration/helpers/test-server.ts**:
+
 ```typescript
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -735,6 +734,7 @@ export function getTestServer(): INestApplication {
 ```
 
 **tests/integration/helpers/factories.ts**:
+
 ```typescript
 import { faker } from '@faker-js/faker';
 
@@ -774,6 +774,7 @@ export class ConversationFactory {
 ### Setup and Teardown
 
 **tests/integration/setup.ts**:
+
 ```typescript
 import { setupTestDatabase } from './helpers/test-db';
 import { exec } from 'child_process';
@@ -790,13 +791,12 @@ export default async function globalSetup() {
     console.log('✅ Test containers started');
 
     // Wait for services to be ready
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Initialize database
     const db = await setupTestDatabase();
     await db.synchronize(true);
     console.log('✅ Test database initialized');
-
   } catch (error) {
     console.error('❌ Failed to setup test environment:', error);
     throw error;
@@ -805,6 +805,7 @@ export default async function globalSetup() {
 ```
 
 **tests/integration/teardown.ts**:
+
 ```typescript
 import { closeTestDatabase } from './helpers/test-db';
 import { exec } from 'child_process';
@@ -822,7 +823,6 @@ export default async function globalTeardown() {
     // Stop test containers
     await execAsync('docker-compose -f docker-compose.test.yaml down');
     console.log('✅ Test containers stopped');
-
   } catch (error) {
     console.error('❌ Failed to teardown test environment:', error);
   }
@@ -838,6 +838,7 @@ export default async function globalTeardown() {
 Integration tests automatically load configuration from `config/env/.env.${NX_APP_ENV}` using the setup.ts global setup file.
 
 **Key Features:**
+
 - ✅ Automatic dotenv loading from config/env directory
 - ✅ Hostname mapping (Docker services → localhost ports)
 - ✅ No manual environment variable passing needed
@@ -845,6 +846,7 @@ Integration tests automatically load configuration from `config/env/.env.${NX_AP
 - ✅ Graceful authentication handling (optional API keys/tokens)
 
 **Environment File** (`config/env/.env.dev`):
+
 ```bash
 # Active environment
 NX_APP_ENV=dev
@@ -903,10 +905,7 @@ The global setup file automatically maps Docker hostnames to localhost:
 // tests/integration/setup.ts
 export default async function globalSetup() {
   // Load environment from config/env/.env.${NX_APP_ENV}
-  const envFile = path.resolve(
-    __dirname,
-    `../../../config/env/.env.${process.env.NX_APP_ENV || 'dev'}`
-  );
+  const envFile = path.resolve(__dirname, `../../../config/env/.env.${process.env.NX_APP_ENV || 'dev'}`);
   dotenv.config({ path: envFile });
 
   // Map Docker service hostnames to localhost ports
@@ -953,6 +952,7 @@ pnpm nx:integration
 ### GitHub Actions Workflow
 
 **.github/workflows/integration-tests.yaml**:
+
 ```yaml
 name: Integration Tests
 
@@ -1042,7 +1042,7 @@ jobs:
             const coverage = JSON.parse(fs.readFileSync('./coverage/coverage-summary.json'));
             const comment = `
             ## Integration Test Results
-            
+
             - **Lines**: ${coverage.total.lines.pct}%
             - **Statements**: ${coverage.total.statements.pct}%
             - **Functions**: ${coverage.total.functions.pct}%
@@ -1059,6 +1059,7 @@ jobs:
 ### Nx Integration Target
 
 Add to each `project.json`:
+
 ```json
 {
   "targets": {
@@ -1084,19 +1085,20 @@ Add to each `project.json`:
 ### 0. Test-Driven Development (Mandatory)
 
 ✅ **Write Tests First**:
+
 ```typescript
 // ALWAYS start with the test
 describe('Payment Processing', () => {
   it('should process valid payment', async () => {
     // Arrange: Set up test data
     const payment = PaymentFactory.create({
-      amount: 100.00,
-      currency: 'USD'
+      amount: 100.0,
+      currency: 'USD',
     });
-    
+
     // Act: Execute the operation
     const result = await paymentService.process(payment);
-    
+
     // Assert: Verify expected behavior
     expect(result.status).toBe('success');
     expect(result.transactionId).toBeDefined();
@@ -1106,6 +1108,7 @@ describe('Payment Processing', () => {
 ```
 
 ❌ **Don't Write Code First**:
+
 ```typescript
 // BAD: Implementing without tests
 class PaymentService {
@@ -1122,6 +1125,7 @@ class PaymentService {
 ### 0.1. Incremental Test Development
 
 ✅ **Build Tests Incrementally**:
+
 ```typescript
 // Start with happy path
 it('should create user with valid data', async () => {
@@ -1132,14 +1136,12 @@ it('should create user with valid data', async () => {
 // Add edge cases one at a time
 it('should reject duplicate email', async () => {
   await userService.create(validUserData);
-  await expect(userService.create(validUserData))
-    .rejects.toThrow('Email already exists');
+  await expect(userService.create(validUserData)).rejects.toThrow('Email already exists');
 });
 
 // Add error cases incrementally
 it('should reject invalid email format', async () => {
-  await expect(userService.create({ email: 'invalid' }))
-    .rejects.toThrow('Invalid email');
+  await expect(userService.create({ email: 'invalid' })).rejects.toThrow('Invalid email');
 });
 
 // Build complexity gradually
@@ -1153,6 +1155,7 @@ it('should hash password before storage', async () => {
 ### 1. Test Isolation
 
 ✅ **Good**:
+
 ```typescript
 describe('User Service', () => {
   beforeEach(async () => {
@@ -1171,6 +1174,7 @@ describe('User Service', () => {
 ```
 
 ❌ **Bad**:
+
 ```typescript
 describe('User Service', () => {
   let userId: string;
@@ -1190,6 +1194,7 @@ describe('User Service', () => {
 ### 2. Realistic Test Data
 
 ✅ **Good**:
+
 ```typescript
 const testUser = UserFactory.create({
   email: `test-${Date.now()}@example.com`, // Unique email
@@ -1199,6 +1204,7 @@ const testUser = UserFactory.create({
 ```
 
 ❌ **Bad**:
+
 ```typescript
 const testUser = {
   email: 'test@test.com', // Same email causes conflicts
@@ -1209,20 +1215,20 @@ const testUser = {
 ### 3. Test Error Paths
 
 ✅ **Good**:
+
 ```typescript
 it('should handle database connection failure', async () => {
   // Simulate database down
   await db.close();
 
-  await expect(userService.findAll())
-    .rejects
-    .toThrow('Database connection failed');
+  await expect(userService.findAll()).rejects.toThrow('Database connection failed');
 });
 ```
 
 ### 4. Avoid Test Timeouts
 
 ✅ **Good**:
+
 ```typescript
 it('should process large file', async () => {
   const largeFile = generateLargeFile(100 * 1024 * 1024); // 100MB
@@ -1233,6 +1239,7 @@ it('should process large file', async () => {
 ### 5. Use Transactions for Speed
 
 ✅ **Good**:
+
 ```typescript
 describe('Database Operations', () => {
   let queryRunner: QueryRunner;
@@ -1266,6 +1273,7 @@ describe('Database Operations', () => {
 **Problem**: Test containers fail to start due to port conflicts.
 
 **Solution**:
+
 ```bash
 # Check what's using the port
 lsof -i :5432
@@ -1280,6 +1288,7 @@ ports:
 **Problem**: Tests fail with "Connection timeout" errors.
 
 **Solution**:
+
 ```typescript
 // Increase timeout in jest.config.integration.ts
 export default {
@@ -1297,6 +1306,7 @@ it('slow test', async () => {
 **Problem**: Tests pass individually but fail when run together.
 
 **Solution**:
+
 ```typescript
 // Always clean up in afterEach
 afterEach(async () => {
@@ -1312,10 +1322,11 @@ const uniqueEmail = `test-${Date.now()}@example.com`;
 **Problem**: WebSocket tests fail intermittently.
 
 **Solution**:
+
 ```typescript
 it('should handle websocket', (done) => {
   const socket = io('http://localhost:3080');
-  
+
   // Add timeout safety
   const timeout = setTimeout(() => {
     socket.disconnect();
@@ -1336,6 +1347,7 @@ it('should handle websocket', (done) => {
 **Problem**: Integration tests take too long to run.
 
 **Solutions**:
+
 - Run tests in parallel where possible
 - Use database transactions for faster cleanup
 - Cache Docker images
@@ -1376,6 +1388,7 @@ This integration testing strategy ensures ChatSuite maintains high reliability t
 Every integration test and feature must follow the Red-Green-Refactor cycle:
 
 1. **🔴 RED**: Write failing integration test
+
    ```typescript
    // Test what you want to build
    it('should process payment successfully', async () => {
@@ -1386,6 +1399,7 @@ Every integration test and feature must follow the Red-Green-Refactor cycle:
    ```
 
 2. **🟢 GREEN**: Make the test pass
+
    ```typescript
    // Implement minimal code to pass
    async process(payment: Payment) {
@@ -1408,17 +1422,21 @@ Every integration test and feature must follow the Red-Green-Refactor cycle:
 **Example: Adding Email Notification Integration**
 
 ✅ **GOOD** (Incremental approach):
+
 1. Step 1 (15 min): Test email connection
+
    - Write test for SMTP connection
    - Implement connection logic
    - Commit: `test: add email connection test` + `feat: connect to SMTP server`
 
 2. Step 2 (20 min): Test email sending
+
    - Write test for sending email
    - Implement send logic
    - Commit: `test: add email sending test` + `feat: implement email sending`
 
 3. Step 3 (15 min): Test template rendering
+
    - Write test for email templates
    - Implement template system
    - Commit: `test: add template tests` + `feat: add email templates`
@@ -1429,6 +1447,7 @@ Every integration test and feature must follow the Red-Green-Refactor cycle:
    - Commit: `test: add e2e email test` + `feat: complete email integration`
 
 ❌ **BAD** (Monolithic approach):
+
 - Implement entire email system in one go (2+ hours)
 - Write tests afterward
 - One giant commit
@@ -1445,6 +1464,7 @@ Every integration test and feature must follow the Red-Green-Refactor cycle:
 ---
 
 **Next Steps**:
+
 1. ✅ Integration test infrastructure implemented
 2. ✅ Test utilities library created
 3. ✅ Pre-commit hooks configured

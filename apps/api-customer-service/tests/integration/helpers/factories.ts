@@ -128,7 +128,10 @@ export class ConversationFactory {
    * @param overrides - Partial conversation data to override defaults
    * @returns Array of conversation objects
    */
-  static createMany(count: number, overrides: Partial<Conversation> = {}): Conversation[] {
+  static createMany(
+    count: number,
+    overrides: Partial<Conversation> = {}
+  ): Conversation[] {
     return Array.from({ length: count }, () => this.create(overrides));
   }
 
@@ -145,10 +148,9 @@ export class ConversationFactory {
   ): Conversation {
     const conversation = this.create(overrides);
     const conversationId = conversation.id || `conv-${Date.now()}`;
-    conversation.messages = MessageFactory.createMany(
-      messageCount,
-      { conversationId }
-    );
+    conversation.messages = MessageFactory.createMany(messageCount, {
+      conversationId,
+    });
     return conversation;
   }
 }
@@ -181,7 +183,10 @@ export class MessageFactory {
    * @param overrides - Partial message data to override defaults
    * @returns Array of message objects
    */
-  static createMany(count: number, overrides: Partial<Message> = {}): Message[] {
+  static createMany(
+    count: number,
+    overrides: Partial<Message> = {}
+  ): Message[] {
     return Array.from({ length: count }, () => this.create(overrides));
   }
 
@@ -238,7 +243,10 @@ export class TestDataHelper {
    * Includes timestamp to avoid collisions.
    */
   static uniqueEmail(prefix = 'test'): string {
-    return `${prefix}-${Date.now()}-${faker.number.int({ min: 1000, max: 9999 })}@test.com`;
+    return `${prefix}-${Date.now()}-${faker.number.int({
+      min: 1000,
+      max: 9999,
+    })}@test.com`;
   }
 
   /**
@@ -276,7 +284,7 @@ export class TestDataHelper {
    * @param ms - Milliseconds to wait
    */
   static async wait(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

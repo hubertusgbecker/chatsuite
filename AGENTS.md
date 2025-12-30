@@ -34,6 +34,7 @@ This document serves as the authoritative reference for all development, service
 ### Package Management
 
 - **Always use `pnpm`** - Never use npm or yarn
+
   ```bash
   pnpm install              # Install dependencies
   pnpm add package-name     # Add package
@@ -56,11 +57,7 @@ This document serves as the authoritative reference for all development, service
 
 ```typescript
 // ✅ GOOD - Type-safe function with documentation
-export async function processData(
-  param1: string,
-  param2: number,
-  config: Record<string, any>
-): Promise<DataResult | null> {
+export async function processData(param1: string, param2: number, config: Record<string, any>): Promise<DataResult | null> {
   /**
    * Processes data with specified parameters.
    *
@@ -77,6 +74,7 @@ export async function processData(
 ### Pre-Commit Requirements
 
 - **ALWAYS run pre-commit checks** before making PRs
+
   ```bash
   pnpm lint        # Run linters
   pnpm nx:test     # Run tests
@@ -133,7 +131,7 @@ export async function processData(
 - Deploy small changes frequently rather than large batches
 - Example breakdown:
   - ❌ BAD: "Implement user authentication system"
-  - ✅ GOOD: 
+  - ✅ GOOD:
     1. Create user model with tests (15 min)
     2. Add password hashing with tests (20 min)
     3. Implement login endpoint with tests (25 min)
@@ -196,6 +194,7 @@ You are an AI agent working with the ChatSuite codebase. Your responses should b
 - **Plain ASCII** - No emoji, emoticons, or Unicode symbols except in code, math, URLs, file paths
 
 **Development Approach:**
+
 - When implementing features, always propose a breakdown into 5-10 small incremental steps
 - Each step should include: test first, implementation, commit
 - Prioritize small working increments over large batches
@@ -267,16 +266,16 @@ chatsuite/
 
 ### Critical Files & Locations
 
-| File/Directory | Purpose |
-|---------------|---------|
-| `AGENTS.md` | Authoritative reference for all development standards |
-| `repomix-output.xml` | Machine-readable codebase summary |
-| `tools/dev-scripts/` | All development automation |
-| `config/nginx/default.dev.conf` | Central nginx proxy configuration |
-| `config/env/` | Environment templates and runtime configuration |
-| `docs/integration-testing-strategy.md` | Comprehensive testing strategy |
-| `.husky/` | Git hooks for automated quality checks |
-| `.github/workflows/` | CI/CD pipeline definitions |
+| File/Directory                         | Purpose                                               |
+| -------------------------------------- | ----------------------------------------------------- |
+| `AGENTS.md`                            | Authoritative reference for all development standards |
+| `repomix-output.xml`                   | Machine-readable codebase summary                     |
+| `tools/dev-scripts/`                   | All development automation                            |
+| `config/nginx/default.dev.conf`        | Central nginx proxy configuration                     |
+| `config/env/`                          | Environment templates and runtime configuration       |
+| `docs/integration-testing-strategy.md` | Comprehensive testing strategy                        |
+| `.husky/`                              | Git hooks for automated quality checks                |
+| `.github/workflows/`                   | CI/CD pipeline definitions                            |
 
 ### Essential Commands
 
@@ -315,20 +314,20 @@ pnpm nx affected --target=integration        # Run affected integration tests
 
 ### Service Ports
 
-| Service | Direct Port | Proxy Route (10443) | Status |
-|---------|------------|---------------------|--------|
-| Client App | 4200 | /app/ | HTTP + HTTPS |
-| API Customer Service | 3333 | /api/customer/ | HTTP + HTTPS |
-| LibreChat | 3080 | /librechat/ | HTTP + HTTPS |
-| PgAdmin | (internal) | /pgadmin/ | HTTPS Only |
-| N8N | 5678 | /n8n/ | HTTP + HTTPS |
-| NocoDB | 8080 | /nocodb/ | HTTP + HTTPS |
-| MCPHub | 3000 | /mcphub/ | HTTP + HTTPS |
-| MCP Email | 9557 | /mcp-email/ | HTTP + HTTPS |
-| MindsDB HTTP | 47334 | /mindsdb/ | HTTP + HTTPS |
-| MinIO API | 9000 | /minio-api/ | HTTP + HTTPS |
-| MinIO Console | 9001 | /minio/ | HTTP + HTTPS |
-| Nginx Proxy | 10443 | (All services) | HTTPS Only |
+| Service              | Direct Port | Proxy Route (10443) | Status       |
+| -------------------- | ----------- | ------------------- | ------------ |
+| Client App           | 4200        | /app/               | HTTP + HTTPS |
+| API Customer Service | 3333        | /api/customer/      | HTTP + HTTPS |
+| LibreChat            | 3080        | /librechat/         | HTTP + HTTPS |
+| PgAdmin              | (internal)  | /pgadmin/           | HTTPS Only   |
+| N8N                  | 5678        | /n8n/               | HTTP + HTTPS |
+| NocoDB               | 8080        | /nocodb/            | HTTP + HTTPS |
+| MCPHub               | 3000        | /mcphub/            | HTTP + HTTPS |
+| MCP Email            | 9557        | /mcp-email/         | HTTP + HTTPS |
+| MindsDB HTTP         | 47334       | /mindsdb/           | HTTP + HTTPS |
+| MinIO API            | 9000        | /minio-api/         | HTTP + HTTPS |
+| MinIO Console        | 9001        | /minio/             | HTTP + HTTPS |
+| Nginx Proxy          | 10443       | (All services)      | HTTPS Only   |
 
 ---
 
@@ -440,6 +439,7 @@ git push origin feature/my-feature
 ```
 
 **Key Principles:**
+
 - Write test → Make it pass → Refactor → Commit
 - Each commit should be a working increment
 - Run tests continuously during development
@@ -556,18 +556,12 @@ describe('API Integration', () => {
   });
 
   it('should create user and store in database', async () => {
-    const response = await request(httpServer)
-      .post('/api/users')
-      .send({ name: 'Test User', email: 'test@test.com' })
-      .expect(201);
-    
+    const response = await request(httpServer).post('/api/users').send({ name: 'Test User', email: 'test@test.com' }).expect(201);
+
     expect(response.body.id).toBeDefined();
-    
+
     // Verify database persistence
-    const user = await executeQuery(
-      'SELECT * FROM users WHERE email = $1',
-      ['test@test.com']
-    );
+    const user = await executeQuery('SELECT * FROM users WHERE email = $1', ['test@test.com']);
     expect(user.rows).toHaveLength(1);
   });
 });
@@ -632,18 +626,21 @@ apps/api-customer-service/
 #### Test Helpers
 
 **PostgreSQL Helper** (`tests/integration/helpers/test-db.ts`):
+
 - `setupTestDatabase()`: Initialize PostgreSQL connection
 - `cleanupTestDatabase()`: Truncate all tables between tests
 - `closeTestDatabase()`: Close connection
 - `executeQuery()`: Execute raw SQL queries
 
 **MongoDB Helper** (`tests/integration/helpers/test-mongodb.ts`):
+
 - `setupTestMongoDB()`: Initialize MongoDB connection
 - `cleanupTestMongoDB()`: Drop test collections
 - `createTestCollection()`: Create test collection
 - `verifyMongoConnection()`: Health check
 
 **MinIO Helper** (`tests/integration/helpers/test-minio.ts`):
+
 - `setupTestMinIO()`: Initialize S3 client
 - `createTestBucket()`: Create test bucket
 - `uploadTestFile()`: Upload file to bucket
@@ -651,42 +648,49 @@ apps/api-customer-service/
 - `cleanupTestMinIO()`: Delete test buckets/objects
 
 **n8n Helper** (`tests/integration/helpers/test-n8n.ts`):
+
 - `setupTestN8n()`: Initialize n8n API client (optional API key)
 - `createTestWorkflow()`: Create workflow
 - `getTestWorkflow()`: Retrieve workflow
 - `cleanupTestN8n()`: Clean test workflows
 
 **NocoDB Helper** (`tests/integration/helpers/test-nocodb.ts`):
+
 - `setupTestNocodb()`: Initialize NocoDB client (optional auth token)
 - `createTestBase()`: Create database base
 - `getTestBase()`: Retrieve base
 - `cleanupTestNocodb()`: Clean test bases
 
 **MindsDB Helper** (`tests/integration/helpers/test-mindsdb.ts`):
+
 - `setupTestMindsDB()`: Initialize MindsDB HTTP client
 - `executeMindsDBQuery()`: Execute SQL queries
 - `listMindsDBDatabases()`: List databases
 - `cleanupTestMindsDB()`: Drop test databases
 
 **MCPHub Helper** (`tests/integration/helpers/test-mcphub.ts`):
+
 - `setupTestMCPHub()`: Initialize MCPHub client
 - `verifyMCPHubConnection()`: Health check (accepts 200/503)
 - `listMCPServers()`: List configured MCP servers
 - `cleanupTestMCPHub()`: Minimal cleanup (protocol server)
 
 **MCP Email Helper** (`tests/integration/helpers/test-mcp-email.ts`):
+
 - `setupTestMCPEmail()`: Initialize SSE client with timeout
 - `verifyMCPEmailConnection()`: Check SSE endpoint
 - `checkMCPEmailSSEEndpoint()`: Validate SSE stream
 - `cleanupTestMCPEmail()`: Minimal cleanup (protocol server)
 
 **Test Server Helper** (`tests/integration/helpers/test-server.ts`):
+
 - `createTestServer()`: Initialize NestJS test application
 - `closeTestServer()`: Shutdown test server
 - `getHttpServer()`: Get HTTP server for supertest
 - `getService()`: Access service instances from DI container
 
 **Test Data Factories** (`tests/integration/helpers/factories.ts`):
+
 - `UserFactory`: Generate realistic user test data
 - `ConversationFactory`: Generate conversation test data
 - `MessageFactory`: Generate message test data
@@ -711,11 +715,13 @@ pnpm nx integration api-customer-service --coverage
 #### Test Environment
 
 **Automatic Environment Loading:**
+
 - Tests automatically load from `config/env/.env.${NX_APP_ENV}`
 - No manual environment variable passing required
 - Automatic hostname mapping: Docker services → localhost ports
 
 **Service Integration Coverage:**
+
 - ✅ PostgreSQL (port 54320) - Database integration
 - ✅ MongoDB (port 27018) - Document store integration
 - ✅ MinIO (port 9000) - S3 storage integration
@@ -726,11 +732,13 @@ pnpm nx integration api-customer-service --coverage
 - ✅ MCP Email (port 9557) - Email SSE protocol
 
 **Authentication Handling:**
+
 - Optional services (n8n, NocoDB) skip tests gracefully when credentials not configured
 - Clear setup instructions provided in console output
 - No test failures from missing optional configuration
 
 **Environment Configuration** (`config/env/.env.dev`):
+
 ```bash
 # Automatically loaded by integration tests
 NX_APP_ENV=dev
@@ -744,16 +752,19 @@ MONGO_PORT=27018
 #### Automated Quality Gates
 
 **Pre-commit Hooks** (`.husky/pre-commit`):
+
 - ✅ Run linters (ESLint, Prettier)
 - ✅ Run unit tests on affected projects
 - ℹ️ Run integration tests (advisory, not blocking)
 
 **Pre-push Hooks** (`.husky/pre-push`):
+
 - ✅ Run all unit tests
 - ✅ Run integration tests on affected projects
 - ✅ Verify security configuration
 
 **CI/CD Pipeline** (`.github/workflows/`):
+
 - `integration-tests.yaml`: Dedicated integration test workflow
 - `ci.yaml`: Complete CI/CD pipeline with all checks
 - Runs on every PR and push to main/develop
@@ -765,27 +776,32 @@ MONGO_PORT=27018
 Follow these rules for effective integration testing:
 
 1. **Test Environment Setup**
+
    - Use `docker-compose.test.yaml` to start test services
    - Ensure databases are migrated and seeded before tests
    - Clean up state between test runs using `cleanupTestDatabase()`
 
 2. **Test Location**
+
    - Place integration tests under `tests/integration/` inside each project
    - Keep tests close to the project they verify
    - Use descriptive test file names ending with `.integration.spec.ts`
 
 3. **Execution**
+
    - Define `integration` target in `project.json`
    - Execute with: `pnpm nx integration <project-name>`
    - Run on every PR using Nx affected commands
 
 4. **Cross-Service Scenarios**
+
    - Cover interactions between APIs, workers, and databases
    - Validate shared libraries integrate correctly
    - Test authentication flows end-to-end
    - Verify data consistency across services
 
 5. **Continuous Integration**
+
    - Integration tests run automatically on every pull request
    - Pipeline fails when any integration test fails
    - Coverage reports generated and posted to PRs
@@ -824,6 +840,7 @@ Follow these rules for effective integration testing:
 ### Linting & Formatting
 
 - **ESLint** - Enterprise-grade linting
+
   - Security plugins (@microsoft/eslint-plugin-sdl, eslint-plugin-security)
   - TypeScript strict checking
   - React best practices
@@ -892,18 +909,18 @@ ChatSuite follows domain-driven microservices architecture:
 
 ### Core Services
 
-| Service | Purpose | Technology | Port |
-|---------|---------|------------|------|
-| Client App | Web frontend | React, TypeScript | 4200 |
-| API Customer Service | Backend API | NestJS, TypeScript | 3333 |
-| LibreChat | AI chat interface | Node.js, MongoDB | 3080 |
-| n8n | Workflow automation | Node.js, PostgreSQL | 5678 |
-| MindsDB | AI database | Python, PostgreSQL | 47334 |
-| NocoDB | Database GUI | Node.js, PostgreSQL | 8080 |
-| MCPHub | Protocol orchestration | Node.js | 3000 |
-| MCP Email | Email processing | Python | 9557 |
-| MinIO | Object storage | Go | 9000/9001 |
-| Nginx | Reverse proxy | Nginx | 10443 |
+| Service              | Purpose                | Technology          | Port      |
+| -------------------- | ---------------------- | ------------------- | --------- |
+| Client App           | Web frontend           | React, TypeScript   | 4200      |
+| API Customer Service | Backend API            | NestJS, TypeScript  | 3333      |
+| LibreChat            | AI chat interface      | Node.js, MongoDB    | 3080      |
+| n8n                  | Workflow automation    | Node.js, PostgreSQL | 5678      |
+| MindsDB              | AI database            | Python, PostgreSQL  | 47334     |
+| NocoDB               | Database GUI           | Node.js, PostgreSQL | 8080      |
+| MCPHub               | Protocol orchestration | Node.js             | 3000      |
+| MCP Email            | Email processing       | Python              | 9557      |
+| MinIO                | Object storage         | Go                  | 9000/9001 |
+| Nginx                | Reverse proxy          | Nginx               | 10443     |
 
 ### Nginx Reverse Proxy
 
@@ -921,8 +938,8 @@ All services accessible via unified nginx proxy (port 10443):
   - NocoDB data
   - n8n workflows
   - Application data
-  
 - **MongoDB**: Document storage
+
   - LibreChat conversations
   - User preferences
 
@@ -935,24 +952,28 @@ All services accessible via unified nginx proxy (port 10443):
 Libraries organized by category:
 
 1. **UI Components** (`libs/ui/*`)
+
    - Reusable UI components
    - Design system implementation
    - Zero business logic
    - Atomic design principles
 
 2. **Features** (`libs/features/*`)
+
    - Complete reusable features
    - Business logic + UI
    - Encapsulated state management
    - Self-contained modules
 
 3. **Core Libraries** (`libs/core/*`)
+
    - Business logic
    - Domain models
    - Pure TypeScript
    - Framework-agnostic
 
 4. **Data Libraries** (`libs/data/*`)
+
    - API clients
    - Database connectors
    - Data transformation
@@ -1040,7 +1061,7 @@ Built into docker-compose for all services:
 
 ```yaml
 healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:3333/health"]
+  test: ['CMD', 'curl', '-f', 'http://localhost:3333/health']
   interval: 30s
   timeout: 10s
   retries: 3
@@ -1243,20 +1264,20 @@ nx graph
 
 ## Glossary
 
-| Term | Definition |
-|------|-----------|
-| **Service** | API or backend component exposed via HTTP/HTTPS |
-| **Feature** | Reusable business logic spanning multiple components |
-| **Library** | Shared code (core, features, ui, utils, data) |
-| **Unified Route** | Endpoint exposed via nginx proxy on port 10443 |
-| **Integration Test** | Test covering service interactions without mocks |
-| **Nx Workspace** | Monorepo structure with apps and libraries |
-| **Docker Compose** | Multi-container orchestration tool |
-| **Environment Template** | Version-controlled config file (env.dev, env.host, env.qa) |
-| **Runtime Config** | Actual configuration file (.env.dev, .env.host, .env.qa) not in git |
-| **MCP** | Model Context Protocol for AI agent communication |
-| **TSDoc** | TypeScript documentation standard |
-| **RBAC** | Role-Based Access Control |
+| Term                     | Definition                                                          |
+| ------------------------ | ------------------------------------------------------------------- |
+| **Service**              | API or backend component exposed via HTTP/HTTPS                     |
+| **Feature**              | Reusable business logic spanning multiple components                |
+| **Library**              | Shared code (core, features, ui, utils, data)                       |
+| **Unified Route**        | Endpoint exposed via nginx proxy on port 10443                      |
+| **Integration Test**     | Test covering service interactions without mocks                    |
+| **Nx Workspace**         | Monorepo structure with apps and libraries                          |
+| **Docker Compose**       | Multi-container orchestration tool                                  |
+| **Environment Template** | Version-controlled config file (env.dev, env.host, env.qa)          |
+| **Runtime Config**       | Actual configuration file (.env.dev, .env.host, .env.qa) not in git |
+| **MCP**                  | Model Context Protocol for AI agent communication                   |
+| **TSDoc**                | TypeScript documentation standard                                   |
+| **RBAC**                 | Role-Based Access Control                                           |
 
 ---
 

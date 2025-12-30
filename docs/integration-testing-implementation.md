@@ -11,11 +11,13 @@
 This integration testing infrastructure was implemented following ChatSuite's core development principles:
 
 ### Test-Driven Development (TDD)
+
 - All test helpers written with tests first
 - Example integration tests demonstrate TDD workflow
 - Red-Green-Refactor cycle documented throughout
 
 ### Incremental Development
+
 - Implementation completed in small, testable steps
 - Each component (test-db, test-server, factories) built incrementally
 - Every step committed with passing tests
@@ -28,6 +30,7 @@ This integration testing infrastructure was implemented following ChatSuite's co
 ### 1. Comprehensive Documentation
 
 ✅ **`docs/integration-testing-strategy.md`**
+
 - Complete testing strategy guide
 - Examples for all test categories
 - Setup and configuration instructions
@@ -37,6 +40,7 @@ This integration testing infrastructure was implemented following ChatSuite's co
 ### 2. Integration Test Infrastructure
 
 ✅ **Test Framework for api-customer-service:**
+
 ```
 apps/api-customer-service/
 ├── tests/integration/
@@ -53,6 +57,7 @@ apps/api-customer-service/
 ```
 
 **Key Features:**
+
 - Database cleanup between tests
 - Test data factories with faker.js
 - Real service integration (no mocking)
@@ -66,6 +71,7 @@ apps/api-customer-service/
 ### 3. Service Integration Approach
 
 ✅ **Uses existing docker-compose.yaml services:**
+
 - PostgreSQL (port 54320) - Database integration
 - MongoDB (port 27018) - Document store
 - MinIO (port 9000) - S3 object storage
@@ -76,6 +82,7 @@ apps/api-customer-service/
 - MCP Email (port 9557) - Email SSE protocol
 
 **Automatic Environment Configuration:**
+
 - Tests load config from `config/env/.env.${NX_APP_ENV}`
 - Docker hostnames automatically mapped to localhost ports
 - No separate test infrastructure needed
@@ -84,21 +91,25 @@ apps/api-customer-service/
 ### 4. Git Hooks (Husky)
 
 ✅ **Pre-commit** (`.husky/pre-commit`):
+
 - Run linters
 - Run affected unit tests
 - Run affected integration tests (advisory)
 
 ✅ **Pre-push** (`.husky/pre-push`):
+
 - Run all unit tests
 - Run all affected integration tests (blocking)
 - Verify security configuration
 
 ✅ **Commit message validation** (`.husky/commit-msg`):
+
 - Enforce Conventional Commits format
 
 ### 5. CI/CD Pipeline
 
 ✅ **`.github/workflows/integration-tests.yaml`**:
+
 - Dedicated integration test workflow
 - PostgreSQL, MongoDB, Redis services
 - Coverage reporting to Codecov
@@ -106,6 +117,7 @@ apps/api-customer-service/
 - Test artifact archiving
 
 ✅ **`.github/workflows/ci.yaml`**:
+
 - Complete CI/CD pipeline
 - Lint & format checks
 - Unit tests
@@ -117,6 +129,7 @@ apps/api-customer-service/
 ### 6. Project Configuration
 
 ✅ **Updated `project.json`**:
+
 ```json
 {
   "targets": {
@@ -135,6 +148,7 @@ apps/api-customer-service/
 ### 7. Package Scripts
 
 ✅ **Updated `package.json`**:
+
 ```json
 {
   "scripts": {
@@ -150,6 +164,7 @@ apps/api-customer-service/
 ### 8. Dependencies Installed
 
 ✅ **Added to workspace:**
+
 - `@faker-js/faker` - Test data generation
 - `typeorm` - Database ORM for tests
 - `supertest` - Already present
@@ -158,6 +173,7 @@ apps/api-customer-service/
 ### 9. Documentation Updates
 
 ✅ **Updated `AGENTS.md`**:
+
 - Complete integration test section
 - Test helper documentation
 - Running tests commands
@@ -191,11 +207,13 @@ docker-compose -f docker-compose.test.yaml down -v
 ### Add Integration Tests to New Projects
 
 1. **Create test structure:**
+
 ```bash
 mkdir -p apps/my-project/tests/integration/{api,helpers}
 ```
 
 2. **Copy helper files from api-customer-service:**
+
 ```bash
 cp -r apps/api-customer-service/tests/integration/helpers/* \
       apps/my-project/tests/integration/helpers/
@@ -210,6 +228,7 @@ cp apps/api-customer-service/jest.config.integration.ts \
 ```
 
 3. **Add integration target to `project.json`:**
+
 ```json
 {
   "targets": {
@@ -403,6 +422,7 @@ chmod +x .husky/pre-commit .husky/pre-push .husky/commit-msg
 **Status**: Production-ready integration testing infrastructure with comprehensive 8-service coverage!
 
 **Services Integrated:**
+
 - ✅ PostgreSQL (Database)
 - ✅ MongoDB (Document Store)
 - ✅ MinIO (Object Storage)

@@ -1,12 +1,16 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createTestServer, closeTestServer, getHttpServer } from '../helpers/test-server';
+import {
+  createTestServer,
+  closeTestServer,
+  getHttpServer,
+} from '../helpers/test-server';
 import { setupTestDatabase, cleanupTestDatabase } from '../helpers/test-db';
 import {
   setupTestMongoDB,
   cleanupTestMongoDB,
   verifyMongoConnection,
-  createTestCollection
+  createTestCollection,
 } from '../helpers/test-mongodb';
 import {
   setupTestMinIO,
@@ -122,9 +126,7 @@ describe('API Customer Service Integration', () => {
 
   describe('GET /api', () => {
     it('should return welcome message', async () => {
-      const response = await request(httpServer)
-        .get('/api')
-        .expect(200);
+      const response = await request(httpServer).get('/api').expect(200);
 
       expect(response.body).toEqual({
         message: 'Welcome to api-customer-service of ChatSuite!',
@@ -198,9 +200,7 @@ describe('API Customer Service Integration', () => {
     it('should respond within acceptable time', async () => {
       const start = Date.now();
 
-      await request(httpServer)
-        .get('/api')
-        .expect(200);
+      await request(httpServer).get('/api').expect(200);
 
       const duration = Date.now() - start;
 
@@ -215,18 +215,19 @@ describe('API Customer Service Integration', () => {
       const responses = [];
 
       for (let i = 0; i < totalRequests; i += batchSize) {
-        const batch = Array.from({ length: Math.min(batchSize, totalRequests - i) }, () =>
-          request(httpServer).get('/api').expect(200)
+        const batch = Array.from(
+          { length: Math.min(batchSize, totalRequests - i) },
+          () => request(httpServer).get('/api').expect(200)
         );
         const batchResponses = await Promise.all(batch);
         responses.push(...batchResponses);
         // Small delay between batches
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
       // All requests should succeed
       expect(responses).toHaveLength(totalRequests);
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.body.message).toBeDefined();
       });
     });
@@ -252,7 +253,7 @@ describe('API Customer Service Integration', () => {
       // Create test collection with sample data
       const testDocs = [
         { name: 'Test User 1', email: 'user1@test.com', createdAt: new Date() },
-        { name: 'Test User 2', email: 'user2@test.com', createdAt: new Date() }
+        { name: 'Test User 2', email: 'user2@test.com', createdAt: new Date() },
       ];
 
       await createTestCollection('test_users', testDocs);
@@ -310,7 +311,9 @@ describe('API Customer Service Integration', () => {
   describe('Workflow Automation Integration', () => {
     it('should connect to n8n service', async () => {
       if (!process.env.N8N_API_KEY) {
-        console.log('ℹ️  Skipped: N8N_API_KEY not configured - see helper for setup instructions');
+        console.log(
+          'ℹ️  Skipped: N8N_API_KEY not configured - see helper for setup instructions'
+        );
         return;
       }
 
@@ -321,7 +324,9 @@ describe('API Customer Service Integration', () => {
 
     it('should create and retrieve workflows in n8n', async () => {
       if (!process.env.N8N_API_KEY) {
-        console.log('ℹ️  Skipped: N8N_API_KEY not configured - see helper for setup instructions');
+        console.log(
+          'ℹ️  Skipped: N8N_API_KEY not configured - see helper for setup instructions'
+        );
         return;
       }
 
@@ -343,7 +348,9 @@ describe('API Customer Service Integration', () => {
   describe('Database UI Integration', () => {
     it('should connect to NocoDB service', async () => {
       if (!process.env.NOCODB_AUTH_TOKEN) {
-        console.log('ℹ️  Skipped: NOCODB_AUTH_TOKEN not configured - see helper for setup instructions');
+        console.log(
+          'ℹ️  Skipped: NOCODB_AUTH_TOKEN not configured - see helper for setup instructions'
+        );
         return;
       }
 
@@ -354,7 +361,9 @@ describe('API Customer Service Integration', () => {
 
     it('should create and retrieve bases in NocoDB', async () => {
       if (!process.env.NOCODB_AUTH_TOKEN) {
-        console.log('ℹ️  Skipped: NOCODB_AUTH_TOKEN not configured - see helper for setup instructions');
+        console.log(
+          'ℹ️  Skipped: NOCODB_AUTH_TOKEN not configured - see helper for setup instructions'
+        );
         return;
       }
 

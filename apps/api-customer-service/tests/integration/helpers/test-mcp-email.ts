@@ -39,7 +39,7 @@ export async function setupTestMCPEmail(): Promise<void> {
     mcpEmailClient = axios.create({
       baseURL: config.baseUrl,
       headers: {
-        'Accept': 'text/event-stream',
+        Accept: 'text/event-stream',
       },
       validateStatus: () => true, // Don't throw on any status
       timeout: 3000,
@@ -49,16 +49,25 @@ export async function setupTestMCPEmail(): Promise<void> {
 
     // Test connection by checking SSE endpoint
     // Note: SSE endpoints return continuous streams, so we only check initial response
-    const response = await mcpEmailClient.get('/sse', {
-      // Abort the request after getting initial response headers
-      signal: AbortSignal.timeout(1000),
-    }).catch((error) => {
-      // If timeout, it means connection started successfully (SSE streams are continuous)
-      if (error.code === 'ECONNABORTED' || error.name === 'AbortError' || error.message?.includes('aborted')) {
-        return { status: 200, headers: { 'content-type': 'text/event-stream' } };
-      }
-      throw error;
-    });
+    const response = await mcpEmailClient
+      .get('/sse', {
+        // Abort the request after getting initial response headers
+        signal: AbortSignal.timeout(1000),
+      })
+      .catch((error) => {
+        // If timeout, it means connection started successfully (SSE streams are continuous)
+        if (
+          error.code === 'ECONNABORTED' ||
+          error.name === 'AbortError' ||
+          error.message?.includes('aborted')
+        ) {
+          return {
+            status: 200,
+            headers: { 'content-type': 'text/event-stream' },
+          };
+        }
+        throw error;
+      });
 
     if (response.status !== 200) {
       throw new Error(
@@ -97,15 +106,21 @@ export function getMCPEmailClient(): AxiosInstance {
 export async function verifyMCPEmailConnection(): Promise<boolean> {
   try {
     const client = getMCPEmailClient();
-    const response = await client.get('/sse', {
-      signal: AbortSignal.timeout(1000),
-    }).catch((error) => {
-      // SSE streams are continuous - timeout means successful connection
-      if (error.code === 'ECONNABORTED' || error.name === 'AbortError' || error.message?.includes('aborted')) {
-        return { status: 200 };
-      }
-      throw error;
-    });
+    const response = await client
+      .get('/sse', {
+        signal: AbortSignal.timeout(1000),
+      })
+      .catch((error) => {
+        // SSE streams are continuous - timeout means successful connection
+        if (
+          error.code === 'ECONNABORTED' ||
+          error.name === 'AbortError' ||
+          error.message?.includes('aborted')
+        ) {
+          return { status: 200 };
+        }
+        throw error;
+      });
     return response.status === 200;
   } catch (error) {
     console.error('❌ MCP Email connection verification failed:', error);
@@ -127,18 +142,24 @@ export async function checkMCPEmailSSEEndpoint(): Promise<{
 }> {
   try {
     const client = getMCPEmailClient();
-    const response = await client.get('/sse', {
-      signal: AbortSignal.timeout(1000),
-    }).catch((error) => {
-      // SSE streams are continuous - timeout means successful connection
-      if (error.code === 'ECONNABORTED' || error.name === 'AbortError' || error.message?.includes('aborted')) {
-        return {
-          status: 200,
-          headers: { 'content-type': 'text/event-stream' },
-        };
-      }
-      throw error;
-    });
+    const response = await client
+      .get('/sse', {
+        signal: AbortSignal.timeout(1000),
+      })
+      .catch((error) => {
+        // SSE streams are continuous - timeout means successful connection
+        if (
+          error.code === 'ECONNABORTED' ||
+          error.name === 'AbortError' ||
+          error.message?.includes('aborted')
+        ) {
+          return {
+            status: 200,
+            headers: { 'content-type': 'text/event-stream' },
+          };
+        }
+        throw error;
+      });
 
     const contentType = response.headers['content-type'] || '';
     const isSSE = contentType.includes('text/event-stream');

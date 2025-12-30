@@ -57,7 +57,9 @@ export async function setupTestMCPHub(): Promise<void> {
 
     if (response.status === 503) {
       console.log('⚠️  MCPHub is running but MCP servers are not all ready');
-      console.log('ℹ️  This is normal if MCP servers are not configured in mcp_settings.json');
+      console.log(
+        'ℹ️  This is normal if MCP servers are not configured in mcp_settings.json'
+      );
     }
 
     console.log('✅ Test MCPHub connected');

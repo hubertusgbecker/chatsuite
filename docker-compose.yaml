@@ -196,7 +196,7 @@ services:
 
   mongodb:
     container_name: chatsuite_mongodb
-    ports:  # Exposed for integration tests
+    ports: # Exposed for integration tests
       - '27018:27017'
     image: mongo:latest
     restart: always

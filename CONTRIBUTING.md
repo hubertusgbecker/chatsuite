@@ -114,11 +114,13 @@ ChatSuite strictly follows Test-Driven Development for all contributions:
 **The Red-Green-Refactor Cycle:**
 
 1. 🔴 **RED**: Write a failing test first
+
    - Define what you want to build
    - Test fails because feature doesn't exist yet
    - Clarifies requirements before coding
 
 2. 🟢 **GREEN**: Write minimal code to pass the test
+
    - Focus on making it work
    - Don't optimize prematurely
    - Keep it simple
@@ -129,6 +131,7 @@ ChatSuite strictly follows Test-Driven Development for all contributions:
    - Keep all tests green
 
 **Example TDD Workflow:**
+
 ```bash
 # 1. Write failing test
 pnpm nx test my-app --watch
@@ -151,6 +154,7 @@ git commit -m "feat: implement user creation (step 1/5)"
 **Break work into small, achievable steps (15-30 minutes each):**
 
 ✅ **GOOD Example**: "Add User Authentication"
+
 1. Create user model with tests (20 min)
 2. Add password hashing with tests (15 min)
 3. Implement login endpoint with tests (25 min)
@@ -160,6 +164,7 @@ git commit -m "feat: implement user creation (step 1/5)"
 Result: 5 small commits, fully tested, easy to review
 
 ❌ **BAD Example**: "Add User Authentication"
+
 1. Implement entire auth system (4 hours)
 2. Write tests at the end
 3. One massive commit

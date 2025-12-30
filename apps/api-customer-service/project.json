@@ -60,7 +60,9 @@
     },
     "integration": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/apps/api-customer-service-integration"],
+      "outputs": [
+        "{workspaceRoot}/coverage/apps/api-customer-service-integration"
+      ],
       "options": {
         "jestConfig": "apps/api-customer-service/jest.config.integration.ts",
         "passWithNoTests": false,
