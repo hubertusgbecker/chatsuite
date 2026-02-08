@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - **MCPHub MCP Transport**: Switched to `sse` transport for stable MCP tool execution
+
   - The `streamable-http` transport caused constant SSE stream disconnects every ~40-60s
   - SSE transport at `http://mcphub:3000/sse` provides stable long-lived connections
   - MCP tools (56 discovered) now execute reliably via LibreChat
