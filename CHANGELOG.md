@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.4 - 2026-02-08
+
+### Fixed
+
+- **MCPHub MCP Transport**: Switched to `sse` transport for stable MCP tool execution
+  - The `streamable-http` transport caused constant SSE stream disconnects every ~40-60s
+  - SSE transport at `http://mcphub:3000/sse` provides stable long-lived connections
+  - MCP tools (56 discovered) now execute reliably via LibreChat
+
+- **LibreChat OpenAI Configuration**: Switched from LiteLLM proxy to direct OpenAI API
+  - Commented out `baseURL` pointing to LiteLLM (`http://synology.local:4000/v1`)
+  - LiteLLM proxy was returning 200 OK but streaming responses were being truncated to 4 tokens
+  - Direct OpenAI API resolved the empty response / "no response" issue
+  - Updated model list: `gpt-5`, `gpt-4o`, `gpt-5-mini`, `gpt-4.1`, `gpt-5.2`, `claude-sonnet-4.5`, `claude-opus-4.6`
+  - Fixed `titleModel`/`summaryModel` from non-existent `gpt-4o-mini` to `gpt-5-mini`
+  - Commented out Anthropic endpoint (not currently used)
+
 ## v0.3.3 - 2026-02-08
 
 ### Fixed
