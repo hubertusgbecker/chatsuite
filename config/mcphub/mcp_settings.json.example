@@ -24,6 +24,12 @@
     }
   ],
   "systemConfig": {
+    "routing": {
+      "enableGlobalRoute": true,
+      "enableGroupNameRoute": true,
+      "enableBearerAuth": false,
+      "skipAuth": false
+    },
     "oauthServer": {
       "enabled": true,
       "accessTokenLifetime": 3600,

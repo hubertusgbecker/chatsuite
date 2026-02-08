@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.3 - 2026-02-08
+
+### Fixed
+
+- **MCPHub Authentication**: Disabled bearer auth for MCP endpoints by default
+  - Added `routing.enableBearerAuth: false` to `mcp_settings.json.example`
+  - Fixes LibreChat failing to connect to MCPHub with `invalid_token` errors
+
 ## v0.3.1 - 2025-12-28
 
 ### Added
