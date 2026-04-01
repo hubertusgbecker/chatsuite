@@ -24,12 +24,39 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/explicit-function-return-type": [
+          "warn",
+          {
+            "allowExpressions": true,
+            "allowTypedFunctionExpressions": true,
+            "allowHigherOrderFunctions": true,
+            "allowDirectConstAssertionInArrowFunctions": true
+          }
+        ],
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_"
+          }
+        ],
+        "no-console": ["warn", { "allow": ["warn", "error"] }]
+      }
     },
     {
       "files": ["*.js", "*.jsx"],
       "extends": ["plugin:@nx/javascript"],
       "rules": {}
+    },
+    {
+      "files": ["*.spec.ts", "*.spec.tsx", "*.test.ts", "*.test.tsx", "tests/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-unused-vars": "warn"
+      }
     }
   ]
 }

@@ -1,30 +1,47 @@
 /**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
+ * ChatSuite API Customer Service entry point.
+ *
+ * Configures and starts the NestJS application with global
+ * exception handling, validation, and security middleware.
  */
 
 import 'reflect-metadata';
 
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
+import { GlobalExceptionFilter } from './app/global-exception.filter';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3333;
-  await app.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+/**
+ * Configures the NestJS application with global middleware.
+ * Extracted so tests can reuse the same configuration.
+ *
+ * @param app - The NestJS application instance to configure
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function configureApp(app: any): void {
+  app.setGlobalPrefix('api');
+  app.enableCors();
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    })
   );
-  Logger.log({
-    NX_POSTGRES_HOST: process.env.NX_POSTGRES_HOST,
-    NX_POSTGRES_PORT: process.env.NX_POSTGRES_PORT,
-    NX_POSTGRES_USER: process.env.NX_POSTGRES_USER,
-    NX_POSTGRES_DB: process.env.NX_POSTGRES_DB,
-  });
+  app.useGlobalFilters(new GlobalExceptionFilter());
 }
 
-bootstrap();
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule);
+  configureApp(app);
+  const port = process.env.PORT || 3333;
+  await app.listen(port);
+  Logger.log(`Application is running on: http://localhost:${port}/api`);
+}
+
+// Only bootstrap when run directly, not when imported by tests
+if (require.main === module) {
+  bootstrap();
+}
