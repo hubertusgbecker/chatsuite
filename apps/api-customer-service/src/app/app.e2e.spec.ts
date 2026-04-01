@@ -23,8 +23,9 @@ describe('GlobalExceptionFilter', () => {
   });
 
   it('should return standardized error format for unknown routes', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/api/nonexistent-route');
+    const response = await request(app.getHttpServer()).get(
+      '/api/nonexistent-route'
+    );
 
     // Unknown routes return error with our standardized format
     expect(response.body).toHaveProperty('statusCode');
