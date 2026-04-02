@@ -6,3 +6,57 @@ datasource db {
   provider = "postgresql"
   url      = env("POSTGRES_URL_WITH_SCHEMA")
 }
+
+/// A workflow definition orchestrating tasks across services.
+model Workflow {
+  id          Int            @id @default(autoincrement())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  name        String         @db.VarChar(255)
+  description String?        @db.Text
+  status      WorkflowStatus @default(DRAFT)
+  tasks       Task[]
+
+  @@unique([name])
+  @@index([status])
+}
+
+/// A single executable step within a workflow.
+model Task {
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  workflowId Int
+  workflow   Workflow    @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  name       String     @db.VarChar(255)
+  type       TaskType
+  config     Json       @db.JsonB
+  order      Int
+  status     TaskStatus @default(PENDING)
+
+  @@index([workflowId, order])
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum TaskType {
+  HTTP_REQUEST
+  DATABASE_QUERY
+  AI_PROMPT
+  NOTIFICATION
+  TRANSFORM
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+

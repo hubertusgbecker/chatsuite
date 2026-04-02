@@ -12,7 +12,7 @@ model Account {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   organizationId      Int
-  organization        Organization @relation(fields: [organizationId], references: [id])
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   role                Role         @default(READER)
   email               String       @db.VarChar
   firstName           String       @db.VarChar
@@ -38,7 +38,7 @@ model Project {
   id                     Int           @id @default(autoincrement())
   createdAt              DateTime      @default(now())
   organizationId         Int
-  organization           Organization  @relation(fields: [organizationId], references: [id])
+  organization           Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   name                   String        @db.VarChar
   key                    String        @db.VarChar(60)
   tags                   String[]      @default([])
@@ -54,7 +54,7 @@ model Environment {
   createdAt       DateTime @default(now())
   key             String   @db.VarChar(60)
   projectId       Int
-  project         Project  @relation(fields: [projectId], references: [id])
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   name            String   @db.VarChar
   color           String?
   confirmChanges  Boolean  @default(true)

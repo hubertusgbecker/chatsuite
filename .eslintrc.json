@@ -30,12 +30,19 @@
               }
             ]
           }
-        ]
+        ],
+        "eqeqeq": ["error", "always"],
+        "no-var": "error",
+        "prefer-const": "error"
       }
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": ["plugin:@nx/typescript"],
+      "extends": [
+        "plugin:@nx/typescript",
+        "plugin:security/recommended-legacy"
+      ],
+      "plugins": ["@microsoft/eslint-plugin-sdl"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/explicit-function-return-type": [
@@ -54,7 +61,9 @@
             "varsIgnorePattern": "^_"
           }
         ],
-        "no-console": ["warn", { "allow": ["warn", "error"] }]
+        "@typescript-eslint/no-shadow": "error",
+        "no-console": ["warn", { "allow": ["warn", "error"] }],
+        "@microsoft/sdl/no-insecure-url": "warn"
       }
     },
     {
@@ -73,7 +82,8 @@
       "rules": {
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/no-unused-vars": "warn"
+        "@typescript-eslint/no-unused-vars": "warn",
+        "@typescript-eslint/no-shadow": "off"
       }
     }
   ]

@@ -3,9 +3,25 @@
 
 echo "🚀 Running pre-push checks..."
 
+# Timeout for entire pre-push hook (5 minutes)
+PUSH_TIMEOUT=300
+
+# Portable timeout function (macOS lacks `timeout` command)
+run_with_timeout() {
+  "$@" &
+  PID=$!
+  ( sleep $PUSH_TIMEOUT && kill $PID 2>/dev/null && echo "⏰ Command timed out after ${PUSH_TIMEOUT}s" ) &
+  TIMER_PID=$!
+  wait $PID 2>/dev/null
+  STATUS=$?
+  kill $TIMER_PID 2>/dev/null
+  wait $TIMER_PID 2>/dev/null
+  return $STATUS
+}
+
 # Run all unit tests
 echo "🧪 Running all unit tests..."
-pnpm nx:test
+run_with_timeout pnpm nx:test
 if [ $? -ne 0 ]; then
   echo "❌ Unit tests failed. Please fix tests before pushing."
   exit 1
@@ -13,7 +29,7 @@ fi
 
 # Run integration tests on affected projects
 echo "🔄 Running integration tests on all affected projects..."
-pnpm nx affected --target=integration --base=origin/main --parallel=1
+run_with_timeout pnpm nx affected --target=integration --base=origin/main --parallel=1
 if [ $? -ne 0 ]; then
   echo "⚠️  Integration tests failed."
   echo "❌ Please fix integration tests before pushing."

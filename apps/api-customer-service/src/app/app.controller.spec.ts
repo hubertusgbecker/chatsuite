@@ -17,6 +17,10 @@ describe('AppController', () => {
     service = module.get<AppService>(AppService);
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('getData', () => {
     it('should return welcome message object with message key', () => {
       const result = controller.getData();
@@ -36,6 +40,17 @@ describe('AppController', () => {
         throw new Error('Service failure');
       });
       expect(() => controller.getData()).toThrow('Service failure');
+    });
+
+    it('should return the same result on consecutive calls', () => {
+      const first = controller.getData();
+      const second = controller.getData();
+      expect(first).toEqual(second);
+    });
+
+    it('should return an object with exactly one key', () => {
+      const result = controller.getData();
+      expect(Object.keys(result)).toEqual(['message']);
     });
   });
 
@@ -59,6 +74,47 @@ describe('AppController', () => {
     it('should return version from env or fallback to 0.0.0', () => {
       const result = controller.getHealth();
       expect(result.version).toMatch(/^\d+\.\d+\.\d+/);
+    });
+
+    it('should use npm_package_version when available', () => {
+      const original = process.env.npm_package_version;
+      process.env.npm_package_version = '9.8.7';
+      try {
+        const result = controller.getHealth();
+        expect(result.version).toBe('9.8.7');
+      } finally {
+        process.env.npm_package_version = original;
+      }
+    });
+
+    it('should fallback to 0.0.0 when npm_package_version is not set', () => {
+      const original = process.env.npm_package_version;
+      delete process.env.npm_package_version;
+      try {
+        const result = controller.getHealth();
+        expect(result.version).toBe('0.0.0');
+      } finally {
+        process.env.npm_package_version = original;
+      }
+    });
+
+    it('should return exactly four keys in health response', () => {
+      const result = controller.getHealth();
+      expect(Object.keys(result).sort()).toEqual([
+        'status',
+        'timestamp',
+        'uptime',
+        'version',
+      ]);
+    });
+
+    it('should return unique timestamps on consecutive calls', async () => {
+      const first = controller.getHealth();
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      const second = controller.getHealth();
+      const t1 = Date.parse(first.timestamp);
+      const t2 = Date.parse(second.timestamp);
+      expect(t2).toBeGreaterThanOrEqual(t1);
     });
   });
 });

@@ -121,7 +121,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Lint ${{ matrix.project }}
-        run: pnpm nx run ${{ matrix.project }}:lint
+        run: pnpm nx run ${{ matrix.project }}:lint --max-warnings=0
 
   # ──────────────────────────────────────────────
   # Format: check code style consistency

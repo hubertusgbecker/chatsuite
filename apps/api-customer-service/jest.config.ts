@@ -16,4 +16,12 @@ export default {
   coverageDirectory: '../../coverage/apps/api-customer-service',
   // Exclude integration tests from unit test runs
   testPathIgnorePatterns: ['/node_modules/', '/tests/integration/'],
+  coverageThreshold: {
+    global: {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+  },
 };

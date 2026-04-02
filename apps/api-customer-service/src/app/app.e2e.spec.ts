@@ -63,6 +63,7 @@ describe('API Customer Service (e2e)', () => {
         .expect(HttpStatus.NOT_FOUND);
 
       expect(response.body.statusCode).toBe(404);
+      expect(response.body.errorCode).toBe('NOT_FOUND');
       expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toContain('Cannot GET');
       expect(response.body.path).toBe('/api/this-route-does-not-exist');
@@ -75,6 +76,7 @@ describe('API Customer Service (e2e)', () => {
         .expect(HttpStatus.NOT_FOUND);
 
       expect(response.body.statusCode).toBe(404);
+      expect(response.body.errorCode).toBe('NOT_FOUND');
     });
 
     it('should not leak stack traces in error responses', async () => {
@@ -84,6 +86,39 @@ describe('API Customer Service (e2e)', () => {
 
       expect(response.body.stack).toBeUndefined();
       expect(JSON.stringify(response.body)).not.toContain('at ');
+      expect(JSON.stringify(response.body)).not.toContain('.ts:');
+    });
+
+    it('should include correlation-id in error responses when provided', async () => {
+      const correlationId = 'test-corr-id-12345';
+      const response = await request(httpServer)
+        .get('/api/nonexistent')
+        .set('x-correlation-id', correlationId)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(response.body.correlationId).toBe(correlationId);
+      expect(response.headers['x-correlation-id']).toBe(correlationId);
+    });
+  });
+
+  describe('Correlation ID', () => {
+    it('should generate correlation-id when not provided', async () => {
+      const response = await request(httpServer).get('/api').expect(200);
+
+      expect(response.headers['x-correlation-id']).toBeDefined();
+      expect(response.headers['x-correlation-id']).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      );
+    });
+
+    it('should echo back client-provided correlation-id', async () => {
+      const clientId = 'client-trace-abc';
+      const response = await request(httpServer)
+        .get('/api')
+        .set('x-correlation-id', clientId)
+        .expect(200);
+
+      expect(response.headers['x-correlation-id']).toBe(clientId);
     });
   });
 
@@ -96,8 +131,8 @@ describe('API Customer Service (e2e)', () => {
 
       // Should get a proper error, not a crash
       expect([400, 404]).toContain(response.status);
-      expect(response.body.statusCode).toBeDefined();
-      expect(response.body.message).toBeDefined();
+      expect(typeof response.body.statusCode).toBe('number');
+      expect(typeof response.body.message).toBe('string');
     });
 
     it('should reject requests with Content-Type mismatch', async () => {
@@ -109,6 +144,47 @@ describe('API Customer Service (e2e)', () => {
       // Should not crash, should return proper error
       expect(response.status).toBeGreaterThanOrEqual(400);
       expect(response.body).toBeDefined();
+    });
+
+    it('should handle oversized payloads without crashing', async () => {
+      const largePayload = 'x'.repeat(1024 * 1024); // 1MB
+      const response = await request(httpServer)
+        .post('/api')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify({ data: largePayload }));
+
+      // Should return an error, not crash
+      expect(response.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe('Security', () => {
+    it('should not reflect SQL injection payloads in responses', async () => {
+      const sqlPayload = "'; DROP TABLE users; --";
+      const response = await request(httpServer)
+        .get(`/api/${encodeURIComponent(sqlPayload)}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      // The response should not execute or reflect SQL
+      expect(response.body.message).not.toContain('DROP TABLE');
+    });
+
+    it('should not reflect XSS payloads in responses', async () => {
+      const xssPayload = '<script>alert("xss")</script>';
+      const response = await request(httpServer)
+        .get(`/api/${encodeURIComponent(xssPayload)}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      // Response is JSON, not HTML, so XSS in path is contained
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+    });
+
+    it('should return JSON content-type for all error responses', async () => {
+      const paths = ['/api/missing', '/api/../../../etc/passwd', '/api/%00'];
+      for (const p of paths) {
+        const response = await request(httpServer).get(p);
+        expect(response.headers['content-type']).toMatch(/application\/json/);
+      }
     });
   });
 
@@ -130,6 +206,17 @@ describe('API Customer Service (e2e)', () => {
         .expect(HttpStatus.OK);
 
       expect(response.headers['access-control-allow-origin']).toBeDefined();
+    });
+
+    it('should list allowed methods in preflight response', async () => {
+      const response = await request(httpServer)
+        .options('/api')
+        .set('Origin', 'http://localhost:4200')
+        .set('Access-Control-Request-Method', 'POST');
+
+      const allowedMethods =
+        response.headers['access-control-allow-methods'] || '';
+      expect(allowedMethods).toMatch(/GET/);
     });
   });
 

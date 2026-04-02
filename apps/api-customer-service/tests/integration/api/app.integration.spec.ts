@@ -136,12 +136,13 @@ describe('API Customer Service Integration', () => {
   });
 
   describe('Error Handling', () => {
-    it('should return 404 with path in standardized format', async () => {
+    it('should return 404 with errorCode and path in standardized format', async () => {
       const response = await request(httpServer)
         .get('/api/does-not-exist')
         .expect(404);
 
       expect(response.body.statusCode).toBe(404);
+      expect(response.body.errorCode).toBe('NOT_FOUND');
       expect(response.body.path).toBe('/api/does-not-exist');
       expect(typeof response.body.message).toBe('string');
       expect(Date.parse(response.body.timestamp)).not.toBeNaN();
@@ -154,7 +155,7 @@ describe('API Customer Service Integration', () => {
         .send('{"broken');
 
       expect(response.status).toBeGreaterThanOrEqual(400);
-      expect(response.body.statusCode).toBeDefined();
+      expect(typeof response.body.statusCode).toBe('number');
     });
 
     it('should not expose stack traces', async () => {
@@ -165,6 +166,36 @@ describe('API Customer Service Integration', () => {
       expect(response.body.stack).toBeUndefined();
       expect(JSON.stringify(response.body)).not.toContain('.ts:');
       expect(JSON.stringify(response.body)).not.toContain('.js:');
+    });
+  });
+
+  describe('Correlation ID', () => {
+    it('should propagate correlation-id through the request lifecycle', async () => {
+      const correlationId = 'integration-trace-' + Date.now();
+      const response = await request(httpServer)
+        .get('/api/health')
+        .set('x-correlation-id', correlationId)
+        .expect(200);
+
+      expect(response.headers['x-correlation-id']).toBe(correlationId);
+    });
+
+    it('should generate a UUID when no correlation-id is provided', async () => {
+      const response = await request(httpServer).get('/api').expect(200);
+
+      expect(response.headers['x-correlation-id']).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      );
+    });
+
+    it('should include correlation-id in error responses', async () => {
+      const correlationId = 'error-trace-' + Date.now();
+      const response = await request(httpServer)
+        .get('/api/missing-route')
+        .set('x-correlation-id', correlationId)
+        .expect(404);
+
+      expect(response.body.correlationId).toBe(correlationId);
     });
   });
 
@@ -208,29 +239,34 @@ describe('API Customer Service Integration', () => {
       expect(result[0].value).toBe(1);
     });
 
-    it('should create and query a temp table', async () => {
+    it('should persist and retrieve multiple users with factory data', async () => {
       await executeQuery(`
         CREATE TEMP TABLE test_users (
           id SERIAL PRIMARY KEY,
           name TEXT NOT NULL,
           email TEXT UNIQUE NOT NULL,
+          role TEXT NOT NULL DEFAULT 'customer',
           created_at TIMESTAMPTZ DEFAULT NOW()
         )
       `);
 
-      const user = UserFactory.create();
-      await executeQuery(
-        'INSERT INTO test_users (name, email) VALUES ($1, $2)',
-        [user.name, user.email]
-      );
+      const users = UserFactory.createMany(5);
+      for (const user of users) {
+        await executeQuery(
+          'INSERT INTO test_users (name, email, role) VALUES ($1, $2, $3)',
+          [user.name, user.email, user.role]
+        );
+      }
 
       const rows = await executeQuery(
-        'SELECT name, email FROM test_users WHERE email = $1',
-        [user.email]
+        'SELECT name, email, role FROM test_users ORDER BY id'
       );
-      expect(rows).toHaveLength(1);
-      expect(rows[0].name).toBe(user.name);
-      expect(rows[0].email).toBe(user.email);
+      expect(rows).toHaveLength(5);
+      for (let i = 0; i < 5; i++) {
+        expect(rows[i].name).toBe(users[i].name);
+        expect(rows[i].email).toBe(users[i].email);
+        expect(rows[i].role).toBe(users[i].role);
+      }
     });
 
     it('should enforce unique constraints', async () => {
@@ -241,7 +277,7 @@ describe('API Customer Service Integration', () => {
         )
       `);
 
-      const email = 'unique@test.com';
+      const email = UserFactory.create().email;
       await executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [
         email,
       ]);
@@ -251,7 +287,7 @@ describe('API Customer Service Integration', () => {
       ).rejects.toThrow();
     });
 
-    it('should handle transactions', async () => {
+    it('should handle transactions with rollback', async () => {
       await executeQuery(`
         CREATE TEMP TABLE test_tx (
           id SERIAL PRIMARY KEY,
@@ -269,6 +305,29 @@ describe('API Customer Service Integration', () => {
       const rows = await executeQuery('SELECT * FROM test_tx');
       expect(rows).toHaveLength(0);
     });
+
+    it('should support filtering, ordering, and aggregation', async () => {
+      await executeQuery(`
+        CREATE TEMP TABLE test_orders (
+          id SERIAL PRIMARY KEY,
+          customer TEXT NOT NULL,
+          amount NUMERIC(10,2) NOT NULL
+        )
+      `);
+
+      await executeQuery(
+        "INSERT INTO test_orders (customer, amount) VALUES ('alice', 100), ('bob', 200), ('alice', 50)"
+      );
+
+      const totals = await executeQuery(
+        'SELECT customer, SUM(amount)::numeric AS total FROM test_orders GROUP BY customer ORDER BY total DESC'
+      );
+      expect(totals).toHaveLength(2);
+      expect(totals[0].customer).toBe('bob');
+      expect(Number(totals[0].total)).toBe(200);
+      expect(totals[1].customer).toBe('alice');
+      expect(Number(totals[1].total)).toBe(150);
+    });
   });
 
   // ---------------------------------------------------------------
@@ -281,7 +340,7 @@ describe('API Customer Service Integration', () => {
       expect(connected).toBe(true);
     });
 
-    it('should insert and retrieve documents', async () => {
+    it('should insert and retrieve documents with factory data', async () => {
       const db = getMongoDatabase();
       const collection = db.collection('integration_test_users');
 
@@ -294,6 +353,7 @@ describe('API Customer Service Integration', () => {
       const found = await collection.findOne({ email: users[1].email });
       expect(found).not.toBeNull();
       expect(found?.name).toBe(users[1].name);
+      expect(found?.role).toBe(users[1].role);
     });
 
     it('should support query filtering and projection', async () => {
@@ -315,9 +375,30 @@ describe('API Customer Service Integration', () => {
       expect(userConvos.map((c) => c.title).sort()).toEqual(['Alpha', 'Beta']);
     });
 
-    it('should support update operations', async () => {
+    it('should build a conversation thread with factory', async () => {
       const db = getMongoDatabase();
-      const collection = db.collection('integration_test_messages');
+      const collection = db.collection('integration_test_threads');
+
+      const conversationId = 'conv-thread-test';
+      const thread = MessageFactory.createConversationThread(4, conversationId);
+      await collection.insertMany(thread);
+
+      const messages = await collection
+        .find({ conversationId })
+        .sort({ timestamp: 1 })
+        .toArray();
+      expect(messages).toHaveLength(8); // 4 turns = 8 messages
+      expect(messages[0].role).toBe('user');
+      expect(messages[1].role).toBe('assistant');
+      // Verify alternating pattern
+      for (let i = 0; i < messages.length; i++) {
+        expect(messages[i].role).toBe(i % 2 === 0 ? 'user' : 'assistant');
+      }
+    });
+
+    it('should support update and delete operations', async () => {
+      const db = getMongoDatabase();
+      const collection = db.collection('integration_test_updates');
 
       const msg = MessageFactory.create({ content: 'original' });
       const insertResult = await collection.insertOne(msg);
@@ -331,23 +412,16 @@ describe('API Customer Service Integration', () => {
         _id: insertResult.insertedId,
       });
       expect(updated?.content).toBe('updated');
-    });
 
-    it('should support delete operations', async () => {
-      const db = getMongoDatabase();
-      const collection = db.collection('integration_test_delete');
-
-      await collection.insertMany([
-        { key: 'keep' },
-        { key: 'delete-me' },
-        { key: 'keep' },
-      ]);
-
-      const deleteResult = await collection.deleteMany({ key: 'delete-me' });
+      const deleteResult = await collection.deleteOne({
+        _id: insertResult.insertedId,
+      });
       expect(deleteResult.deletedCount).toBe(1);
 
-      const remaining = await collection.countDocuments();
-      expect(remaining).toBe(2);
+      const gone = await collection.findOne({
+        _id: insertResult.insertedId,
+      });
+      expect(gone).toBeNull();
     });
   });
 

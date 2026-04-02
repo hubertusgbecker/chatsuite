@@ -7,4 +7,54 @@ datasource db {
   url      = env("POSTGRES_URL_WITH_SCHEMA")
 }
 
+/// End-user of the platform (distinct from admin Account).
+model User {
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  email         String         @db.VarChar(255)
+  name          String         @db.VarChar(255)
+  role          UserRole       @default(CUSTOMER)
+  conversations Conversation[]
+
+  @@unique([email])
+  @@index([id, email])
+}
+
+/// A conversation thread between a user and AI assistants.
+model Conversation {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  title     String    @db.VarChar(500)
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// A single message within a conversation.
+model Message {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole  @default(USER)
+  content        String       @db.Text
+
+  @@index([conversationId, createdAt])
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
 

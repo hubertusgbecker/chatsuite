@@ -8,11 +8,24 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "rules": {}
+      "parserOptions": {
+        "project": ["apps/client-app/tsconfig.*?.json"]
+      },
+      "rules": {
+        "@typescript-eslint/no-floating-promises": "error",
+        "@typescript-eslint/await-thenable": "error"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],
       "rules": {}
+    },
+    {
+      "files": ["*.spec.ts", "*.spec.tsx", "*.test.ts", "*.test.tsx"],
+      "rules": {
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/await-thenable": "off"
+      }
     }
   ]
 }

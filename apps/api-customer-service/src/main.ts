@@ -12,6 +12,9 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
 import { GlobalExceptionFilter } from './app/global-exception.filter';
+import { CORRELATION_ID_HEADER } from './app/middleware/correlation-id.middleware';
+import { randomUUID } from 'crypto';
+import type { Request, Response, NextFunction } from 'express';
 
 /**
  * Configures the NestJS application with global middleware.
@@ -21,6 +24,15 @@ import { GlobalExceptionFilter } from './app/global-exception.filter';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function configureApp(app: any): void {
+  // Correlation-ID middleware (runs before all routes, including 404s)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const correlationId =
+      (req.headers[CORRELATION_ID_HEADER] as string) || randomUUID();
+    req.headers[CORRELATION_ID_HEADER] = correlationId;
+    res.setHeader(CORRELATION_ID_HEADER, correlationId);
+    next();
+  });
+
   app.setGlobalPrefix('api');
   app.enableCors();
   app.useGlobalPipes(
@@ -45,5 +57,5 @@ async function bootstrap(): Promise<void> {
 const isDirectRun = require.main === module;
 const isNxServe = process.env.NX_TASK_TARGET_TARGET === 'serve';
 if (isDirectRun || isNxServe) {
-  bootstrap();
+  void bootstrap();
 }
