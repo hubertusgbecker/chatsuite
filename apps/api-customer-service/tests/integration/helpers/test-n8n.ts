@@ -218,7 +218,7 @@ export async function cleanupTestN8n(): Promise<void> {
         try {
           await deleteTestWorkflow(workflow.id);
           console.log(`🗑️  Deleted test workflow: ${workflow.name}`);
-        } catch (error) {
+        } catch (_error) {
           console.warn(`⚠️  Could not delete workflow ${workflow.name}`);
         }
       }

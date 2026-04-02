@@ -3,16 +3,20 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/api-customer-service/src",
   "projectType": "application",
-  "tags": ["type:app", "scope:backend"],
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/api-customer-service",
         "main": "apps/api-customer-service/src/main.ts",
         "tsConfig": "apps/api-customer-service/tsconfig.app.json",
-        "assets": ["apps/api-customer-service/src/assets"]
+        "assets": [
+          "apps/api-customer-service/src/assets"
+        ]
       },
       "configurations": {
         "production": {
@@ -30,7 +34,9 @@
     },
     "serve": {
       "executor": "@nx/js:node",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "api-customer-service:build",
         "buildTargetOptions": {
@@ -45,15 +51,20 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["apps/api-customer-service/**/*.ts"],
-        "ignorePath": "apps/api-customer-service/.eslintignore"
+        "lintFilePatterns": [
+          "apps/api-customer-service/**/*.ts"
+        ]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/apps/api-customer-service"],
+      "outputs": [
+        "{workspaceRoot}/coverage/apps/api-customer-service"
+      ],
       "options": {
         "jestConfig": "apps/api-customer-service/jest.config.ts",
         "passWithNoTests": true
@@ -69,10 +80,14 @@
         "passWithNoTests": false,
         "runInBand": true,
         "coverage": true,
-        "coverageReporters": ["html", "json", "lcov", "text"],
+        "coverageReporters": [
+          "html",
+          "json",
+          "lcov",
+          "text"
+        ],
         "maxWorkers": 1
       }
     }
-  },
-  "tags": []
+  }
 }

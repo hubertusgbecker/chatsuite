@@ -91,7 +91,7 @@ export async function createTestBucket(bucketName: string): Promise<void> {
     // Check if bucket already exists
     await client.send(new HeadBucketCommand({ Bucket: bucketName }));
     console.log(`ℹ️  Bucket ${bucketName} already exists`);
-  } catch (error) {
+  } catch (_error) {
     // Bucket doesn't exist, create it
     await client.send(new CreateBucketCommand({ Bucket: bucketName }));
     console.log(`✅ Created test bucket: ${bucketName}`);
@@ -212,7 +212,7 @@ export async function cleanupTestMinIO(): Promise<void> {
         // Now delete the empty bucket
         await s3Client.send(new DeleteBucketCommand({ Bucket: bucketName }));
         console.log(`🗑️  Deleted test bucket: ${bucketName}`);
-      } catch (error) {
+      } catch (_error) {
         // Bucket might not exist
         console.warn(`⚠️  Could not delete bucket ${bucketName}`);
       }
