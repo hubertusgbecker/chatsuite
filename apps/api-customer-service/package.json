@@ -4,9 +4,9 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@nestjs/common": "9.4.0",
-    "@nestjs/core": "9.4.0",
-    "@nestjs/platform-express": "9.4.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
     "@nx/node": "21.3.2",
     "async": "^3.2.4",
     "bluebird": "^3.7.2",

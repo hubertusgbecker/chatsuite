@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../../src/app/app.module';
+import { configureApp } from '../../../src/main';
 
 let app: INestApplication | null = null;
 let moduleRef: TestingModule | null = null;
@@ -8,6 +9,7 @@ let moduleRef: TestingModule | null = null;
 /**
  * Creates and initializes a test NestJS application.
  * Reuses the same instance if already created for performance.
+ * Applies production-identical configuration via configureApp().
  *
  * @returns Initialized NestJS application
  */
@@ -24,9 +26,7 @@ export async function createTestServer(): Promise<INestApplication> {
     app = moduleRef.createNestApplication() as INestApplication;
 
     // Apply same configuration as production
-    // app.useGlobalPipes(new ValidationPipe());
-    app.setGlobalPrefix('api');
-    app.enableCors();
+    configureApp(app);
 
     await app.init();
     console.log('✅ Test server initialized');
