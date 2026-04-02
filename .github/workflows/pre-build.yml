@@ -67,7 +67,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: '20.x'
           cache: 'pnpm'
       # Install workspace dependencies with frozen lockfile for faster install
       - name: Install dependencies
@@ -126,7 +126,7 @@ jobs:
       max-parallel: 4
       # One job for each different project and node version
       matrix:
-        node: ['24.x']
+        node: ['20.x']
         projectName: ${{fromJson(needs.get-affected.outputs.lint)}}
     env:
       NODE: ${{ matrix.node }}
@@ -163,7 +163,7 @@ jobs:
       max-parallel: 4
       # One job for each different project and node version
       matrix:
-        node: ['24.x']
+        node: ['20.x']
         projectName: ${{fromJson(needs.get-affected.outputs.test-unit)}}
     env:
       NODE: ${{ matrix.node }}
@@ -222,7 +222,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: '20.x'
           cache: 'pnpm'
       - name: Configure pnpm for CI
         run: |

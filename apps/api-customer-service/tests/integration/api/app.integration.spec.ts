@@ -56,7 +56,11 @@ import {
   verifyMCPEmailConnection,
   checkMCPEmailSSEEndpoint,
 } from '../helpers/test-mcp-email';
-import { UserFactory, ConversationFactory, MessageFactory } from '../helpers/factories';
+import {
+  UserFactory,
+  ConversationFactory,
+  MessageFactory,
+} from '../helpers/factories';
 
 /**
  * Integration tests for the Customer Service API.
@@ -114,9 +118,7 @@ describe('API Customer Service Integration', () => {
 
   describe('GET /api/health', () => {
     it('should return complete health status', async () => {
-      const response = await request(httpServer)
-        .get('/api/health')
-        .expect(200);
+      const response = await request(httpServer).get('/api/health').expect(200);
 
       expect(response.body.status).toBe('ok');
       expect(response.body.version).toMatch(/^\d+\.\d+\.\d+/);
@@ -240,7 +242,9 @@ describe('API Customer Service Integration', () => {
       `);
 
       const email = 'unique@test.com';
-      await executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [email]);
+      await executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [
+        email,
+      ]);
 
       await expect(
         executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [email])
@@ -257,7 +261,9 @@ describe('API Customer Service Integration', () => {
 
       // Insert inside a transaction that we rollback
       await executeQuery('BEGIN');
-      await executeQuery("INSERT INTO test_tx (value) VALUES ('should-vanish')");
+      await executeQuery(
+        "INSERT INTO test_tx (value) VALUES ('should-vanish')"
+      );
       await executeQuery('ROLLBACK');
 
       const rows = await executeQuery('SELECT * FROM test_tx');
@@ -321,7 +327,9 @@ describe('API Customer Service Integration', () => {
         { $set: { content: 'updated' } }
       );
 
-      const updated = await collection.findOne({ _id: insertResult.insertedId });
+      const updated = await collection.findOne({
+        _id: insertResult.insertedId,
+      });
       expect(updated?.content).toBe('updated');
     });
 
