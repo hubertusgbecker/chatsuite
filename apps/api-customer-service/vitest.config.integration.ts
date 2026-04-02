@@ -6,6 +6,9 @@ export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/api-customer-service-integration',
 
+  // Disable Vite's built-in Oxc transform; SWC handles it via unplugin-swc
+  oxc: false,
+
   plugins: [
     nxViteTsPaths(),
     swc.vite({
@@ -21,11 +24,8 @@ export default defineConfig({
     reporters: ['default'],
     globalSetup: ['./tests/integration/setup.ts'],
     setupFiles: ['./tests/integration/vitest.setup.ts'],
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
+    sequence: {
+      concurrent: false,
     },
     coverage: {
       reportsDirectory: '../../coverage/apps/api-customer-service-integration',

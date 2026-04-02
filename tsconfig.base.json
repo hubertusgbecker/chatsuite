@@ -1,11 +1,10 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -16,13 +15,12 @@
     "lib": ["es2022", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "@chatsuite/core/*": ["libs/core/src/*"],
-      "@chatsuite/ui/*": ["libs/ui/src/*"],
-      "@chatsuite/features/*": ["libs/features/src/*"],
-      "@chatsuite/data/*": ["libs/data/src/*"],
-      "@chatsuite/utils/*": ["libs/utils/src/*"]
+      "@chatsuite/core/*": ["./libs/core/src/*"],
+      "@chatsuite/ui/*": ["./libs/ui/src/*"],
+      "@chatsuite/features/*": ["./libs/features/src/*"],
+      "@chatsuite/data/*": ["./libs/data/src/*"],
+      "@chatsuite/utils/*": ["./libs/utils/src/*"]
     },
     "strict": true,
     "noImplicitReturns": true,

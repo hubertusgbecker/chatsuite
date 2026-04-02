@@ -6,6 +6,9 @@ export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/api-customer-service',
 
+  // Disable Vite's built-in Oxc transform; SWC handles it via unplugin-swc
+  oxc: false,
+
   plugins: [
     nxViteTsPaths(),
     swc.vite({

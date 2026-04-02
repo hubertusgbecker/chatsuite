@@ -101,7 +101,7 @@
     "unplugin-swc": "^1.5.9",
     "vite": "^8.0.3",
     "vitest": "^4.1.2",
-    "yargs": "^17.7.2"
+    "yargs": "^18.0.0"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.17",
@@ -112,5 +112,19 @@
     "express": "^5.2.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "axios": ">=1.14.0",
+      "fast-xml-parser": ">=5.5.7",
+      "minimatch": ">=9.0.7",
+      "multer": ">=2.1.1",
+      "picomatch": ">=4.0.4",
+      "path-to-regexp": ">=8.4.0",
+      "lodash": ">=4.18.0",
+      "body-parser": ">=2.2.1",
+      "qs": ">=6.14.1",
+      "file-type": ">=21.3.2"
+    }
   }
 }
