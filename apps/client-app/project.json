@@ -40,9 +40,7 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "apps/client-app/**/*.{ts,tsx,js,jsx}"
-        ]
+        "lintFilePatterns": ["apps/client-app/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
