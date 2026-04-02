@@ -67,8 +67,9 @@ export default async function globalSetup() {
     console.log('🗄️  Initializing database connection...');
     const db = await setupTestDatabase();
 
-    // Sync schema (creates tables if they don't exist)
-    await db.synchronize(true);
+    // Verify database connection works
+    const client = await db.connect();
+    client.release();
     console.log('✅ Database connection established');
 
     console.log('\n✨ Integration test environment ready!\n');

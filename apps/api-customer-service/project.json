@@ -51,25 +51,19 @@
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/apps/api-customer-service"],
       "options": {
-        "jestConfig": "apps/api-customer-service/jest.config.ts",
-        "passWithNoTests": true
+        "config": "apps/api-customer-service/vitest.config.ts"
       }
     },
     "integration": {
-      "executor": "@nx/jest:jest",
+      "executor": "@nx/vitest:test",
       "outputs": [
         "{workspaceRoot}/coverage/apps/api-customer-service-integration"
       ],
       "options": {
-        "jestConfig": "apps/api-customer-service/jest.config.integration.ts",
-        "passWithNoTests": false,
-        "runInBand": true,
-        "coverage": true,
-        "coverageReporters": ["html", "json", "lcov", "text"],
-        "maxWorkers": 1
+        "config": "apps/api-customer-service/vitest.config.integration.ts"
       }
     }
   }

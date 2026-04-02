@@ -18,7 +18,7 @@ describe('AppController', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getData', () => {
@@ -30,13 +30,13 @@ describe('AppController', () => {
     });
 
     it('should delegate to AppService', () => {
-      const spy = jest.spyOn(service, 'getData');
+      const spy = vi.spyOn(service, 'getData');
       controller.getData();
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('should propagate service errors', () => {
-      jest.spyOn(service, 'getData').mockImplementation(() => {
+      vi.spyOn(service, 'getData').mockImplementation(() => {
         throw new Error('Service failure');
       });
       expect(() => controller.getData()).toThrow('Service failure');

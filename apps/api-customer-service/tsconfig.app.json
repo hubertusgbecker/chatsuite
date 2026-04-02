@@ -8,8 +8,8 @@
     "target": "es2022"
   },
   "exclude": [
-    "jest.config.ts",
-    "jest.config.integration.ts",
+    "vitest.config.ts",
+    "vitest.config.integration.ts",
     "**/*.spec.ts",
     "**/*.test.ts",
     "tests/**/*"

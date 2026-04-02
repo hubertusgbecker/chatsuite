@@ -15,11 +15,11 @@
       "cache": true
     },
     "test": {
-      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "inputs": ["default", "^production"],
       "cache": true
     },
     "integration": {
-      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "inputs": ["default", "^production"],
       "cache": false
     },
     "lint": {
@@ -48,14 +48,13 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "sharedGlobals": [
       "{workspaceRoot}/pnpm-workspace.yaml",
-      "{workspaceRoot}/pnpm-lock.yaml",
-      "{workspaceRoot}/babel.config.json"
+      "{workspaceRoot}/pnpm-lock.yaml"
     ],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/vitest.config*.ts",
       "!{projectRoot}/eslint.config.mjs"
     ]
   },

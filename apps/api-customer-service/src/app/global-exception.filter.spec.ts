@@ -1,3 +1,4 @@
+import { type Mock } from 'vitest';
 import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import {
@@ -9,8 +10,8 @@ import {
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
   let mockResponse: {
-    status: jest.Mock;
-    json: jest.Mock;
+    status: Mock;
+    json: Mock;
   };
   let mockRequest: {
     method: string;
@@ -22,8 +23,8 @@ describe('GlobalExceptionFilter', () => {
   beforeEach(() => {
     filter = new GlobalExceptionFilter();
     mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
     };
     mockRequest = {
       method: 'GET',
