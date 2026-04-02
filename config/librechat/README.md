@@ -155,7 +155,6 @@ endpoints:
 ### Common Issues
 
 1. **Cannot connect to AI models**
-
    - Check your API keys in the active environment file:
      ```bash
      cat ../../.env  # Check which environment is active
@@ -165,12 +164,10 @@ endpoints:
    - Check API rate limits
 
 2. **Chat history not saving**
-
    - Ensure MongoDB is running: `docker-compose logs mongodb`
    - Check volume mounts for data persistence
 
 3. **MCP features not working**
-
    - Verify MCPHub is running: `docker-compose logs mcphub`
    - Check MCP server status in MCPHub web interface
 

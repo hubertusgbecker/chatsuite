@@ -184,7 +184,7 @@ describe('API Customer Service Integration', () => {
       const response = await request(httpServer).get('/api').expect(200);
 
       expect(response.headers['x-correlation-id']).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
       );
     });
 
@@ -214,7 +214,7 @@ describe('API Customer Service Integration', () => {
   describe('Performance', () => {
     it('should handle 30 concurrent requests', async () => {
       const promises = Array.from({ length: 30 }, () =>
-        request(httpServer).get('/api')
+        request(httpServer).get('/api'),
       );
       const responses = await Promise.all(promises);
 
@@ -222,7 +222,7 @@ describe('API Customer Service Integration', () => {
       expect(successes).toHaveLength(30);
       for (const r of successes) {
         expect(r.body.message).toBe(
-          'Welcome to api-customer-service of ChatSuite!'
+          'Welcome to api-customer-service of ChatSuite!',
         );
       }
     });
@@ -254,12 +254,12 @@ describe('API Customer Service Integration', () => {
       for (const user of users) {
         await executeQuery(
           'INSERT INTO test_users (name, email, role) VALUES ($1, $2, $3)',
-          [user.name, user.email, user.role]
+          [user.name, user.email, user.role],
         );
       }
 
       const rows = await executeQuery(
-        'SELECT name, email, role FROM test_users ORDER BY id'
+        'SELECT name, email, role FROM test_users ORDER BY id',
       );
       expect(rows).toHaveLength(5);
       for (let i = 0; i < 5; i++) {
@@ -283,7 +283,7 @@ describe('API Customer Service Integration', () => {
       ]);
 
       await expect(
-        executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [email])
+        executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [email]),
       ).rejects.toThrow();
     });
 
@@ -298,7 +298,7 @@ describe('API Customer Service Integration', () => {
       // Insert inside a transaction that we rollback
       await executeQuery('BEGIN');
       await executeQuery(
-        "INSERT INTO test_tx (value) VALUES ('should-vanish')"
+        "INSERT INTO test_tx (value) VALUES ('should-vanish')",
       );
       await executeQuery('ROLLBACK');
 
@@ -316,11 +316,11 @@ describe('API Customer Service Integration', () => {
       `);
 
       await executeQuery(
-        "INSERT INTO test_orders (customer, amount) VALUES ('alice', 100), ('bob', 200), ('alice', 50)"
+        "INSERT INTO test_orders (customer, amount) VALUES ('alice', 100), ('bob', 200), ('alice', 50)",
       );
 
       const totals = await executeQuery(
-        'SELECT customer, SUM(amount)::numeric AS total FROM test_orders GROUP BY customer ORDER BY total DESC'
+        'SELECT customer, SUM(amount)::numeric AS total FROM test_orders GROUP BY customer ORDER BY total DESC',
       );
       expect(totals).toHaveLength(2);
       expect(totals[0].customer).toBe('bob');
@@ -405,7 +405,7 @@ describe('API Customer Service Integration', () => {
 
       await collection.updateOne(
         { _id: insertResult.insertedId },
-        { $set: { content: 'updated' } }
+        { $set: { content: 'updated' } },
       );
 
       const updated = await collection.findOne({

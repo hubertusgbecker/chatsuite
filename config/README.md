@@ -264,17 +264,14 @@ docker-compose restart <service-name>
 ### Common Issues
 
 1. **Port conflicts**
-
    - Check if ports are already in use: `netstat -tulpn | grep <port>`
    - Stop conflicting services or change ports in docker-compose.yaml
 
 2. **SSL certificate warnings**
-
    - Expected with self-signed certificates
    - Click "Advanced" → "Proceed to localhost" in browser
 
 3. **Database connection errors**
-
    - Ensure PostgreSQL is running: `docker-compose ps postgres`
    - Check database logs: `docker-compose logs postgres`
 

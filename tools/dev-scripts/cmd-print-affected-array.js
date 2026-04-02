@@ -108,7 +108,7 @@ async function affectedProjectsContainingTask(taskName, baseBranch) {
 
   // Return intersection of affected projects and projects with target
   return affectedProjects.filter((project) =>
-    projectsWithTarget.includes(project)
+    projectsWithTarget.includes(project),
   );
 }
 

@@ -72,7 +72,7 @@ export async function setupTestMinIO(): Promise<void> {
 export function getMinioClient(): S3Client {
   if (!s3Client) {
     throw new Error(
-      'MinIO client not initialized. Call setupTestMinIO() first.'
+      'MinIO client not initialized. Call setupTestMinIO() first.',
     );
   }
   return s3Client;
@@ -111,7 +111,7 @@ export async function createTestBucket(bucketName: string): Promise<void> {
 export async function uploadTestFile(
   bucketName: string,
   key: string,
-  body: string | Buffer
+  body: string | Buffer,
 ): Promise<void> {
   const client = getMinioClient();
 
@@ -120,7 +120,7 @@ export async function uploadTestFile(
       Bucket: bucketName,
       Key: key,
       Body: body,
-    })
+    }),
   );
 }
 
@@ -133,7 +133,7 @@ export async function uploadTestFile(
  */
 export async function downloadTestFile(
   bucketName: string,
-  key: string
+  key: string,
 ): Promise<string> {
   const client = getMinioClient();
 
@@ -141,7 +141,7 @@ export async function downloadTestFile(
     new GetObjectCommand({
       Bucket: bucketName,
       Key: key,
-    })
+    }),
   );
 
   // Convert stream to string
@@ -164,7 +164,7 @@ export async function downloadTestFile(
  */
 export async function deleteTestFile(
   bucketName: string,
-  key: string
+  key: string,
 ): Promise<void> {
   const client = getMinioClient();
 
@@ -172,7 +172,7 @@ export async function deleteTestFile(
     new DeleteObjectCommand({
       Bucket: bucketName,
       Key: key,
-    })
+    }),
   );
 }
 
@@ -192,7 +192,7 @@ export async function cleanupTestMinIO(): Promise<void> {
       try {
         // List all objects in bucket
         const listResponse = await s3Client.send(
-          new ListObjectsV2Command({ Bucket: bucketName })
+          new ListObjectsV2Command({ Bucket: bucketName }),
         );
 
         // Delete all objects first
@@ -203,7 +203,7 @@ export async function cleanupTestMinIO(): Promise<void> {
                 new DeleteObjectCommand({
                   Bucket: bucketName,
                   Key: object.Key,
-                })
+                }),
               );
             }
           }

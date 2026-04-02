@@ -75,19 +75,16 @@ docker-compose up pgadmin -d
 The initialization script creates separate databases and schemas for each service:
 
 1. **chatsuite** - Main application database
-
    - Customer service data
    - User management
    - Application settings
 
 2. **n8n** - Workflow automation
-
    - Workflow definitions
    - Execution history
    - User credentials
 
 3. **nocodb** - Database GUI
-
    - Project configurations
    - API definitions
    - User interface settings
@@ -109,12 +106,10 @@ During first startup, PostgreSQL runs:
 Multiple services connect to PostgreSQL:
 
 - **Customer Service API** (port 3333)
-
   - Connection: `postgresql://admin:admin@postgres:5432/chatsuite`
   - Purpose: Application data storage
 
 - **n8n Workflow Engine** (port 5678)
-
   - Connection: `postgresql://admin:admin@postgres:5432/chatsuite?schema=n8n`
   - Purpose: Workflow and execution data
 
@@ -225,7 +220,6 @@ FROM pg_tables WHERE schemaname NOT IN ('information_schema','pg_catalog');
    ```
 
 3. **Permission denied errors**
-
    - Verify credentials in environment files
    - Check database user permissions
    - Ensure proper schema access rights

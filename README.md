@@ -136,7 +136,6 @@ pnpm rebuild && pnpm test
 **What each command does:**
 
 - **`pnpm rebuild`**:
-
   - Stops and cleans existing containers
   - Pulls latest service images
   - Starts all services in correct order
@@ -293,7 +292,6 @@ Developer Guide: All development standards and guidelines are defined in [`AGENT
 Find the perfect place to start by following these steps:
 
 1. **Install NVM (Node Version Manager):**
-
    - [NVM Installation Guide](https://github.com/nvm-sh/nvm#installing-and-updating)
    - In the project root, run:
      ```bash
@@ -306,7 +304,6 @@ Find the perfect place to start by following these steps:
      ```
 
 2. **Install Docker:**
-
    - [Docker Installation Guide](https://docs.docker.com/engine/install/)
    - Verify installation:
      ```bash
@@ -314,14 +311,12 @@ Find the perfect place to start by following these steps:
      ```
 
 3. **Install pnpm:**
-
    - This repo uses pnpm for efficient dependency management.
      ```bash
      npm install -g pnpm
      ```
 
 4. **Generate .env files:**
-
    - Copy all files in `config/env/` and prefix each with a dot (`.`) to make them hidden and git-ignored:
      ```bash
      cp config/env/env.dev config/env/.env.dev
@@ -330,7 +325,6 @@ Find the perfect place to start by following these steps:
      ```
 
 5. **SSL Setup (Recommended for HTTPS):**
-
    - Install [mkcert](https://github.com/FiloSottile/mkcert) (easiest via Homebrew):
      ```bash
      brew install mkcert
@@ -340,7 +334,6 @@ Find the perfect place to start by following these steps:
      ```
 
 6. **MCPHub Configuration (Required):**
-
    - Copy the example MCP settings to create your configuration:
      ```bash
      cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json

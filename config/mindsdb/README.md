@@ -210,13 +210,11 @@ POSTGRES_PASSWORD=admin    # Change for qa/host environments
    ```
 
 2. **Cannot connect to data sources**
-
    - Verify database connectivity from MindsDB container
    - Check firewall and network settings
    - Ensure correct credentials and connection strings
 
 3. **Model training fails**
-
    - Check data quality and format
    - Verify sufficient disk space
    - Review MindsDB logs for specific errors

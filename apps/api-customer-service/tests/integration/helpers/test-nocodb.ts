@@ -40,10 +40,10 @@ export async function setupTestNocodb(): Promise<void> {
     // Skip setup if auth token not configured
     if (!config.authToken) {
       console.warn(
-        '⚠️  NOCODB_AUTH_TOKEN not configured - NocoDB tests will be skipped'
+        '⚠️  NOCODB_AUTH_TOKEN not configured - NocoDB tests will be skipped',
       );
       console.warn(
-        'ℹ️  To enable NocoDB tests, create an API token from NocoDB UI and set NOCODB_AUTH_TOKEN environment variable'
+        'ℹ️  To enable NocoDB tests, create an API token from NocoDB UI and set NOCODB_AUTH_TOKEN environment variable',
       );
       return;
     }
@@ -62,7 +62,7 @@ export async function setupTestNocodb(): Promise<void> {
 
     if (response.status !== 200) {
       throw new Error(
-        `NocoDB health check failed with status ${response.status}`
+        `NocoDB health check failed with status ${response.status}`,
       );
     }
 
@@ -82,7 +82,7 @@ export async function setupTestNocodb(): Promise<void> {
 export function getNocodbClient(): AxiosInstance {
   if (!nocodbClient) {
     throw new Error(
-      'NocoDB client not initialized. Call setupTestNocodb() first.'
+      'NocoDB client not initialized. Call setupTestNocodb() first.',
     );
   }
   return nocodbClient;
@@ -104,7 +104,7 @@ export async function createTestBase(baseName: string): Promise<any> {
 
   if (response.status !== 200 && response.status !== 201) {
     throw new Error(
-      `Failed to create base: ${response.status} ${response.statusText}`
+      `Failed to create base: ${response.status} ${response.statusText}`,
     );
   }
 

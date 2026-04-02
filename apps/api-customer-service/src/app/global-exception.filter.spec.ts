@@ -47,7 +47,7 @@ describe('GlobalExceptionFilter', () => {
         statusCode: 500,
         errorCode: ErrorCode.INTERNAL_ERROR,
         message: 'Internal server error',
-      })
+      }),
     );
   });
 
@@ -61,7 +61,7 @@ describe('GlobalExceptionFilter', () => {
         statusCode: 403,
         errorCode: ErrorCode.FORBIDDEN,
         message: 'Forbidden',
-      })
+      }),
     );
   });
 
@@ -69,14 +69,14 @@ describe('GlobalExceptionFilter', () => {
     const exception = new BusinessException(
       ErrorCode.DB_QUERY_FAILED,
       'query failed',
-      HttpStatus.INTERNAL_SERVER_ERROR
+      HttpStatus.INTERNAL_SERVER_ERROR,
     );
     filter.catch(exception, mockHost);
 
     expect(mockResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
         errorCode: ErrorCode.DB_QUERY_FAILED,
-      })
+      }),
     );
   });
 
@@ -131,7 +131,7 @@ describe('GlobalExceptionFilter', () => {
     expect(mockResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Internal server error',
-      })
+      }),
     );
   });
 });

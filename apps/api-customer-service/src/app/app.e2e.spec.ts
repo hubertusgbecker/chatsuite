@@ -107,7 +107,7 @@ describe('API Customer Service (e2e)', () => {
 
       expect(response.headers['x-correlation-id']).toBeDefined();
       expect(response.headers['x-correlation-id']).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
       );
     });
 
@@ -252,7 +252,7 @@ describe('API Customer Service (e2e)', () => {
       for (let i = 0; i < totalRequests; i += batchSize) {
         const batch = Array.from(
           { length: Math.min(batchSize, totalRequests - i) },
-          () => request(httpServer).get('/api').expect(200)
+          () => request(httpServer).get('/api').expect(200),
         );
         const batchResponses = await Promise.all(batch);
         responses.push(...batchResponses);
@@ -262,7 +262,7 @@ describe('API Customer Service (e2e)', () => {
       expect(responses).toHaveLength(10);
       for (const res of responses) {
         expect(res.body.message).toBe(
-          'Welcome to api-customer-service of ChatSuite!'
+          'Welcome to api-customer-service of ChatSuite!',
         );
       }
     });

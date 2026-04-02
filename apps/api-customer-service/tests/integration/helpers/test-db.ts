@@ -96,7 +96,7 @@ export async function closeTestDatabase(): Promise<void> {
 export function getTestDatabase(): DataSource {
   if (!dataSource?.isInitialized) {
     throw new Error(
-      'Test database not initialized. Call setupTestDatabase() first.'
+      'Test database not initialized. Call setupTestDatabase() first.',
     );
   }
   return dataSource;
@@ -113,7 +113,7 @@ export function getTestDatabase(): DataSource {
 export async function executeQuery<T = any>(
   query: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parameters?: any[]
+  parameters?: any[],
 ): Promise<T> {
   const db = getTestDatabase();
   return db.query(query, parameters);

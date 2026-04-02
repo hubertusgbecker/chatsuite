@@ -51,14 +51,14 @@ export async function setupTestMCPHub(): Promise<void> {
 
     if (response.status !== 200 && response.status !== 503) {
       throw new Error(
-        `MCPHub health check failed with unexpected status ${response.status}`
+        `MCPHub health check failed with unexpected status ${response.status}`,
       );
     }
 
     if (response.status === 503) {
       console.log('⚠️  MCPHub is running but MCP servers are not all ready');
       console.log(
-        'ℹ️  This is normal if MCP servers are not configured in mcp_settings.json'
+        'ℹ️  This is normal if MCP servers are not configured in mcp_settings.json',
       );
     }
 
@@ -78,7 +78,7 @@ export async function setupTestMCPHub(): Promise<void> {
 export function getMCPHubClient(): AxiosInstance {
   if (!mcphubClient) {
     throw new Error(
-      'MCPHub client not initialized. Call setupTestMCPHub() first.'
+      'MCPHub client not initialized. Call setupTestMCPHub() first.',
     );
   }
   return mcphubClient;
@@ -153,7 +153,7 @@ export async function getMCPServerStatus(serverId: string): Promise<any> {
  * @returns Promise that resolves to true if server is reachable
  */
 export async function testMCPServerConnection(
-  serverId: string
+  serverId: string,
 ): Promise<boolean> {
   try {
     const client = getMCPHubClient();
@@ -163,7 +163,7 @@ export async function testMCPServerConnection(
   } catch (error) {
     console.error(
       `❌ Failed to test MCP server connection for ${serverId}:`,
-      error
+      error,
     );
     return false;
   }

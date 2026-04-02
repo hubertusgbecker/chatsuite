@@ -64,7 +64,7 @@ export async function closeTestServer(): Promise<void> {
 export function getTestServer(): INestApplication {
   if (!app) {
     throw new Error(
-      'Test server not initialized. Call createTestServer() first.'
+      'Test server not initialized. Call createTestServer() first.',
     );
   }
   return app;
@@ -87,7 +87,7 @@ export function getTestServer(): INestApplication {
 export function getService<T>(serviceClass: new (...args: any[]) => T): T {
   if (!moduleRef) {
     throw new Error(
-      'Test module not initialized. Call createTestServer() first.'
+      'Test module not initialized. Call createTestServer() first.',
     );
   }
   return moduleRef.get<T>(serviceClass);

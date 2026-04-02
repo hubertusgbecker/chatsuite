@@ -58,13 +58,11 @@ ChatSuite follows strict Test-Driven Development for all new features and bug fi
 **The TDD Cycle (Red-Green-Refactor):**
 
 1. **RED**: Write a failing test
-
    - Define expected behavior before writing code
    - Test should fail for the right reason
    - Clarifies requirements and interface design
 
 2. **GREEN**: Make the test pass
-
    - Write minimal code to pass the test
    - Don't optimize prematurely
    - Focus on making it work first
@@ -1424,19 +1422,16 @@ Every integration test and feature must follow the Red-Green-Refactor cycle:
 ✅ **GOOD** (Incremental approach):
 
 1. Step 1 (15 min): Test email connection
-
    - Write test for SMTP connection
    - Implement connection logic
    - Commit: `test: add email connection test` + `feat: connect to SMTP server`
 
 2. Step 2 (20 min): Test email sending
-
    - Write test for sending email
    - Implement send logic
    - Commit: `test: add email sending test` + `feat: implement email sending`
 
 3. Step 3 (15 min): Test template rendering
-
    - Write test for email templates
    - Implement template system
    - Commit: `test: add template tests` + `feat: add email templates`

@@ -35,7 +35,7 @@ const getLatestTagVersion = async () => {
     .catch((e) => {
       console.error(
         '[ChatSuite] An error occurred while getting the latest tag version. Returning the tag version as 0.0.0',
-        e
+        e,
       );
       return '0.0.0';
     });
@@ -45,7 +45,7 @@ const tagAndPushProjectDockerImage = async (projectName, tag) => {
   const cmdDockerBuild =
     `docker build -t ${tag} -f ./apps/${projectName}/Dockerfile ./apps/${projectName}`.replace(
       /\n/,
-      ''
+      '',
     );
   console.log(`$ ${cmdDockerBuild}`);
   await execPromise(cmdDockerBuild);
@@ -74,14 +74,14 @@ const tagAndPushProjectDockerImages = async () => {
         console.log(response?.stderr);
       } else {
         console.log(
-          `[ChatSuite] Project images are tagged and pushed successfully.`
+          `[ChatSuite] Project images are tagged and pushed successfully.`,
         );
       }
     })
     .catch((e) => {
       console.error(
         '[ChatSuite] An error occurred while tagging and pushing project images.',
-        e
+        e,
       );
       process.exit(1);
     });
@@ -102,7 +102,7 @@ const buildProjects = async () => {
           })
           .map((projectName) => {
             return execPromise(
-              `rm -rf ./apps/${projectName}/dist && cp -r ./dist/apps/${projectName}/ ./apps/${projectName}/dist/`
+              `rm -rf ./apps/${projectName}/dist && cp -r ./dist/apps/${projectName}/ ./apps/${projectName}/dist/`,
             ).catch(() => undefined);
           });
         return Promise.all(promiseBatch);
@@ -111,7 +111,7 @@ const buildProjects = async () => {
     .catch((e) => {
       console.error(
         '[ChatSuite] An error occurred while building the projects.',
-        e
+        e,
       );
       process.exit(1);
     });
@@ -124,23 +124,23 @@ const tagAndPushProjectHelmChart = async (chartName, chartPath, version) => {
     return runCmd(`helm lint ${chartPath}`)
       .then(() =>
         runCmd(
-          `helm package --dependency-update --version ${version} --app-version ${version} ${chartPath}`
-        )
+          `helm package --dependency-update --version ${version} --app-version ${version} ${chartPath}`,
+        ),
       )
       .then(() =>
-        runCmd(`helm push ${zippedFile} oci://${OCI_REPOSITORY_URL}/helm`)
+        runCmd(`helm push ${zippedFile} oci://${OCI_REPOSITORY_URL}/helm`),
       )
       .then(() =>
         runCmd(
-          `helm show all "oci://${OCI_REPOSITORY_URL}/helm/${chartName}" --version ${version}`
-        )
+          `helm show all "oci://${OCI_REPOSITORY_URL}/helm/${chartName}" --version ${version}`,
+        ),
       )
       .then((response) => console.log(response.stdout))
       .then(() => runCmd(`rm -f ./${zippedFile}`))
       .catch((e) => {
         console.error(
           `[ChatSuite] An error occurred while packaging the chart ${chartName}`,
-          e
+          e,
         );
         process.exit(1);
       });
@@ -151,7 +151,7 @@ const tagAndPushProjectHelmChart = async (chartName, chartPath, version) => {
 const tagAndPushProjectHelmCharts = async () => {
   if (!OCI_REPOSITORY_URL) {
     return Promise.reject(
-      '[ChatSuite][Error] Please pass the OCI repository url as an argument.'
+      '[ChatSuite][Error] Please pass the OCI repository url as an argument.',
     );
   }
   const projects = getProjectVersionsJson();
@@ -183,7 +183,7 @@ const _helmDryRun = async () => {
       // For remote images
       // helm upgrade --install client-app --version 1.3.43 oci://localhost:${ZOT_PORT_INSIDE_MINIKUBE}/helm/client-app --set image.repository="bugrauluyurt/client-app" --set image.tag="1.3.43"
       return runCmd(
-        `helm upgrade --install ${chartName} --version ${version} oci://${OCI_REPOSITORY_URL}/helm/${chartName} --set image.repository="host.minikube.internal:${DOCKER_REGISTRY_PORT}/${chartName}" --set image.tag="${version}"`
+        `helm upgrade --install ${chartName} --version ${version} oci://${OCI_REPOSITORY_URL}/helm/${chartName} --set image.repository="host.minikube.internal:${DOCKER_REGISTRY_PORT}/${chartName}" --set image.tag="${version}"`,
       );
     });
   return Promise.all(promiseBatch);
@@ -203,11 +203,11 @@ const run = async () => {
     await runJob('[ChatSuite] Job->buildProjects()', buildProjects);
     await runJob(
       '[ChatSuite] Job->tagAndPushProjectDockerImages()',
-      tagAndPushProjectDockerImages
+      tagAndPushProjectDockerImages,
     );
     await runJob(
       '[ChatSuite] Job->tagAndPushProjectHelmCharts()',
-      tagAndPushProjectHelmCharts
+      tagAndPushProjectHelmCharts,
     );
     process.exit(0);
   } catch (e) {

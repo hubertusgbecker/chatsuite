@@ -33,38 +33,38 @@ const checkDocker = () =>
 
 const checkEnvFiles = () => {
   const hostEnvExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/env/.env.host')
+    path.resolve(__dirname, '../../config/env/.env.host'),
   );
   const qaEnvExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/env/.env.qa')
+    path.resolve(__dirname, '../../config/env/.env.qa'),
   );
   const devEnvExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/env/.env.dev')
+    path.resolve(__dirname, '../../config/env/.env.dev'),
   );
   const rootEnvExists = fs.existsSync(path.resolve(__dirname, '../../.env'));
   if (!hostEnvExists || !qaEnvExists || !devEnvExists || !rootEnvExists) {
     if (!hostEnvExists) {
       console.error(
-        '[ChatSuite][Error] Please put .env.host file inside your ./config/env/ folder.'
+        '[ChatSuite][Error] Please put .env.host file inside your ./config/env/ folder.',
       );
     }
     if (!qaEnvExists) {
       console.error(
-        '[ChatSuite][Error] Please put .env.qa file inside your ./config/env/ folder.'
+        '[ChatSuite][Error] Please put .env.qa file inside your ./config/env/ folder.',
       );
     }
     if (!devEnvExists) {
       console.error(
-        '[ChatSuite][Error] Please put .env.dev file inside your ./config/env/ folder.'
+        '[ChatSuite][Error] Please put .env.dev file inside your ./config/env/ folder.',
       );
     }
     if (!rootEnvExists) {
       console.error(
-        '[ChatSuite][Error] Please put a .env file in the root of your project.'
+        '[ChatSuite][Error] Please put a .env file in the root of your project.',
       );
     }
     console.error(
-      '[ChatSuite][Info] You can copy the template .env.[env] file from ./config/env folder for each environment.'
+      '[ChatSuite][Info] You can copy the template .env.[env] file from ./config/env folder for each environment.',
     );
     process.exit(1);
   }
@@ -72,24 +72,24 @@ const checkEnvFiles = () => {
 
 const checkCertificates = () => {
   const keyExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/certificates/localhost-key.pem')
+    path.resolve(__dirname, '../../config/certificates/localhost-key.pem'),
   );
   const crtExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/certificates/localhost-crt.pem')
+    path.resolve(__dirname, '../../config/certificates/localhost-crt.pem'),
   );
   const certificates = { keyExists, crtExists };
   if (!certificates.crtExists || !certificates.keyExists) {
     console.log(
-      '[ChatSuite][Error] Please make sure you install mkcert before generating your certificates.'
+      '[ChatSuite][Error] Please make sure you install mkcert before generating your certificates.',
     );
     if (!certificates.crtExists) {
       console.error(
-        '[ChatSuite][Error] Please generate a localhost-crt.pem file inside your ./config/certificates/ folder by using mkcert.'
+        '[ChatSuite][Error] Please generate a localhost-crt.pem file inside your ./config/certificates/ folder by using mkcert.',
       );
     }
     if (!certificates.keyExists) {
       console.error(
-        '[ChatSuite][Error] Please generate a localhost-key.pem file inside your ./config/certificates/ folder by using mkcert.'
+        '[ChatSuite][Error] Please generate a localhost-key.pem file inside your ./config/certificates/ folder by using mkcert.',
       );
     }
     process.exit(1);
@@ -98,16 +98,16 @@ const checkCertificates = () => {
 
 const printNodeVersionError = (data) => {
   console.error(
-    `[ChatSuite][Error] Please use the correct node version -> ${data?.nvmNodeVersion}`
+    `[ChatSuite][Error] Please use the correct node version -> ${data?.nvmNodeVersion}`,
   );
   console.error(
-    `[ChatSuite][Error] If you have already run 'pnpm install' or 'pnpm setup' please delete all **/*/node_modules folders inside your project.`
+    `[ChatSuite][Error] If you have already run 'pnpm install' or 'pnpm setup' please delete all **/*/node_modules folders inside your project.`,
   );
 };
 
 const printDockerError = () => {
   console.error(
-    '[ChatSuite][Error] Please install docker to run the project correctly.'
+    '[ChatSuite][Error] Please install docker to run the project correctly.',
   );
 };
 

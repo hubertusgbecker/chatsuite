@@ -32,7 +32,7 @@ const getBuildProjects = () => {
     })
     .filter(Boolean);
   return JSON.stringify(
-    generatedProjects.length ? generatedProjects : allWorkspaceProjects
+    generatedProjects.length ? generatedProjects : allWorkspaceProjects,
   );
 };
 

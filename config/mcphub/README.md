@@ -261,12 +261,10 @@ The MCP servers are pre-configured in `mcp_settings.json`. You can add more serv
 MCPHub comes with these MCP servers ready to use:
 
 1. **Time Server**
-
    - Provides current time and date functions
    - Uses: `uvx mcp-server-time`
 
 2. **Fetch Server**
-
    - Fetches content from web URLs and APIs
    - Uses: `uvx mcp-server-fetch`
 
@@ -364,13 +362,11 @@ All MCP tools will then be available in your AI conversations.
    ```
 
 2. **MCP servers not responding**
-
    - Check server status in MCPHub web interface
    - Verify network connectivity between containers
    - Review MCP server logs
 
 3. **Configuration not loading**
-
    - Verify JSON syntax in `mcp_settings.json`
    - Restart MCPHub container after configuration changes
    - Check file permissions

@@ -83,7 +83,7 @@ export function getMongoDatabase(): Db {
 export function getMongoClient(): MongoClient {
   if (!mongoClient) {
     throw new Error(
-      'MongoDB client not initialized. Call setupTestMongoDB() first.'
+      'MongoDB client not initialized. Call setupTestMongoDB() first.',
     );
   }
   return mongoClient;
@@ -148,7 +148,7 @@ export async function closeTestMongoDB(): Promise<void> {
 export async function createTestCollection(
   collectionName: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  documents: any[]
+  documents: any[],
 ): Promise<void> {
   const db = getMongoDatabase();
   const collection = db.collection(collectionName);

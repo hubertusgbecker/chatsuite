@@ -7,7 +7,6 @@ For the GitHub Actions workflows to function properly, the following secrets mus
 ### Required Secrets
 
 1. **`GH_WORKFLOW_TOKEN`** - A GitHub Personal Access Token with workflow dispatch permissions
-
    - Go to GitHub Settings > Developer settings > Personal access tokens
    - Generate a token with the following scopes:
      - `repo` (Full control of private repositories)
@@ -16,12 +15,10 @@ For the GitHub Actions workflows to function properly, the following secrets mus
    - Add this token as a repository secret named `GH_WORKFLOW_TOKEN`
 
 2. **`GITHUB_TOKEN`** - This is automatically provided by GitHub Actions
-
    - Should have the permissions set in the workflow file
    - No manual configuration required
 
 3. **`NX_CLOUD_AUTH_TOKEN`** - For Nx Cloud integration (if used)
-
    - Obtain from Nx Cloud dashboard
    - Add as repository secret
 

@@ -10,7 +10,6 @@ If you discover a security vulnerability in ChatSuite, please report it
 privately to the maintainers so we can respond and remediate safely.
 
 - Preferred: Send an email to `hubertus@hubertusbecker.com` with:
-
   - A concise summary of the issue
   - Affected components and versions (if applicable)
   - Steps to reproduce, PoC, or sample code

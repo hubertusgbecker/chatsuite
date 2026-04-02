@@ -6,7 +6,7 @@ const pruneContainers = () => {
     .catch((e) => {
       console.error(
         '[ChatSuite] An error occurred while pruning docker containers.',
-        e
+        e,
       );
     })
     .finally(() => console.log('[ChatSuite] Container prune completed.'));
@@ -30,10 +30,10 @@ const pruneImages = () => {
             execPromise(`docker image rm ${imageId} -f`)
               .then(() =>
                 console.log(
-                  `[ChatSuite] Docker image with id:${imageId} removed.`
-                )
+                  `[ChatSuite] Docker image with id:${imageId} removed.`,
+                ),
               )
-              .catch()
+              .catch(),
           );
         }
       });
@@ -55,7 +55,7 @@ const _stopDockerCompose = () => {
     .catch((e) => {
       console.error(
         '[ChatSuite] An error occurred while executing docker compose down.',
-        e
+        e,
       );
     });
 };
@@ -72,7 +72,7 @@ const handleSuccess = () => {
 const handleError = (error) => {
   console.error(
     '[ChatSuite] An error occurred while pruning docker assets.',
-    error
+    error,
   );
   process.exit(1);
 };

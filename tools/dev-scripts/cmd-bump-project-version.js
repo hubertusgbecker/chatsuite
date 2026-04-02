@@ -19,7 +19,7 @@ const bumpProjectVersion = (projectName, nextCalver) => {
   versionsJson[projectName] = nextCalver;
   fs.writeFileSync(
     getVersionsJsonPath(),
-    JSON.stringify(versionsJson, null, 4)
+    JSON.stringify(versionsJson, null, 4),
   );
 };
 
@@ -27,7 +27,7 @@ const run = () => {
   try {
     if (!PROJECT_NAME?.length || !VERSION?.length) {
       throw Error(
-        'Please input a projectName and version as a cmd line argument.'
+        'Please input a projectName and version as a cmd line argument.',
       );
     }
     bumpProjectVersion(PROJECT_NAME, VERSION);

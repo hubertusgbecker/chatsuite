@@ -21,7 +21,7 @@ const listRunningContainers = async () => {
     .catch((e) => {
       console.error(
         '[ChatSuite] An error occurred while listing running containers.',
-        e
+        e,
       );
       process.exit(1);
     });
@@ -33,7 +33,7 @@ const isDockerLocalRegistryRunning = async () => {
     (row) =>
       row.indexOf(DOCKER_REGISTRY_NAME) !== -1 &&
       row.indexOf(`0.0.0.0:${DOCKER_REGISTRY_PORT}`) !== -1 &&
-      row.indexOf('Up') > -1
+      row.indexOf('Up') > -1,
   );
 };
 
@@ -42,7 +42,7 @@ const startDockerLocalRegistry = async () => {
   const isRegistryRunning = await isDockerLocalRegistryRunning();
   const logSuccess = () => {
     console.log(
-      `[ChatSuite] Docker registry running on port ${DOCKER_REGISTRY_PORT}.`
+      `[ChatSuite] Docker registry running on port ${DOCKER_REGISTRY_PORT}.`,
     );
     const logMessageForTail =
       '[ChatSuite] To tail the container logs you can run:\n => docker logs -f registry';
@@ -55,10 +55,10 @@ const startDockerLocalRegistry = async () => {
     return;
   }
   console.log(
-    `[ChatSuite] Creating local docker registry with name-> ${DOCKER_REGISTRY_NAME} on port ${DOCKER_REGISTRY_PORT}`
+    `[ChatSuite] Creating local docker registry with name-> ${DOCKER_REGISTRY_NAME} on port ${DOCKER_REGISTRY_PORT}`,
   );
   const removeExistingRegistry = execPromise(
-    `docker container rm -f ${DOCKER_REGISTRY_NAME}`
+    `docker container rm -f ${DOCKER_REGISTRY_NAME}`,
   ).then((response) => {
     if (
       response?.stderr?.length &&
@@ -72,7 +72,7 @@ const startDockerLocalRegistry = async () => {
     // @INFO: Uncomment the line and replace it with the runCmd if https is necessary
     // return runCmd(`docker run -d --name ${DOCKER_REGISTRY_NAME} -v ${certificatePath}:/certs -e REGISTRY_HTTP_ADDR=0.0.0.0:443 -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/localhost-crt.pem -e REGISTRY_HTTP_TLS_KEY=/certs/localhost-key.pem -p ${DOCKER_REGISTRY_PORT}:443 registry:${DOCKER_REGISTRY_VERSION}`)
     return runCmd(
-      `docker run -d -p ${DOCKER_REGISTRY_PORT}:5000 --name ${DOCKER_REGISTRY_NAME} registry:${DOCKER_REGISTRY_VERSION}`
+      `docker run -d -p ${DOCKER_REGISTRY_PORT}:5000 --name ${DOCKER_REGISTRY_NAME} registry:${DOCKER_REGISTRY_VERSION}`,
     )
       .then((response) => {
         if (response?.stderr?.length) {
@@ -84,7 +84,7 @@ const startDockerLocalRegistry = async () => {
       .catch((e) => {
         console.error(
           '[ChatSuite] An error occurred while creating a local registry.',
-          e
+          e,
         );
         process.exit(1);
       });
@@ -103,7 +103,7 @@ const run = async () => {
   try {
     await runJob(
       '[ChatSuite] Job->startDockerLocalRegistry()',
-      startDockerLocalRegistry
+      startDockerLocalRegistry,
     );
     await runJob('[ChatSuite] Job->startOCIRepository', startOCIRepository);
     process.exit(0);

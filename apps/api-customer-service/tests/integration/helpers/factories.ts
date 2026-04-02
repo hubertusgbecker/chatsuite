@@ -130,7 +130,7 @@ export class ConversationFactory {
    */
   static createMany(
     count: number,
-    overrides: Partial<Conversation> = {}
+    overrides: Partial<Conversation> = {},
   ): Conversation[] {
     return Array.from({ length: count }, () => this.create(overrides));
   }
@@ -144,7 +144,7 @@ export class ConversationFactory {
    */
   static createWithMessages(
     messageCount: number,
-    overrides: Partial<Conversation> = {}
+    overrides: Partial<Conversation> = {},
   ): Conversation {
     const conversation = this.create(overrides);
     const conversationId = conversation.id || `conv-${Date.now()}`;
@@ -185,7 +185,7 @@ export class MessageFactory {
    */
   static createMany(
     count: number,
-    overrides: Partial<Message> = {}
+    overrides: Partial<Message> = {},
   ): Message[] {
     return Array.from({ length: count }, () => this.create(overrides));
   }
@@ -221,13 +221,13 @@ export class MessageFactory {
    */
   static createConversationThread(
     turnCount: number,
-    conversationId: string
+    conversationId: string,
   ): Message[] {
     const messages: Message[] = [];
     for (let i = 0; i < turnCount; i++) {
       messages.push(
         this.createUserMessage({ conversationId }),
-        this.createAssistantMessage({ conversationId })
+        this.createAssistantMessage({ conversationId }),
       );
     }
     return messages;
@@ -299,7 +299,7 @@ export class TestDataHelper {
   static async retry<T>(
     fn: () => Promise<T>,
     maxAttempts = 3,
-    delayMs = 1000
+    delayMs = 1000,
   ): Promise<T> {
     let lastError: Error | null = null;
 

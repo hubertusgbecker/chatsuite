@@ -40,7 +40,7 @@ export function configureApp(app: any): void {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
 }

@@ -26,7 +26,7 @@ function findProjectRoot(currentDir = __dirname) {
   const parentDir = path.dirname(currentDir);
   if (parentDir === currentDir) {
     throw new Error(
-      'Could not find package.json - are you in the project directory?'
+      'Could not find package.json - are you in the project directory?',
     );
   }
 

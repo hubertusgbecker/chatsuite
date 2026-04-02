@@ -44,7 +44,7 @@ export async function setupTestMindsDB(): Promise<void> {
 
     if (response.status !== 200) {
       throw new Error(
-        `MindsDB status check failed with status ${response.status}`
+        `MindsDB status check failed with status ${response.status}`,
       );
     }
 
@@ -64,7 +64,7 @@ export async function setupTestMindsDB(): Promise<void> {
 export function getMindsdbClient(): AxiosInstance {
   if (!mindsdbClient) {
     throw new Error(
-      'MindsDB client not initialized. Call setupTestMindsDB() first.'
+      'MindsDB client not initialized. Call setupTestMindsDB() first.',
     );
   }
   return mindsdbClient;
@@ -85,7 +85,7 @@ export async function executeMindsDBQuery(query: string): Promise<any> {
 
   if (response.status !== 200) {
     throw new Error(
-      `Failed to execute query: ${response.status} ${response.statusText}`
+      `Failed to execute query: ${response.status} ${response.statusText}`,
     );
   }
 

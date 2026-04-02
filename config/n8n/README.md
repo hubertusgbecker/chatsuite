@@ -330,13 +330,11 @@ Connect with MCP Email Server:
    ```
 
 2. **Workflows not executing**
-
    - Check workflow activation status
    - Verify trigger configuration
    - Review execution logs in n8n interface
 
 3. **Database connection errors**
-
    - Ensure PostgreSQL is running
    - Check database credentials
    - Verify n8n schema exists

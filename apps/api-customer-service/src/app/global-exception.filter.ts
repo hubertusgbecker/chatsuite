@@ -38,13 +38,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       exception instanceof Error &&
       ('status' in exception || 'statusCode' in exception);
 
-    const statusCode = exception instanceof HttpException
-      ? exception.getStatus()
-      : isExpressError
-        ? ((exception as Error & { status?: number; statusCode?: number }).status ??
-           (exception as Error & { status?: number; statusCode?: number }).statusCode ??
-           HttpStatus.INTERNAL_SERVER_ERROR)
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const statusCode =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : isExpressError
+          ? ((exception as Error & { status?: number; statusCode?: number })
+              .status ??
+            (exception as Error & { status?: number; statusCode?: number })
+              .statusCode ??
+            HttpStatus.INTERNAL_SERVER_ERROR)
+          : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const errorCode =
       exception instanceof BusinessException
@@ -68,7 +71,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       `[${correlationId ?? 'no-id'}] ${request.method} ${
         request.url
       } ${statusCode}: ${message}`,
-      exception instanceof Error ? exception.stack : undefined
+      exception instanceof Error ? exception.stack : undefined,
     );
 
     const body: ErrorResponseBody = {

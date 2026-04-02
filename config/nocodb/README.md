@@ -411,13 +411,11 @@ Use NocoDB in n8n workflows:
    ```
 
 2. **Cannot connect to database**
-
    - Verify PostgreSQL is running
    - Check database credentials
    - Ensure network connectivity between containers
 
 3. **API not working**
-
    - Check API token configuration
    - Verify project and table permissions
    - Review API documentation in NocoDB interface

@@ -114,13 +114,11 @@ ChatSuite strictly follows Test-Driven Development for all contributions:
 **The Red-Green-Refactor Cycle:**
 
 1. 🔴 **RED**: Write a failing test first
-
    - Define what you want to build
    - Test fails because feature doesn't exist yet
    - Clarifies requirements before coding
 
 2. 🟢 **GREEN**: Write minimal code to pass the test
-
    - Focus on making it work
    - Don't optimize prematurely
    - Keep it simple
@@ -205,7 +203,6 @@ Result: Hard to review, likely has bugs, difficult to debug
 ### Prerequisites
 
 1. **Install NVM (Node Version Manager):**
-
    - [NVM Installation Guide](https://github.com/nvm-sh/nvm#installing-and-updating)
    - In the project root, run:
      ```bash
@@ -218,7 +215,6 @@ Result: Hard to review, likely has bugs, difficult to debug
      ```
 
 2. **Install Docker:**
-
    - [Docker Installation Guide](https://docs.docker.com/engine/install/)
    - Verify installation:
      ```bash

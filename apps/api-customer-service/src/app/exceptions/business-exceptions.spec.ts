@@ -21,7 +21,7 @@ describe('Business Exceptions', () => {
     it('should accept string identifiers', () => {
       const exception = new ResourceNotFoundException(
         'Project',
-        'my-project-key'
+        'my-project-key',
       );
       expect(exception.message).toBe('Project not found: my-project-key');
     });
@@ -68,7 +68,7 @@ describe('Business Exceptions', () => {
       const exception = new BusinessException(
         ErrorCode.INTERNAL_ERROR,
         'test',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
       expect(exception).toBeInstanceOf(BusinessException);
       expect(exception.getStatus()).toBe(500);
@@ -79,14 +79,14 @@ describe('Business Exceptions', () => {
         ErrorCode.BAD_REQUEST,
         'bad',
         HttpStatus.BAD_REQUEST,
-        [{ field: 'x', message: 'y' }]
+        [{ field: 'x', message: 'y' }],
       );
       expect(withDetails.details).toHaveLength(1);
 
       const withoutDetails = new BusinessException(
         ErrorCode.BAD_REQUEST,
         'bad',
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
       expect(withoutDetails.details).toBeUndefined();
     });

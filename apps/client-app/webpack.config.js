@@ -19,5 +19,5 @@ module.exports = composePlugins(
     // Expose server on all network interfaces inside container
     config.devServer.host = '0.0.0.0';
     return config;
-  }
+  },
 );

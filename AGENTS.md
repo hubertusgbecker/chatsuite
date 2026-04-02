@@ -776,32 +776,27 @@ MONGO_PORT=27018
 Follow these rules for effective integration testing:
 
 1. **Test Environment Setup**
-
    - Use `docker-compose.test.yaml` to start test services
    - Ensure databases are migrated and seeded before tests
    - Clean up state between test runs using `cleanupTestDatabase()`
 
 2. **Test Location**
-
    - Place integration tests under `tests/integration/` inside each project
    - Keep tests close to the project they verify
    - Use descriptive test file names ending with `.integration.spec.ts`
 
 3. **Execution**
-
    - Define `integration` target in `project.json`
    - Execute with: `pnpm nx integration <project-name>`
    - Run on every PR using Nx affected commands
 
 4. **Cross-Service Scenarios**
-
    - Cover interactions between APIs, workers, and databases
    - Validate shared libraries integrate correctly
    - Test authentication flows end-to-end
    - Verify data consistency across services
 
 5. **Continuous Integration**
-
    - Integration tests run automatically on every pull request
    - Pipeline fails when any integration test fails
    - Coverage reports generated and posted to PRs
@@ -840,7 +835,6 @@ Follow these rules for effective integration testing:
 ### Linting & Formatting
 
 - **ESLint** - Enterprise-grade linting
-
   - Security plugins (@microsoft/eslint-plugin-sdl, eslint-plugin-security)
   - TypeScript strict checking
   - React best practices
@@ -939,7 +933,6 @@ All services accessible via unified nginx proxy (port 10443):
   - n8n workflows
   - Application data
 - **MongoDB**: Document storage
-
   - LibreChat conversations
   - User preferences
 
@@ -952,28 +945,24 @@ All services accessible via unified nginx proxy (port 10443):
 Libraries organized by category:
 
 1. **UI Components** (`libs/ui/*`)
-
    - Reusable UI components
    - Design system implementation
    - Zero business logic
    - Atomic design principles
 
 2. **Features** (`libs/features/*`)
-
    - Complete reusable features
    - Business logic + UI
    - Encapsulated state management
    - Self-contained modules
 
 3. **Core Libraries** (`libs/core/*`)
-
    - Business logic
    - Domain models
    - Pure TypeScript
    - Framework-agnostic
 
 4. **Data Libraries** (`libs/data/*`)
-
    - API clients
    - Database connectors
    - Data transformation

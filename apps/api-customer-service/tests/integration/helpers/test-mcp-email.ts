@@ -71,7 +71,7 @@ export async function setupTestMCPEmail(): Promise<void> {
 
     if (response.status !== 200) {
       throw new Error(
-        `MCP Email SSE endpoint check failed with status ${response.status}`
+        `MCP Email SSE endpoint check failed with status ${response.status}`,
       );
     }
 
@@ -91,7 +91,7 @@ export async function setupTestMCPEmail(): Promise<void> {
 export function getMCPEmailClient(): AxiosInstance {
   if (!mcpEmailClient) {
     throw new Error(
-      'MCP Email client not initialized. Call setupTestMCPEmail() first.'
+      'MCP Email client not initialized. Call setupTestMCPEmail() first.',
     );
   }
   return mcpEmailClient;

@@ -97,7 +97,6 @@ For production deployments update certificate paths, enable automated certificat
 ### Common Issues
 
 1. **Certificate warnings in browser**
-
    - This is expected with self-signed certificates
    - Click "Advanced" → "Proceed to localhost"
    - For production, use proper SSL certificates
@@ -116,7 +115,6 @@ For production deployments update certificate paths, enable automated certificat
    ```
 
 3. **SSL/TLS errors**
-
    - Verify certificate files exist and are readable
    - Check certificate validity dates
    - Ensure proper file permissions

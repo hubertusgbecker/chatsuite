@@ -31,7 +31,7 @@ export class BusinessException extends HttpException {
     public readonly errorCode: ErrorCode,
     message: string,
     status: HttpStatus,
-    public readonly details?: ValidationDetail[]
+    public readonly details?: ValidationDetail[],
   ) {
     super({ errorCode, message, details }, status);
   }
@@ -48,7 +48,7 @@ export class ResourceNotFoundException extends BusinessException {
     super(
       ErrorCode.NOT_FOUND,
       `${resource} not found: ${identifier}`,
-      HttpStatus.NOT_FOUND
+      HttpStatus.NOT_FOUND,
     );
   }
 }
@@ -62,7 +62,7 @@ export class ValidationException extends BusinessException {
       ErrorCode.VALIDATION_FAILED,
       'Validation failed',
       HttpStatus.BAD_REQUEST,
-      details
+      details,
     );
   }
 }
@@ -75,7 +75,7 @@ export class ConflictException extends BusinessException {
     super(
       ErrorCode.CONFLICT,
       `${resource} with this ${field} already exists`,
-      HttpStatus.CONFLICT
+      HttpStatus.CONFLICT,
     );
   }
 }
@@ -88,7 +88,7 @@ export class ServiceUnavailableException extends BusinessException {
     super(
       ErrorCode.SERVICE_UNAVAILABLE,
       `${service} is currently unavailable`,
-      HttpStatus.SERVICE_UNAVAILABLE
+      HttpStatus.SERVICE_UNAVAILABLE,
     );
   }
 }
