@@ -22,9 +22,9 @@ services:
       api-customer-service:
         condition: service_healthy
       n8n:
-        condition: service_healthy
+        condition: service_started
       pgadmin:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test:
         [
@@ -133,7 +133,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 120s
   # Client-App: React App
   client-app:
     container_name: chatsuite_client-app
@@ -161,7 +161,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 120s
 
   # LibreChat
   librechat:
@@ -300,6 +300,7 @@ services:
   mindsdb:
     image: mindsdb/mindsdb:latest
     container_name: chatsuite_mindsdb
+    stop_grace_period: 5s
     ports:
       - '47334:47334' # HTTP API
       - '47335:47335' # MySQL API
@@ -319,6 +320,12 @@ services:
         '-c',
         '/fix-mindsdb-permissions.sh && exec /docker-entrypoint-mindsdb.sh',
       ]
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:47334/api/status || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
     networks:
       - gateway
 
@@ -410,6 +417,7 @@ services:
     #  dockerfile: Dockerfile.custom
     image: samanhappy/mcphub:latest
     container_name: chatsuite_mcphub
+    stop_grace_period: 5s
     restart: always
     ports:
       - '3000:3000'
