@@ -44,7 +44,6 @@
       }
     }
   },
-
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "sharedGlobals": [

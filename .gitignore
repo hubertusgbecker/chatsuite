@@ -133,3 +133,6 @@ repomix-output.xml
 repomix-output.md
 
 
+
+.claude/worktrees
+.claude/settings.local.json
