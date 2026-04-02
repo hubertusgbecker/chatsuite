@@ -1,36 +1,33 @@
-import { DataSource } from 'typeorm';
+import { Pool, PoolClient } from 'pg';
 
-let dataSource: DataSource | null = null;
+let pool: Pool | null = null;
 
 /**
  * Sets up a test database connection.
- * Creates a new DataSource instance or returns existing one.
+ * Creates a new Pool instance or returns existing one.
  *
- * @returns DataSource instance for test database
+ * @returns Pool instance for test database
  * @throws Error if connection fails
  */
-export async function setupTestDatabase(): Promise<DataSource> {
-  if (dataSource?.isInitialized) {
-    return dataSource;
+export async function setupTestDatabase(): Promise<Pool> {
+  if (pool) {
+    return pool;
   }
 
-  dataSource = new DataSource({
-    type: 'postgres',
+  pool = new Pool({
     host: process.env.POSTGRES_HOST || 'localhost',
     port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-    username: process.env.POSTGRES_USER || 'admin',
+    user: process.env.POSTGRES_USER || 'admin',
     password: process.env.POSTGRES_PASSWORD || 'admin',
     database: process.env.POSTGRES_DB || 'chatsuite',
-    entities: ['src/**/*.entity.ts'],
-    synchronize: true, // Only for tests - auto-sync schema
-    dropSchema: false,
-    logging: false, // Set to true for debugging
   });
 
   try {
-    await dataSource.initialize();
+    // Test the connection
+    const client = await pool.connect();
+    client.release();
     console.log('✅ Test database connected');
-    return dataSource;
+    return pool;
   } catch (error) {
     console.error('❌ Failed to connect to test database:', error);
     throw error;
@@ -43,25 +40,29 @@ export async function setupTestDatabase(): Promise<DataSource> {
  * Uses CASCADE to handle foreign key constraints.
  */
 export async function cleanupTestDatabase(): Promise<void> {
-  if (!dataSource?.isInitialized) {
+  if (!pool) {
     console.warn('⚠️  Database not initialized, skipping cleanup');
     return;
   }
 
   try {
-    const entities = dataSource.entityMetadatas;
+    // Get all user tables
+    const result = await pool.query(
+      `SELECT tablename FROM pg_tables WHERE schemaname = 'public'`,
+    );
 
-    // Disable foreign key checks temporarily
-    await dataSource.query('SET session_replication_role = replica');
+    if (result.rows.length > 0) {
+      // Disable foreign key checks temporarily
+      await pool.query('SET session_replication_role = replica');
 
-    // Truncate all tables
-    for (const entity of entities) {
-      const tableName = entity.tableName;
-      await dataSource.query(`TRUNCATE TABLE "${tableName}" CASCADE`);
+      // Truncate all tables
+      for (const row of result.rows) {
+        await pool.query(`TRUNCATE TABLE "${row.tablename}" CASCADE`);
+      }
+
+      // Re-enable foreign key checks
+      await pool.query('SET session_replication_role = DEFAULT');
     }
-
-    // Re-enable foreign key checks
-    await dataSource.query('SET session_replication_role = DEFAULT');
 
     console.log('🧹 Test database cleaned');
   } catch (error) {
@@ -75,10 +76,10 @@ export async function cleanupTestDatabase(): Promise<void> {
  * Should be called in global teardown.
  */
 export async function closeTestDatabase(): Promise<void> {
-  if (dataSource?.isInitialized) {
+  if (pool) {
     try {
-      await dataSource.destroy();
-      dataSource = null;
+      await pool.end();
+      pool = null;
       console.log('✅ Test database connection closed');
     } catch (error) {
       console.error('❌ Failed to close test database:', error);
@@ -88,18 +89,18 @@ export async function closeTestDatabase(): Promise<void> {
 }
 
 /**
- * Gets the current test database connection.
+ * Gets the current test database pool.
  *
- * @returns DataSource instance
+ * @returns Pool instance
  * @throws Error if database not initialized
  */
-export function getTestDatabase(): DataSource {
-  if (!dataSource?.isInitialized) {
+export function getTestDatabase(): Pool {
+  if (!pool) {
     throw new Error(
       'Test database not initialized. Call setupTestDatabase() first.',
     );
   }
-  return dataSource;
+  return pool;
 }
 
 /**
@@ -107,16 +108,17 @@ export function getTestDatabase(): DataSource {
  *
  * @param query - SQL query string
  * @param parameters - Query parameters
- * @returns Query result
+ * @returns Query result rows
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function executeQuery<T = any>(
   query: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parameters?: any[],
-): Promise<T> {
+): Promise<T[]> {
   const db = getTestDatabase();
-  return db.query(query, parameters);
+  const result = await db.query(query, parameters);
+  return result.rows as T[];
 }
 
 /**
@@ -125,30 +127,33 @@ export async function executeQuery<T = any>(
  *
  * @example
  * ```typescript
- * const { queryRunner, rollback } = await createTestTransaction();
+ * const { client, rollback } = await createTestTransaction();
  * try {
- *   await queryRunner.query('INSERT INTO users ...');
+ *   await client.query('INSERT INTO users ...');
  *   // Test assertions
  * } finally {
  *   await rollback();
  * }
  * ```
  */
-export async function createTestTransaction() {
+export async function createTestTransaction(): Promise<{
+  client: PoolClient;
+  commit: () => Promise<void>;
+  rollback: () => Promise<void>;
+}> {
   const db = getTestDatabase();
-  const queryRunner = db.createQueryRunner();
-  await queryRunner.connect();
-  await queryRunner.startTransaction();
+  const client = await db.connect();
+  await client.query('BEGIN');
 
   return {
-    queryRunner,
-    commit: async () => {
-      await queryRunner.commitTransaction();
-      await queryRunner.release();
+    client,
+    commit: async (): Promise<void> => {
+      await client.query('COMMIT');
+      client.release();
     },
-    rollback: async () => {
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
+    rollback: async (): Promise<void> => {
+      await client.query('ROLLBACK');
+      client.release();
     },
   };
 }
