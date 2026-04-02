@@ -147,7 +147,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Check formatting
-        run: pnpm prettier --check "**/*.{ts,tsx,js,jsx,json,yaml,yml}"
+        run: pnpm biome check apps/
 
   # ──────────────────────────────────────────────
   # Unit Tests: per-project matrix with coverage

@@ -5,11 +5,9 @@
 
 # Now un-exclude the folders or files required for nx to run inside the container
 #
-!.eslintrc.json
+!biome.json
 !.nvmrc
 !.npmrc
-!.prettierignore
-!.prettierrc
 !nx.json
 !**/package-lock.json
 !**/package.json

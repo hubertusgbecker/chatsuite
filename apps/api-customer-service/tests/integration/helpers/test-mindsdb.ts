@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 
 let mindsdbClient: AxiosInstance | null = null;
 
@@ -43,9 +43,7 @@ export async function setupTestMindsDB(): Promise<void> {
     const response = await mindsdbClient.get('/api/status');
 
     if (response.status !== 200) {
-      throw new Error(
-        `MindsDB status check failed with status ${response.status}`,
-      );
+      throw new Error(`MindsDB status check failed with status ${response.status}`);
     }
 
     console.log('✅ Test MindsDB connected');
@@ -63,9 +61,7 @@ export async function setupTestMindsDB(): Promise<void> {
  */
 export function getMindsdbClient(): AxiosInstance {
   if (!mindsdbClient) {
-    throw new Error(
-      'MindsDB client not initialized. Call setupTestMindsDB() first.',
-    );
+    throw new Error('MindsDB client not initialized. Call setupTestMindsDB() first.');
   }
   return mindsdbClient;
 }
@@ -84,9 +80,7 @@ export async function executeMindsDBQuery(query: string): Promise<any> {
   });
 
   if (response.status !== 200) {
-    throw new Error(
-      `Failed to execute query: ${response.status} ${response.statusText}`,
-    );
+    throw new Error(`Failed to execute query: ${response.status} ${response.statusText}`);
   }
 
   return response.data;
@@ -150,7 +144,7 @@ export async function cleanupTestMindsDB(): Promise<void> {
     // Drop databases that contain 'test' in name (case-insensitive)
     for (const db of databases) {
       const dbName = db.Database || db.name || db.database_name;
-      if (dbName && dbName.toLowerCase().includes('test')) {
+      if (dbName?.toLowerCase().includes('test')) {
         try {
           await dropTestDatabase(dbName);
           console.log(`🗑️  Dropped test database: ${dbName}`);

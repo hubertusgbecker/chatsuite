@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 
 let mcphubClient: AxiosInstance | null = null;
 
@@ -50,16 +50,12 @@ export async function setupTestMCPHub(): Promise<void> {
     const response = await mcphubClient.get('/health');
 
     if (response.status !== 200 && response.status !== 503) {
-      throw new Error(
-        `MCPHub health check failed with unexpected status ${response.status}`,
-      );
+      throw new Error(`MCPHub health check failed with unexpected status ${response.status}`);
     }
 
     if (response.status === 503) {
       console.log('⚠️  MCPHub is running but MCP servers are not all ready');
-      console.log(
-        'ℹ️  This is normal if MCP servers are not configured in mcp_settings.json',
-      );
+      console.log('ℹ️  This is normal if MCP servers are not configured in mcp_settings.json');
     }
 
     console.log('✅ Test MCPHub connected');
@@ -77,9 +73,7 @@ export async function setupTestMCPHub(): Promise<void> {
  */
 export function getMCPHubClient(): AxiosInstance {
   if (!mcphubClient) {
-    throw new Error(
-      'MCPHub client not initialized. Call setupTestMCPHub() first.',
-    );
+    throw new Error('MCPHub client not initialized. Call setupTestMCPHub() first.');
   }
   return mcphubClient;
 }
@@ -152,19 +146,14 @@ export async function getMCPServerStatus(serverId: string): Promise<any> {
  * @param serverId - ID of the MCP server to test
  * @returns Promise that resolves to true if server is reachable
  */
-export async function testMCPServerConnection(
-  serverId: string,
-): Promise<boolean> {
+export async function testMCPServerConnection(serverId: string): Promise<boolean> {
   try {
     const client = getMCPHubClient();
     const response = await client.post(`/api/servers/${serverId}/test`);
 
     return response.status === 200;
   } catch (error) {
-    console.error(
-      `❌ Failed to test MCP server connection for ${serverId}:`,
-      error,
-    );
+    console.error(`❌ Failed to test MCP server connection for ${serverId}:`, error);
     return false;
   }
 }

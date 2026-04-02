@@ -1,12 +1,12 @@
 import { closeTestDatabase } from './helpers/test-db';
-import { closeTestServer } from './helpers/test-server';
-import { closeTestMongoDB } from './helpers/test-mongodb';
+import { closeTestMCPEmail } from './helpers/test-mcp-email';
+import { closeTestMCPHub } from './helpers/test-mcphub';
+import { closeTestMindsDB } from './helpers/test-mindsdb';
 import { closeTestMinIO } from './helpers/test-minio';
+import { closeTestMongoDB } from './helpers/test-mongodb';
 import { closeTestN8n } from './helpers/test-n8n';
 import { closeTestNocodb } from './helpers/test-nocodb';
-import { closeTestMindsDB } from './helpers/test-mindsdb';
-import { closeTestMCPHub } from './helpers/test-mcphub';
-import { closeTestMCPEmail } from './helpers/test-mcp-email';
+import { closeTestServer } from './helpers/test-server';
 
 /**
  * Global teardown for integration tests.

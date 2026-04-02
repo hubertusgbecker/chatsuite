@@ -1,7 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 
+// biome-ignore lint/style/useImportType: NestJS DI requires value import for injectable classes
 import { AppService } from './app.service';
-import { HealthResponseDto, WelcomeResponseDto } from './dto';
+import type { HealthResponseDto, WelcomeResponseDto } from './dto';
 
 @Controller()
 export class AppController {

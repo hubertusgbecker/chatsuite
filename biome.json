@@ -1,0 +1,109 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+	"files": {
+		"includes": ["**", "!!**/dist", "!!**/out-tsc", "!!**/coverage", "!!**/.nx", "!!**/node_modules"],
+		"ignoreUnknown": true
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "space",
+		"indentWidth": 2,
+		"lineEnding": "lf",
+		"lineWidth": 100,
+		"bracketSpacing": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"style": {
+				"useConst": "error",
+				"noNonNullAssertion": "warn",
+				"useImportType": "warn"
+			},
+			"suspicious": {
+				"noExplicitAny": "warn",
+				"noConsole": {
+					"level": "warn",
+					"options": { "allow": ["warn", "error"] }
+				},
+				"noShadowRestrictedNames": "error",
+				"noDoubleEquals": "error"
+			},
+			"correctness": {
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error",
+				"useExhaustiveDependencies": "warn"
+			},
+			"complexity": {
+				"useLiteralKeys": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "error"
+			},
+			"a11y": {
+				"recommended": true
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"bracketSameLine": false,
+			"quoteStyle": "single",
+			"bracketSpacing": true
+		},
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		}
+	},
+	"json": {
+		"formatter": {
+			"indentWidth": 2,
+			"indentStyle": "space"
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": { "source": { "organizeImports": "on" } }
+	},
+	"overrides": [
+		{
+			"includes": [
+				"**/*.spec.ts",
+				"**/*.spec.tsx",
+				"**/*.test.ts",
+				"**/*.test.tsx",
+				"**/tests/**/*.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off",
+						"noConsole": "off"
+					},
+					"correctness": {
+						"noUnusedVariables": "warn"
+					},
+					"complexity": {
+						"noStaticOnlyClass": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/nx-welcome.tsx"],
+			"linter": { "enabled": false }
+		}
+	]
+}

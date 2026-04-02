@@ -7,14 +7,13 @@
 
 import 'reflect-metadata';
 
+import { randomUUID } from 'node:crypto';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-
+import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app/app.module';
 import { GlobalExceptionFilter } from './app/global-exception.filter';
 import { CORRELATION_ID_HEADER } from './app/middleware/correlation-id.middleware';
-import { randomUUID } from 'crypto';
-import type { Request, Response, NextFunction } from 'express';
 
 /**
  * Configures the NestJS application with global middleware.
@@ -22,12 +21,11 @@ import type { Request, Response, NextFunction } from 'express';
  *
  * @param app - The NestJS application instance to configure
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: NestJS app instance has no typed interface
 export function configureApp(app: any): void {
   // Correlation-ID middleware (runs before all routes, including 404s)
   app.use((req: Request, res: Response, next: NextFunction) => {
-    const correlationId =
-      (req.headers[CORRELATION_ID_HEADER] as string) || randomUUID();
+    const correlationId = (req.headers[CORRELATION_ID_HEADER] as string) || randomUUID();
     req.headers[CORRELATION_ID_HEADER] = correlationId;
     res.setHeader(CORRELATION_ID_HEADER, correlationId);
     next();

@@ -1,15 +1,15 @@
 import {
-  ExceptionFilter,
+  type ArgumentsHost,
   Catch,
-  ArgumentsHost,
+  type ExceptionFilter,
   HttpException,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { CORRELATION_ID_HEADER } from './middleware/correlation-id.middleware';
-import { BusinessException, ErrorCode } from './exceptions';
+import type { Request, Response } from 'express';
 import type { ErrorResponseBody } from './exceptions';
+import { BusinessException, ErrorCode } from './exceptions';
+import { CORRELATION_ID_HEADER } from './middleware/correlation-id.middleware';
 
 /**
  * Global exception filter that catches all unhandled exceptions
@@ -28,9 +28,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const correlationId = request.headers[CORRELATION_ID_HEADER] as
-      | string
-      | undefined;
+    const correlationId = request.headers[CORRELATION_ID_HEADER] as string | undefined;
 
     // Determine status: HttpException > Express native errors (status/statusCode) > 500
     const isExpressError =
@@ -42,10 +40,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : isExpressError
-          ? ((exception as Error & { status?: number; statusCode?: number })
-              .status ??
-            (exception as Error & { status?: number; statusCode?: number })
-              .statusCode ??
+          ? ((exception as Error & { status?: number; statusCode?: number }).status ??
+            (exception as Error & { status?: number; statusCode?: number }).statusCode ??
             HttpStatus.INTERNAL_SERVER_ERROR)
           : HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -64,13 +60,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           ? (exception as Error).message
           : 'Internal server error';
 
-    const details =
-      exception instanceof BusinessException ? exception.details : undefined;
+    const details = exception instanceof BusinessException ? exception.details : undefined;
 
     this.logger.error(
-      `[${correlationId ?? 'no-id'}] ${request.method} ${
-        request.url
-      } ${statusCode}: ${message}`,
+      `[${correlationId ?? 'no-id'}] ${request.method} ${request.url} ${statusCode}: ${message}`,
       exception instanceof Error ? exception.stack : undefined,
     );
 

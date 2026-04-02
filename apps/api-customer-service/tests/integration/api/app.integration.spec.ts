@@ -1,66 +1,54 @@
 import request from 'supertest';
+import { ConversationFactory, MessageFactory, UserFactory } from '../helpers/factories';
+import { cleanupTestDatabase, executeQuery, setupTestDatabase } from '../helpers/test-db';
 import {
-  createTestServer,
-  closeTestServer,
-  getHttpServer,
-} from '../helpers/test-server';
-import {
-  setupTestDatabase,
-  cleanupTestDatabase,
-  executeQuery,
-} from '../helpers/test-db';
-import {
-  setupTestMongoDB,
-  cleanupTestMongoDB,
-  verifyMongoConnection,
-  getMongoDatabase,
-} from '../helpers/test-mongodb';
-import {
-  setupTestMinIO,
-  cleanupTestMinIO,
-  verifyMinioConnection,
-  createTestBucket,
-  uploadTestFile,
-  downloadTestFile,
-} from '../helpers/test-minio';
-import {
-  setupTestN8n,
-  cleanupTestN8n,
-  verifyN8nConnection,
-  createTestWorkflow,
-  getTestWorkflow,
-} from '../helpers/test-n8n';
-import {
-  setupTestNocodb,
-  cleanupTestNocodb,
-  verifyNocodbConnection,
-  createTestBase,
-  getTestBase,
-} from '../helpers/test-nocodb';
-import {
-  setupTestMindsDB,
-  cleanupTestMindsDB,
-  verifyMindsDBConnection,
-  executeMindsDBQuery,
-  listMindsDBDatabases,
-} from '../helpers/test-mindsdb';
-import {
-  setupTestMCPHub,
-  cleanupTestMCPHub,
-  verifyMCPHubConnection,
-  listMCPServers,
-} from '../helpers/test-mcphub';
-import {
-  setupTestMCPEmail,
-  cleanupTestMCPEmail,
-  verifyMCPEmailConnection,
   checkMCPEmailSSEEndpoint,
+  cleanupTestMCPEmail,
+  setupTestMCPEmail,
+  verifyMCPEmailConnection,
 } from '../helpers/test-mcp-email';
 import {
-  UserFactory,
-  ConversationFactory,
-  MessageFactory,
-} from '../helpers/factories';
+  cleanupTestMCPHub,
+  listMCPServers,
+  setupTestMCPHub,
+  verifyMCPHubConnection,
+} from '../helpers/test-mcphub';
+import {
+  cleanupTestMindsDB,
+  executeMindsDBQuery,
+  listMindsDBDatabases,
+  setupTestMindsDB,
+  verifyMindsDBConnection,
+} from '../helpers/test-mindsdb';
+import {
+  cleanupTestMinIO,
+  createTestBucket,
+  downloadTestFile,
+  setupTestMinIO,
+  uploadTestFile,
+  verifyMinioConnection,
+} from '../helpers/test-minio';
+import {
+  cleanupTestMongoDB,
+  getMongoDatabase,
+  setupTestMongoDB,
+  verifyMongoConnection,
+} from '../helpers/test-mongodb';
+import {
+  cleanupTestN8n,
+  createTestWorkflow,
+  getTestWorkflow,
+  setupTestN8n,
+  verifyN8nConnection,
+} from '../helpers/test-n8n';
+import {
+  cleanupTestNocodb,
+  createTestBase,
+  getTestBase,
+  setupTestNocodb,
+  verifyNocodbConnection,
+} from '../helpers/test-nocodb';
+import { closeTestServer, createTestServer, getHttpServer } from '../helpers/test-server';
 
 /**
  * Integration tests for the Customer Service API.
@@ -137,9 +125,7 @@ describe('API Customer Service Integration', () => {
 
   describe('Error Handling', () => {
     it('should return 404 with errorCode and path in standardized format', async () => {
-      const response = await request(httpServer)
-        .get('/api/does-not-exist')
-        .expect(404);
+      const response = await request(httpServer).get('/api/does-not-exist').expect(404);
 
       expect(response.body.statusCode).toBe(404);
       expect(response.body.errorCode).toBe('NOT_FOUND');
@@ -159,9 +145,7 @@ describe('API Customer Service Integration', () => {
     });
 
     it('should not expose stack traces', async () => {
-      const response = await request(httpServer)
-        .get('/api/nonexistent')
-        .expect(404);
+      const response = await request(httpServer).get('/api/nonexistent').expect(404);
 
       expect(response.body.stack).toBeUndefined();
       expect(JSON.stringify(response.body)).not.toContain('.ts:');
@@ -171,7 +155,7 @@ describe('API Customer Service Integration', () => {
 
   describe('Correlation ID', () => {
     it('should propagate correlation-id through the request lifecycle', async () => {
-      const correlationId = 'integration-trace-' + Date.now();
+      const correlationId = `integration-trace-${Date.now()}`;
       const response = await request(httpServer)
         .get('/api/health')
         .set('x-correlation-id', correlationId)
@@ -189,7 +173,7 @@ describe('API Customer Service Integration', () => {
     });
 
     it('should include correlation-id in error responses', async () => {
-      const correlationId = 'error-trace-' + Date.now();
+      const correlationId = `error-trace-${Date.now()}`;
       const response = await request(httpServer)
         .get('/api/missing-route')
         .set('x-correlation-id', correlationId)
@@ -213,17 +197,13 @@ describe('API Customer Service Integration', () => {
 
   describe('Performance', () => {
     it('should handle 30 concurrent requests', async () => {
-      const promises = Array.from({ length: 30 }, () =>
-        request(httpServer).get('/api'),
-      );
+      const promises = Array.from({ length: 30 }, () => request(httpServer).get('/api'));
       const responses = await Promise.all(promises);
 
       const successes = responses.filter((r) => r.status === 200);
       expect(successes).toHaveLength(30);
       for (const r of successes) {
-        expect(r.body.message).toBe(
-          'Welcome to api-customer-service of ChatSuite!',
-        );
+        expect(r.body.message).toBe('Welcome to api-customer-service of ChatSuite!');
       }
     });
   });
@@ -252,15 +232,14 @@ describe('API Customer Service Integration', () => {
 
       const users = UserFactory.createMany(5);
       for (const user of users) {
-        await executeQuery(
-          'INSERT INTO test_users (name, email, role) VALUES ($1, $2, $3)',
-          [user.name, user.email, user.role],
-        );
+        await executeQuery('INSERT INTO test_users (name, email, role) VALUES ($1, $2, $3)', [
+          user.name,
+          user.email,
+          user.role,
+        ]);
       }
 
-      const rows = await executeQuery(
-        'SELECT name, email, role FROM test_users ORDER BY id',
-      );
+      const rows = await executeQuery('SELECT name, email, role FROM test_users ORDER BY id');
       expect(rows).toHaveLength(5);
       for (let i = 0; i < 5; i++) {
         expect(rows[i].name).toBe(users[i].name);
@@ -278,9 +257,7 @@ describe('API Customer Service Integration', () => {
       `);
 
       const email = UserFactory.create().email;
-      await executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [
-        email,
-      ]);
+      await executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [email]);
 
       await expect(
         executeQuery('INSERT INTO test_unique (email) VALUES ($1)', [email]),
@@ -297,9 +274,7 @@ describe('API Customer Service Integration', () => {
 
       // Insert inside a transaction that we rollback
       await executeQuery('BEGIN');
-      await executeQuery(
-        "INSERT INTO test_tx (value) VALUES ('should-vanish')",
-      );
+      await executeQuery("INSERT INTO test_tx (value) VALUES ('should-vanish')");
       await executeQuery('ROLLBACK');
 
       const rows = await executeQuery('SELECT * FROM test_tx');
@@ -383,10 +358,7 @@ describe('API Customer Service Integration', () => {
       const thread = MessageFactory.createConversationThread(4, conversationId);
       await collection.insertMany(thread);
 
-      const messages = await collection
-        .find({ conversationId })
-        .sort({ timestamp: 1 })
-        .toArray();
+      const messages = await collection.find({ conversationId }).sort({ timestamp: 1 }).toArray();
       expect(messages).toHaveLength(8); // 4 turns = 8 messages
       expect(messages[0].role).toBe('user');
       expect(messages[1].role).toBe('assistant');
@@ -438,7 +410,7 @@ describe('API Customer Service Integration', () => {
     it('should upload, download, and verify file content', async () => {
       const bucket = 'integration-test-files';
       const key = `test-${Date.now()}.txt`;
-      const content = 'Integration test file content: ' + Date.now();
+      const content = `Integration test file content: ${Date.now()}`;
 
       await createTestBucket(bucket);
       await uploadTestFile(bucket, key, content);
@@ -509,7 +481,7 @@ describe('API Customer Service Integration', () => {
         console.log('Skipped: N8N_API_KEY not configured');
         return;
       }
-      const name = 'integration-test-' + Date.now();
+      const name = `integration-test-${Date.now()}`;
       const created = await createTestWorkflow(name);
 
       expect(created.id).toBeDefined();
@@ -540,7 +512,7 @@ describe('API Customer Service Integration', () => {
         console.log('Skipped: NOCODB_AUTH_TOKEN not configured');
         return;
       }
-      const name = 'integration-base-' + Date.now();
+      const name = `integration-base-${Date.now()}`;
       const created = await createTestBase(name);
 
       expect(created.id).toBeDefined();

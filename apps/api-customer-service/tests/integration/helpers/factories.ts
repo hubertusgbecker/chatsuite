@@ -74,14 +74,14 @@ export class UserFactory {
    * ```
    */
   static createMany(count: number, overrides: Partial<User> = {}): User[] {
-    return Array.from({ length: count }, () => this.create(overrides));
+    return Array.from({ length: count }, () => UserFactory.create(overrides));
   }
 
   /**
    * Creates an admin user.
    */
   static createAdmin(overrides: Partial<User> = {}): User {
-    return this.create({
+    return UserFactory.create({
       role: 'admin',
       email: `admin-${Date.now()}@test.com`,
       ...overrides,
@@ -92,7 +92,7 @@ export class UserFactory {
    * Creates a customer user.
    */
   static createCustomer(overrides: Partial<User> = {}): User {
-    return this.create({
+    return UserFactory.create({
       role: 'customer',
       ...overrides,
     });
@@ -128,11 +128,8 @@ export class ConversationFactory {
    * @param overrides - Partial conversation data to override defaults
    * @returns Array of conversation objects
    */
-  static createMany(
-    count: number,
-    overrides: Partial<Conversation> = {},
-  ): Conversation[] {
-    return Array.from({ length: count }, () => this.create(overrides));
+  static createMany(count: number, overrides: Partial<Conversation> = {}): Conversation[] {
+    return Array.from({ length: count }, () => ConversationFactory.create(overrides));
   }
 
   /**
@@ -146,7 +143,7 @@ export class ConversationFactory {
     messageCount: number,
     overrides: Partial<Conversation> = {},
   ): Conversation {
-    const conversation = this.create(overrides);
+    const conversation = ConversationFactory.create(overrides);
     const conversationId = conversation.id || `conv-${Date.now()}`;
     conversation.messages = MessageFactory.createMany(messageCount, {
       conversationId,
@@ -183,18 +180,15 @@ export class MessageFactory {
    * @param overrides - Partial message data to override defaults
    * @returns Array of message objects
    */
-  static createMany(
-    count: number,
-    overrides: Partial<Message> = {},
-  ): Message[] {
-    return Array.from({ length: count }, () => this.create(overrides));
+  static createMany(count: number, overrides: Partial<Message> = {}): Message[] {
+    return Array.from({ length: count }, () => MessageFactory.create(overrides));
   }
 
   /**
    * Creates a user message.
    */
   static createUserMessage(overrides: Partial<Message> = {}): Message {
-    return this.create({
+    return MessageFactory.create({
       role: 'user',
       content: faker.lorem.paragraph(),
       ...overrides,
@@ -205,7 +199,7 @@ export class MessageFactory {
    * Creates an assistant message.
    */
   static createAssistantMessage(overrides: Partial<Message> = {}): Message {
-    return this.create({
+    return MessageFactory.create({
       role: 'assistant',
       content: faker.lorem.paragraphs(2),
       ...overrides,
@@ -219,15 +213,12 @@ export class MessageFactory {
    * @param conversationId - ID of the conversation
    * @returns Array of alternating user/assistant messages
    */
-  static createConversationThread(
-    turnCount: number,
-    conversationId: string,
-  ): Message[] {
+  static createConversationThread(turnCount: number, conversationId: string): Message[] {
     const messages: Message[] = [];
     for (let i = 0; i < turnCount; i++) {
       messages.push(
-        this.createUserMessage({ conversationId }),
-        this.createAssistantMessage({ conversationId }),
+        MessageFactory.createUserMessage({ conversationId }),
+        MessageFactory.createAssistantMessage({ conversationId }),
       );
     }
     return messages;
@@ -296,11 +287,7 @@ export class TestDataHelper {
    * @returns Result of the function
    * @throws Error if all attempts fail
    */
-  static async retry<T>(
-    fn: () => Promise<T>,
-    maxAttempts = 3,
-    delayMs = 1000,
-  ): Promise<T> {
+  static async retry<T>(fn: () => Promise<T>, maxAttempts = 3, delayMs = 1000): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -309,7 +296,7 @@ export class TestDataHelper {
       } catch (error) {
         lastError = error as Error;
         if (attempt < maxAttempts) {
-          await this.wait(delayMs);
+          await TestDataHelper.wait(delayMs);
         }
       }
     }

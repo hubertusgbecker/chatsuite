@@ -1,5 +1,5 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import type { INestApplication } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../../src/app/app.module';
 import { configureApp } from '../../../src/main';
 
@@ -63,9 +63,7 @@ export async function closeTestServer(): Promise<void> {
  */
 export function getTestServer(): INestApplication {
   if (!app) {
-    throw new Error(
-      'Test server not initialized. Call createTestServer() first.',
-    );
+    throw new Error('Test server not initialized. Call createTestServer() first.');
   }
   return app;
 }
@@ -86,9 +84,7 @@ export function getTestServer(): INestApplication {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getService<T>(serviceClass: new (...args: any[]) => T): T {
   if (!moduleRef) {
-    throw new Error(
-      'Test module not initialized. Call createTestServer() first.',
-    );
+    throw new Error('Test module not initialized. Call createTestServer() first.');
   }
   return moduleRef.get<T>(serviceClass);
 }

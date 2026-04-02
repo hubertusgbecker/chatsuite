@@ -66,7 +66,7 @@ describe('AppController', () => {
     it('should return a valid ISO 8601 timestamp', () => {
       const result = controller.getHealth();
       const parsed = Date.parse(result.timestamp);
-      expect(isNaN(parsed)).toBe(false);
+      expect(Number.isNaN(parsed)).toBe(false);
       // Timestamp should be within last 2 seconds
       expect(Date.now() - parsed).toBeLessThan(2000);
     });
@@ -100,12 +100,7 @@ describe('AppController', () => {
 
     it('should return exactly four keys in health response', () => {
       const result = controller.getHealth();
-      expect(Object.keys(result).sort()).toEqual([
-        'status',
-        'timestamp',
-        'uptime',
-        'version',
-      ]);
+      expect(Object.keys(result).sort()).toEqual(['status', 'timestamp', 'uptime', 'version']);
     });
 
     it('should return unique timestamps on consecutive calls', async () => {

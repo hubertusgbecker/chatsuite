@@ -23,7 +23,7 @@
       "cache": false
     },
     "lint": {
-      "inputs": ["default", "{workspaceRoot}/eslint.config.mjs"],
+      "inputs": ["default", "{workspaceRoot}/biome.json"],
       "cache": true
     }
   },
@@ -31,16 +31,13 @@
   "generators": {
     "@nx/react": {
       "application": {
-        "style": "css",
-        "linter": "eslint",
-        "babel": true
+        "style": "css"
       },
       "component": {
         "style": "css"
       },
       "library": {
-        "style": "css",
-        "linter": "eslint"
+        "style": "css"
       }
     }
   },
@@ -54,18 +51,10 @@
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/vitest.config*.ts",
-      "!{projectRoot}/eslint.config.mjs"
+      "!{projectRoot}/vitest.config*.ts"
     ]
   },
-  "plugins": [
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "eslint:lint"
-      }
-    }
-  ],
+  "plugins": [],
   "analytics": false,
   "nxCloudId": "69ce81e7e886a610abb44936"
 }

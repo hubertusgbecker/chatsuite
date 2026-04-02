@@ -1,5 +1,5 @@
-import axios from 'axios';
 import type { AxiosInstance } from 'axios';
+import axios from 'axios';
 
 let mcpEmailClient: AxiosInstance | null = null;
 
@@ -70,9 +70,7 @@ export async function setupTestMCPEmail(): Promise<void> {
       });
 
     if (response.status !== 200) {
-      throw new Error(
-        `MCP Email SSE endpoint check failed with status ${response.status}`,
-      );
+      throw new Error(`MCP Email SSE endpoint check failed with status ${response.status}`);
     }
 
     console.log('✅ Test MCP Email connected');
@@ -90,9 +88,7 @@ export async function setupTestMCPEmail(): Promise<void> {
  */
 export function getMCPEmailClient(): AxiosInstance {
   if (!mcpEmailClient) {
-    throw new Error(
-      'MCP Email client not initialized. Call setupTestMCPEmail() first.',
-    );
+    throw new Error('MCP Email client not initialized. Call setupTestMCPEmail() first.');
   }
   return mcpEmailClient;
 }

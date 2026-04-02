@@ -45,11 +45,7 @@ export class BusinessException extends HttpException {
  */
 export class ResourceNotFoundException extends BusinessException {
   constructor(resource: string, identifier: string | number) {
-    super(
-      ErrorCode.NOT_FOUND,
-      `${resource} not found: ${identifier}`,
-      HttpStatus.NOT_FOUND,
-    );
+    super(ErrorCode.NOT_FOUND, `${resource} not found: ${identifier}`, HttpStatus.NOT_FOUND);
   }
 }
 
@@ -58,12 +54,7 @@ export class ResourceNotFoundException extends BusinessException {
  */
 export class ValidationException extends BusinessException {
   constructor(details: ValidationDetail[]) {
-    super(
-      ErrorCode.VALIDATION_FAILED,
-      'Validation failed',
-      HttpStatus.BAD_REQUEST,
-      details,
-    );
+    super(ErrorCode.VALIDATION_FAILED, 'Validation failed', HttpStatus.BAD_REQUEST, details);
   }
 }
 
@@ -72,11 +63,7 @@ export class ValidationException extends BusinessException {
  */
 export class ConflictException extends BusinessException {
   constructor(resource: string, field: string) {
-    super(
-      ErrorCode.CONFLICT,
-      `${resource} with this ${field} already exists`,
-      HttpStatus.CONFLICT,
-    );
+    super(ErrorCode.CONFLICT, `${resource} with this ${field} already exists`, HttpStatus.CONFLICT);
   }
 }
 

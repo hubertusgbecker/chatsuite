@@ -1,8 +1,7 @@
 {
   "recommendations": [
     "nrwl.angular-console",
-    "esbenp.prettier-vscode",
-    "vitest.explorer",
-    "dbaeumer.vscode-eslint"
+    "biomejs.biome",
+    "vitest.explorer"
   ]
 }

@@ -1,9 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-
-import { AppModule } from './app.module';
 import { configureApp } from '../main';
+import { AppModule } from './app.module';
 
 describe('API Customer Service (e2e)', () => {
   let app: Awaited<ReturnType<TestingModule['createNestApplication']>>;
@@ -51,7 +50,7 @@ describe('API Customer Service (e2e)', () => {
 
       // Timestamp should be valid ISO 8601 and recent
       const parsed = Date.parse(response.body.timestamp);
-      expect(isNaN(parsed)).toBe(false);
+      expect(Number.isNaN(parsed)).toBe(false);
       expect(Date.now() - parsed).toBeLessThan(5000);
     });
   });
@@ -71,9 +70,7 @@ describe('API Customer Service (e2e)', () => {
     });
 
     it('should return 404 for unknown methods on existing routes', async () => {
-      const response = await request(httpServer)
-        .delete('/api/health')
-        .expect(HttpStatus.NOT_FOUND);
+      const response = await request(httpServer).delete('/api/health').expect(HttpStatus.NOT_FOUND);
 
       expect(response.body.statusCode).toBe(404);
       expect(response.body.errorCode).toBe('NOT_FOUND');
@@ -214,8 +211,7 @@ describe('API Customer Service (e2e)', () => {
         .set('Origin', 'http://localhost:4200')
         .set('Access-Control-Request-Method', 'POST');
 
-      const allowedMethods =
-        response.headers['access-control-allow-methods'] || '';
+      const allowedMethods = response.headers['access-control-allow-methods'] || '';
       expect(allowedMethods).toMatch(/GET/);
     });
   });
@@ -230,9 +226,7 @@ describe('API Customer Service (e2e)', () => {
     });
 
     it('should always return JSON content-type for error responses', async () => {
-      const response = await request(httpServer)
-        .get('/api/missing')
-        .expect(404);
+      const response = await request(httpServer).get('/api/missing').expect(404);
       expect(response.headers['content-type']).toMatch(/application\/json/);
     });
   });
@@ -250,9 +244,8 @@ describe('API Customer Service (e2e)', () => {
       const responses = [];
 
       for (let i = 0; i < totalRequests; i += batchSize) {
-        const batch = Array.from(
-          { length: Math.min(batchSize, totalRequests - i) },
-          () => request(httpServer).get('/api').expect(200),
+        const batch = Array.from({ length: Math.min(batchSize, totalRequests - i) }, () =>
+          request(httpServer).get('/api').expect(200),
         );
         const batchResponses = await Promise.all(batch);
         responses.push(...batchResponses);
@@ -261,9 +254,7 @@ describe('API Customer Service (e2e)', () => {
 
       expect(responses).toHaveLength(10);
       for (const res of responses) {
-        expect(res.body.message).toBe(
-          'Welcome to api-customer-service of ChatSuite!',
-        );
+        expect(res.body.message).toBe('Welcome to api-customer-service of ChatSuite!');
       }
     });
   });

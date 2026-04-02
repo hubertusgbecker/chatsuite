@@ -1,16 +1,15 @@
+import type { Readable } from 'node:stream';
 import {
-  S3Client,
   CreateBucketCommand,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
   DeleteBucketCommand,
-  ListBucketsCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
   HeadBucketCommand,
+  ListBucketsCommand,
   ListObjectsV2Command,
-  _Object,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
-import { Readable } from 'stream';
 
 let s3Client: S3Client | null = null;
 const testBuckets: Set<string> = new Set();
@@ -71,9 +70,7 @@ export async function setupTestMinIO(): Promise<void> {
  */
 export function getMinioClient(): S3Client {
   if (!s3Client) {
-    throw new Error(
-      'MinIO client not initialized. Call setupTestMinIO() first.',
-    );
+    throw new Error('MinIO client not initialized. Call setupTestMinIO() first.');
   }
   return s3Client;
 }
@@ -131,10 +128,7 @@ export async function uploadTestFile(
  * @param key - Object key (file path)
  * @returns Promise that resolves with file content as string
  */
-export async function downloadTestFile(
-  bucketName: string,
-  key: string,
-): Promise<string> {
+export async function downloadTestFile(bucketName: string, key: string): Promise<string> {
   const client = getMinioClient();
 
   const response = await client.send(
@@ -162,10 +156,7 @@ export async function downloadTestFile(
  * @param key - Object key (file path)
  * @returns Promise that resolves when deletion completes
  */
-export async function deleteTestFile(
-  bucketName: string,
-  key: string,
-): Promise<void> {
+export async function deleteTestFile(bucketName: string, key: string): Promise<void> {
   const client = getMinioClient();
 
   await client.send(
@@ -191,9 +182,7 @@ export async function cleanupTestMinIO(): Promise<void> {
     for (const bucketName of testBuckets) {
       try {
         // List all objects in bucket
-        const listResponse = await s3Client.send(
-          new ListObjectsV2Command({ Bucket: bucketName }),
-        );
+        const listResponse = await s3Client.send(new ListObjectsV2Command({ Bucket: bucketName }));
 
         // Delete all objects first
         if (listResponse.Contents && listResponse.Contents.length > 0) {

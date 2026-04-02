@@ -37,10 +37,9 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["apps/client-app/**/*.{ts,tsx,js,jsx}"]
+        "command": "pnpm biome check apps/client-app"
       }
     },
     "test": {

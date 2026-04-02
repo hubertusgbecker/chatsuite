@@ -12,25 +12,22 @@ export function App() {
       <br />
       <hr />
       <br />
-      <div role="navigation">
+      <nav>
         <ul>
           <li>
-            <Link to="/">
-              NX_APP_NAME_UPDATED - {process.env['NX_APP_NAME']}
-            </Link>
+            <Link to="/">NX_APP_NAME_UPDATED - {process.env['NX_APP_NAME']}</Link>
           </li>
           <li>
             <Link to="/page-2">Page 2</Link>
           </li>
         </ul>
-      </div>
+      </nav>
       <Routes>
         <Route
           path="/"
           element={
             <div>
-              This is the generated root route.{' '}
-              <Link to="/page-2">Click here for page 2.</Link>
+              This is the generated root route. <Link to="/page-2">Click here for page 2.</Link>
             </div>
           }
         />

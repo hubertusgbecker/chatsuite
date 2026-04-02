@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 
 let pool: Pool | null = null;
 
@@ -47,9 +47,7 @@ export async function cleanupTestDatabase(): Promise<void> {
 
   try {
     // Get all user tables
-    const result = await pool.query(
-      `SELECT tablename FROM pg_tables WHERE schemaname = 'public'`,
-    );
+    const result = await pool.query(`SELECT tablename FROM pg_tables WHERE schemaname = 'public'`);
 
     if (result.rows.length > 0) {
       // Disable foreign key checks temporarily
@@ -96,9 +94,7 @@ export async function closeTestDatabase(): Promise<void> {
  */
 export function getTestDatabase(): Pool {
   if (!pool) {
-    throw new Error(
-      'Test database not initialized. Call setupTestDatabase() first.',
-    );
+    throw new Error('Test database not initialized. Call setupTestDatabase() first.');
   }
   return pool;
 }

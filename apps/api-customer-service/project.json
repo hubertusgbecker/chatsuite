@@ -44,10 +44,9 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["apps/api-customer-service/**/*.ts"]
+        "command": "pnpm biome check apps/api-customer-service"
       }
     },
     "test": {
@@ -59,9 +58,7 @@
     },
     "integration": {
       "executor": "@nx/vitest:test",
-      "outputs": [
-        "{workspaceRoot}/coverage/apps/api-customer-service-integration"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/apps/api-customer-service-integration"],
       "options": {
         "config": "apps/api-customer-service/vitest.config.integration.ts"
       }

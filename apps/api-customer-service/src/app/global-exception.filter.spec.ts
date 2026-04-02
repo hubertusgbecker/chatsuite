@@ -1,11 +1,7 @@
-import { type Mock } from 'vitest';
-import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
+import { type ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import type { Mock } from 'vitest';
+import { BusinessException, ErrorCode, ValidationException } from './exceptions';
 import { GlobalExceptionFilter } from './global-exception.filter';
-import {
-  BusinessException,
-  ErrorCode,
-  ValidationException,
-} from './exceptions';
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
@@ -89,9 +85,7 @@ describe('GlobalExceptionFilter', () => {
 
     const body = mockResponse.json.mock.calls[0][0];
     expect(body.errorCode).toBe(ErrorCode.VALIDATION_FAILED);
-    expect(body.details).toEqual([
-      { field: 'email', message: 'Invalid email format' },
-    ]);
+    expect(body.details).toEqual([{ field: 'email', message: 'Invalid email format' }]);
   });
 
   it('should include correlation-id when present in request', () => {

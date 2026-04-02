@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { WelcomeResponseDto } from './dto';
+import type { WelcomeResponseDto } from './dto';
 
 @Injectable()
 export class AppService {

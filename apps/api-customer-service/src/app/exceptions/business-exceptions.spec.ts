@@ -1,11 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
 import {
   BusinessException,
-  ResourceNotFoundException,
-  ValidationException,
   ConflictException,
-  ServiceUnavailableException,
   ErrorCode,
+  ResourceNotFoundException,
+  ServiceUnavailableException,
+  ValidationException,
 } from './index';
 
 describe('Business Exceptions', () => {
@@ -19,10 +19,7 @@ describe('Business Exceptions', () => {
     });
 
     it('should accept string identifiers', () => {
-      const exception = new ResourceNotFoundException(
-        'Project',
-        'my-project-key',
-      );
+      const exception = new ResourceNotFoundException('Project', 'my-project-key');
       expect(exception.message).toBe('Project not found: my-project-key');
     });
   });
