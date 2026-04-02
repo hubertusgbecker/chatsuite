@@ -370,51 +370,6 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
   # ──────────────────────────────────────────────
-  # Release: semantic versioning on main push only
-  # ──────────────────────────────────────────────
-  release:
-    name: release
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [lint, format, test, build, integration, security]
-    if: >-
-      always() &&
-      github.ref == 'refs/heads/main' &&
-      github.event_name == 'push' &&
-      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
-      (needs.format.result == 'success' || needs.format.result == 'skipped') &&
-      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
-      (needs.build.result == 'success' || needs.build.result == 'skipped') &&
-      (needs.integration.result == 'success' || needs.integration.result == 'skipped') &&
-      needs.security.result == 'success'
-    permissions:
-      contents: write
-      issues: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Run semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm semantic-release --branches main || echo "No new release needed"
-
-  # ──────────────────────────────────────────────
   # Status gate: single required check for branch protection
   # ──────────────────────────────────────────────
   status:
