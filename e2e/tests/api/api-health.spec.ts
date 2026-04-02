@@ -1,86 +1,98 @@
-import { expect, test } from '@playwright/test';
+import type { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import request from 'supertest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { AppModule } from '../../../apps/api-customer-service/src/app/app.module';
+import { configureApp } from '../../../apps/api-customer-service/src/main';
 
 /**
  * API Customer Service E2E Tests.
  *
  * High-impact smoke tests verifying the API is reachable,
  * responds correctly, and handles errors as expected.
- * These tests run against a live API instance.
+ * Uses supertest with the NestJS test module.
  */
 
-test.describe('API Health & Availability', () => {
-  test('GET /api/health returns 200 with status ok', async ({ request }) => {
-    const response = await request.get('/api/health');
+let app: INestApplication;
+let httpServer: ReturnType<INestApplication['getHttpServer']>;
 
-    expect(response.status()).toBe(200);
+beforeAll(async () => {
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+  }).compile();
 
-    const body = await response.json();
-    expect(body.status).toBe('ok');
-    expect(body.timestamp).toBeTruthy();
-    expect(body.uptime).toBeGreaterThan(0);
+  app = moduleRef.createNestApplication();
+  configureApp(app);
+  await app.init();
+  httpServer = app.getHttpServer();
+});
+
+afterAll(async () => {
+  await app.close();
+});
+
+describe('API Health & Availability', () => {
+  it('GET /api/health returns 200 with status ok', async () => {
+    const response = await request(httpServer).get('/api/health').expect(200);
+
+    expect(response.body.status).toBe('ok');
+    expect(response.body.timestamp).toBeTruthy();
+    expect(response.body.uptime).toBeGreaterThan(0);
   });
 
-  test('GET /api returns welcome message', async ({ request }) => {
-    const response = await request.get('/api');
+  it('GET /api returns welcome message', async () => {
+    const response = await request(httpServer).get('/api').expect(200);
 
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    expect(body.message).toBeTruthy();
+    expect(response.body.message).toBeTruthy();
   });
 
-  test('health endpoint returns valid ISO 8601 timestamp', async ({ request }) => {
-    const response = await request.get('/api/health');
-    const body = await response.json();
+  it('health endpoint returns valid ISO 8601 timestamp', async () => {
+    const response = await request(httpServer).get('/api/health');
 
-    const parsed = Date.parse(body.timestamp);
+    const parsed = Date.parse(response.body.timestamp);
     expect(Number.isNaN(parsed)).toBe(false);
     expect(Date.now() - parsed).toBeLessThan(5000);
   });
 });
 
-test.describe('API Error Handling', () => {
-  test('unknown route returns 404 with structured error', async ({ request }) => {
-    const response = await request.get('/api/nonexistent-route-xyz');
+describe('API Error Handling', () => {
+  it('unknown route returns 404 with structured error', async () => {
+    const response = await request(httpServer).get('/api/nonexistent-route-xyz').expect(404);
 
-    expect(response.status()).toBe(404);
-
-    const body = await response.json();
-    expect(body.statusCode).toBe(404);
+    expect(response.body.statusCode).toBe(404);
   });
 
-  test('correlation ID header is returned on every response', async ({ request }) => {
-    const response = await request.get('/api/health');
+  it('correlation ID header is returned on every response', async () => {
+    const response = await request(httpServer).get('/api/health');
 
-    const correlationId = response.headers()['x-correlation-id'];
+    const correlationId = response.headers['x-correlation-id'];
     expect(correlationId).toBeTruthy();
     expect(correlationId.length).toBeGreaterThan(0);
   });
 
-  test('client-provided correlation ID is echoed back', async ({ request }) => {
+  it('client-provided correlation ID is echoed back', async () => {
     const customId = 'e2e-test-correlation-12345';
-    const response = await request.get('/api/health', {
-      headers: { 'x-correlation-id': customId },
-    });
+    const response = await request(httpServer)
+      .get('/api/health')
+      .set('x-correlation-id', customId);
 
-    expect(response.headers()['x-correlation-id']).toBe(customId);
+    expect(response.headers['x-correlation-id']).toBe(customId);
   });
 });
 
-test.describe('API Security Headers', () => {
-  test('CORS headers are present', async ({ request }) => {
-    const response = await request.get('/api/health');
+describe('API Security Headers', () => {
+  it('CORS headers are present', async () => {
+    const response = await request(httpServer)
+      .options('/api/health')
+      .set('Origin', 'http://localhost:4200');
 
-    // CORS should be enabled (Access-Control-Allow-Origin)
-    expect(response.status()).toBe(200);
+    expect(response.headers['access-control-allow-origin']).toBeTruthy();
   });
 
-  test('API does not expose server internals on error', async ({ request }) => {
-    const response = await request.get('/api/nonexistent-route-xyz');
-    const body = await response.json();
+  it('API does not expose server internals on error', async () => {
+    const response = await request(httpServer).get('/api/nonexistent-route-xyz');
 
-    // Should not contain stack traces in production-like responses
-    expect(body.stack).toBeUndefined();
-    expect(body.trace).toBeUndefined();
+    expect(response.body.stack).toBeUndefined();
+    expect(response.body.trace).toBeUndefined();
   });
 });

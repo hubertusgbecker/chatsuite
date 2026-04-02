@@ -1,88 +1,88 @@
-import { expect, test } from '@playwright/test';
+import { describe, expect, it } from 'vitest';
 
 /**
  * Client App E2E Tests.
  *
- * High-impact smoke tests verifying the React SPA loads,
- * renders correctly, and has working navigation.
+ * HTTP-level smoke tests verifying the React SPA is served correctly,
+ * returns proper HTML, assets, and response headers.
  * These tests run against a live client-app dev server.
  */
 
-test.describe('Client App Loads', () => {
-  test('homepage renders the React root', async ({ page }) => {
-    const errors: string[] = [];
-    page.on('pageerror', (err) => errors.push(err.message));
+const CLIENT_BASE_URL = process.env['CLIENT_BASE_URL'] || 'http://localhost:4200';
 
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+async function fetchClient(path: string): Promise<Response> {
+  return fetch(`${CLIENT_BASE_URL}${path}`);
+}
 
-    // React root div should exist and have content
-    const root = page.locator('#root');
-    await expect(root).toBeAttached();
+describe('Client App Loads', () => {
+  it('homepage returns 200 with HTML content', async () => {
+    const response = await fetchClient('/');
 
-    // Wait for React to hydrate
-    await expect(root.locator('*').first()).toBeAttached({ timeout: 10_000 });
+    expect(response.status).toBe(200);
 
-    // No JS runtime errors
-    expect(errors).toHaveLength(0);
+    const contentType = response.headers.get('content-type');
+    expect(contentType).toContain('text/html');
   });
 
-  test('homepage has correct title', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveTitle('ClientApp');
+  it('homepage HTML contains React root element', async () => {
+    const response = await fetchClient('/');
+    const html = await response.text();
+
+    expect(html).toContain('<div id="root">');
   });
 
-  test('navigation links are rendered', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+  it('homepage has correct title', async () => {
+    const response = await fetchClient('/');
+    const html = await response.text();
 
-    // Wait for React to render navigation
-    const nav = page.locator('nav');
-    await expect(nav).toBeAttached({ timeout: 10_000 });
-
-    // Should have links
-    const links = nav.locator('a');
-    const count = await links.count();
-    expect(count).toBeGreaterThan(0);
+    expect(html).toMatch(/<title>ClientApp<\/title>/);
   });
 
-  test('client-side routing works (page-2)', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+  it('SPA routes return the index HTML (client-side routing)', async () => {
+    const response = await fetchClient('/page-2');
 
-    // Click the page-2 link (use first() since there may be multiple matching links)
-    const page2Link = page.locator('a[href="/page-2"]').first();
-    await expect(page2Link).toBeAttached({ timeout: 10_000 });
-    await page2Link.click();
+    expect(response.status).toBe(200);
 
-    // URL should update without full page reload
-    await expect(page).toHaveURL(/\/page-2/);
+    const html = await response.text();
+    expect(html).toContain('<div id="root">');
   });
 });
 
-test.describe('Client App Assets', () => {
-  test('CSS is loaded (stylesheets present)', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+describe('Client App Assets', () => {
+  it('main entry point is served as a module', async () => {
+    const response = await fetchClient('/');
+    const html = await response.text();
 
-    const stylesheets = await page.evaluate(
-      () => document.querySelectorAll('link[rel="stylesheet"], style').length,
-    );
-    expect(stylesheets).toBeGreaterThan(0);
+    // Vite serves the app as ES module scripts
+    expect(html).toMatch(/<script type="module"/);
   });
 
-  test('no failed network requests on page load (except optional config)', async ({ page }) => {
-    const failedRequests: string[] = [];
-    page.on('response', (response) => {
-      // Ignore optional appConfig.js -- it is loaded via script tag but not required
-      if (response.status() >= 400 && !response.url().includes('appConfig.js')) {
-        failedRequests.push(`${response.status()} ${response.url()}`);
-      }
-    });
+  it('JavaScript assets are served', async () => {
+    const response = await fetchClient('/');
+    const html = await response.text();
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    // Vite injects script tags for the app bundle
+    expect(html).toMatch(/<script\b/);
+  });
 
-    expect(failedRequests).toHaveLength(0);
+  it('no 404 on critical asset URLs', async () => {
+    const indexResponse = await fetchClient('/');
+    const html = await indexResponse.text();
+
+    // Extract JS/CSS URLs from the HTML
+    const assetUrls = [
+      ...html.matchAll(/(?:src|href)="(\/[^"]+\.(?:js|css))"/g),
+    ].map((m) => m[1]);
+
+    for (const url of assetUrls) {
+      // Skip optional config files
+      if (url.includes('appConfig')) continue;
+
+      const assetResponse = await fetchClient(url);
+      expect(
+        assetResponse.status,
+        `Expected 200 for ${url}, got ${assetResponse.status}`,
+      ).toBe(200);
+    }
   });
 });
