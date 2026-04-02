@@ -8,11 +8,7 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nx/node": "21.3.2",
-    "async": "^3.2.4",
-    "bluebird": "^3.7.2",
-    "core-js": "^3.6.5",
     "reflect-metadata": "^0.1.13",
-    "regenerator-runtime": "0.13.7",
     "rxjs": "^7.1.0",
     "tslib": "^2.3.0"
   },
