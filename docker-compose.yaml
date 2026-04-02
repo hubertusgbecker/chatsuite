@@ -339,7 +339,7 @@ services:
       - ./data/n8n:/home/node/.n8n
       - ./config/n8n/docker-entrypoint-n8n.sh:/docker-entrypoint-n8n.sh:ro
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost:5678/healthz || exit 1']
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://localhost:5678/healthz || exit 1']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -427,7 +427,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://mcphub:3000/health || exit 1']
+      test: ['CMD-SHELL', 'curl -s -o /dev/null -w "%{http_code}" http://mcphub:3000/health | grep -qE "^(200|503)$"']
       interval: 30s
       timeout: 10s
       retries: 3

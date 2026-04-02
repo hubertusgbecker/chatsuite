@@ -41,7 +41,9 @@ async function bootstrap(): Promise<void> {
   Logger.log(`Application is running on: http://localhost:${port}/api`);
 }
 
-// Only bootstrap when run directly, not when imported by tests
-if (require.main === module) {
+// Bootstrap when run directly or via Nx node executor
+const isDirectRun = require.main === module;
+const isNxServe = process.env.NX_TASK_TARGET_TARGET === 'serve';
+if (isDirectRun || isNxServe) {
   bootstrap();
 }
