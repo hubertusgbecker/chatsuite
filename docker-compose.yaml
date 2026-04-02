@@ -1,3 +1,9 @@
+# Resource limits (mem_limit, cpus) are intentionally omitted.
+# Docker's default behaviour -- let the OS scheduler manage memory and CPU --
+# is preferred for this stack. Hard limits cause OOM-kills on bursty workloads
+# (MindsDB model loading, n8n batch workflows, LibreChat streaming) and add
+# tuning overhead with no measurable upside on a dedicated host.
+
 services:
   # Nginx
   nginx:
@@ -11,10 +17,14 @@ services:
     networks:
       - gateway
     depends_on:
-      - client-app
-      - api-customer-service
-      - n8n
-      - pgadmin
+      client-app:
+        condition: service_healthy
+      api-customer-service:
+        condition: service_healthy
+      n8n:
+        condition: service_healthy
+      pgadmin:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -78,7 +88,8 @@ services:
       - gateway
       - database_pg
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     entrypoint: ['sh', '/usr/local/bin/docker-entrypoint-pgadmin.sh']
     healthcheck:
       test:
@@ -108,7 +119,8 @@ services:
       - gateway
       - database_pg
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -142,7 +154,8 @@ services:
     networks:
       - gateway
     depends_on:
-      - api-customer-service
+      api-customer-service:
+        condition: service_healthy
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://client-app:4200/']
       interval: 10s
@@ -158,9 +171,11 @@ services:
       - 3080:3080
     restart: always
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
       #- librechat_rag_api
-      - mcphub # MCPHub for MCP server management
+      mcphub:
+        condition: service_healthy
       #- mindsdb  # Add dependency on MindsDB for MCP
       #- n8n      # Add dependency on n8n for MCP
       #- nocodb   # Add dependency on n8n for MCP
@@ -191,6 +206,13 @@ services:
       - ./data/librechat/logs:/app/api/logs
     networks:
       - gateway
+      - librechat_internal
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3080/api/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     extra_hosts:
       - 'synology.local:192.168.178.3'
 
@@ -211,8 +233,15 @@ services:
         '-c',
         'rm -f /data/db/mongod.lock && exec mongod --noauth --bind_ip_all --dbpath /data/db',
       ]
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.runCommand('ping').ok", '--quiet']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
     networks:
       - gateway
+      - librechat_internal
 
   meilisearch:
     container_name: chatsuite_meilisearch
@@ -227,8 +256,14 @@ services:
       - MEILI_NO_ANALYTICS=true
     volumes:
       - ./data/librechat/meilisearch:/meili_data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
-      - gateway
+      - librechat_internal
   vectordb:
     container_name: chatsuite_vectordb
     image: ankane/pgvector:latest
@@ -239,8 +274,14 @@ services:
     restart: always
     volumes:
       - vectordb_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U admin -d chatsuite']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
-      - gateway
+      - librechat_internal
   #librechat_rag_api:
   #  container_name: chatsuite_librechat_rag_api
   #  image: ghcr.io/danny-avila/librechat-rag-api-dev-lite:latest
@@ -297,8 +338,15 @@ services:
     volumes:
       - ./data/n8n:/home/node/.n8n
       - ./config/n8n/docker-entrypoint-n8n.sh:/docker-entrypoint-n8n.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:5678/healthz || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - gateway
       - database_pg
@@ -349,7 +397,8 @@ services:
       retries: 10
       start_period: 30s
     depends_on:
-      - nocodb-postgres
+      nocodb-postgres:
+        condition: service_healthy
     networks:
       - gateway
       - nocodb_network
@@ -368,7 +417,8 @@ services:
       - ./config/mcphub/mcp_settings.json:/app/mcp_settings.json:rw
       - ./data/mcphub:/app/data
     depends_on:
-      - mcp-email-server
+      mcp-email-server:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -416,7 +466,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: chatsuite_minio
-    restart: unless-stopped
+    restart: always
     ports:
       - '9000:9000' # API
       - '9001:9001' # Console UI
@@ -438,9 +488,10 @@ services:
       - gateway
 
 networks:
-  gateway: {}
-  database_pg: {}
-  nocodb_network: {}
+  gateway: {}            # Public-facing services (nginx, apps, APIs)
+  database_pg: {}        # PostgreSQL access (api, pgadmin, n8n)
+  nocodb_network: {}     # NocoDB + its dedicated postgres
+  librechat_internal: {} # LibreChat, MongoDB, Meilisearch, Vectordb
 
 volumes:
   vectordb_postgres_data:
