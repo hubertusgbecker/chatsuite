@@ -208,7 +208,7 @@ services:
       - gateway
       - librechat_internal
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost:3080/api/health || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:3080/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 5
