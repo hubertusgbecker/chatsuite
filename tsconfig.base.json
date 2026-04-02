@@ -8,17 +8,25 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2022",
     "module": "esnext",
-    "lib": ["es2017", "dom"],
+    "lib": ["es2022", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {},
+    "paths": {
+      "@chatsuite/core/*": ["libs/core/src/*"],
+      "@chatsuite/ui/*": ["libs/ui/src/*"],
+      "@chatsuite/features/*": ["libs/features/src/*"],
+      "@chatsuite/data/*": ["libs/data/src/*"],
+      "@chatsuite/utils/*": ["libs/utils/src/*"]
+    },
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "exclude": ["node_modules", "tmp"]
 }
