@@ -32,9 +32,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       | string
       | undefined;
 
-    const statusCode =
-      exception instanceof HttpException
-        ? exception.getStatus()
+    // Determine status: HttpException > Express native errors (status/statusCode) > 500
+    const isExpressError =
+      !(exception instanceof HttpException) &&
+      exception instanceof Error &&
+      ('status' in exception || 'statusCode' in exception);
+
+    const statusCode = exception instanceof HttpException
+      ? exception.getStatus()
+      : isExpressError
+        ? ((exception as Error & { status?: number; statusCode?: number }).status ??
+           (exception as Error & { status?: number; statusCode?: number }).statusCode ??
+           HttpStatus.INTERNAL_SERVER_ERROR)
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const errorCode =
@@ -42,10 +51,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? exception.errorCode
         : this.mapStatusToErrorCode(statusCode);
 
+    // Only expose messages from known exception types.
+    // Express native errors (e.g. "Cannot GET /path") are safe to expose.
+    // Unknown errors get a generic message to avoid leaking internals.
     const message =
       exception instanceof HttpException
         ? exception.message
-        : 'Internal server error';
+        : isExpressError
+          ? (exception as Error).message
+          : 'Internal server error';
 
     const details =
       exception instanceof BusinessException ? exception.details : undefined;
