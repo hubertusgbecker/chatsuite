@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -18,7 +19,7 @@ export default defineConfig({
     host: 'localhost',
   },
 
-  plugins: [react(), nxViteTsPaths()],
+  plugins: [tailwindcss(), react(), nxViteTsPaths()],
 
   build: {
     outDir: '../../dist/apps/client-app',

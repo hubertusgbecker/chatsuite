@@ -5,10 +5,8 @@ packages:
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@parcel/watcher'
-  - '@prisma/engines'
   - '@scarf/scarf'
   - '@swc/core'
   - esbuild
   - nx
-  - prisma
   - unrs-resolver

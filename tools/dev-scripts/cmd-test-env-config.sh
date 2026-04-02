@@ -53,7 +53,7 @@ echo "------------------------------------------------"
 pnpm env:set:dev > /dev/null
 echo "✅ Set .env to 'dev'"
 echo "✅ Command 'pnpm start' now maps to 'pnpm docker:workspace:up'"
-echo "✅ This will use: docker-compose with ./config/env/.env.dev"
+echo "✅ This will use: docker compose with ./config/env/.env.dev"
 
 # Set to qa and test behavior
 pnpm env:set:qa > /dev/null
@@ -72,7 +72,7 @@ echo "✅ Command 'pnpm start:workspace:host' will override to use: ./config/env
 echo "✅ Command 'pnpm start:workspace:qa' will override to use: ./config/env/.env.qa"
 
 echo ""
-echo "4. Testing docker-compose environment file resolution..."
+echo "4. Testing docker compose environment file resolution..."
 echo "-------------------------------------------------------"
 
 # Test each environment
@@ -107,7 +107,7 @@ echo "Summary of the solution:"
 echo "• .env file in project root controls default environment"
 echo "• 'pnpm start' respects the .env setting (no longer hardcoded to host)"
 echo "• Explicit commands (start:workspace:dev, etc.) still work for overrides"
-echo "• All docker-compose commands use correct ./config/env/.env.<environment> files"
+echo "• All docker compose commands use correct ./config/env/.env.<environment> files"
 echo "• NX commands use dotenv-cli to load .env file properly"
 echo "• Environment can be changed with: pnpm env:set:dev|qa|host"
 echo "• Current environment can be checked with: pnpm env:show"

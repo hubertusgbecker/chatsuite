@@ -15,7 +15,7 @@ export function App() {
       <nav>
         <ul>
           <li>
-            <Link to="/">NX_APP_NAME_UPDATED - {process.env['NX_APP_NAME']}</Link>
+            <Link to="/">ChatSuite Client</Link>
           </li>
           <li>
             <Link to="/page-2">Page 2</Link>

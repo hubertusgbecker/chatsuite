@@ -47,7 +47,7 @@ else
         echo "✅ n8n data directory is accessible by current user"
     else
         echo "⚠️  Warning: Permission issues detected, but continuing startup..."
-        echo "   If n8n fails to start, you may need to run: docker-compose restart n8n"
+        echo "   If n8n fails to start, you may need to run: docker compose restart n8n"
     fi
 fi
 

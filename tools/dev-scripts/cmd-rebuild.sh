@@ -37,9 +37,9 @@ wait_for_service() {
 
 # Step 1: Complete rebuild
 echo "Step 1: Rebuilding entire system..."
-docker-compose down
-docker-compose pull
-docker-compose up -d
+docker compose down
+docker compose pull
+docker compose up -d
 
 # Step 2: Wait for core services
 echo ""

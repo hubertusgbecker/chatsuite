@@ -38,7 +38,7 @@ services:
   # Postgres
   postgres:
     container_name: chatsuite_postgres
-    image: postgres:latest
+    image: postgres:17
     ports:
       - '54320:5432'
     restart: always
@@ -358,7 +358,7 @@ services:
   # NocoDB PostgreSQL Database (separate from main postgres)
   nocodb-postgres:
     container_name: chatsuite_nocodb-postgres
-    image: postgres:latest
+    image: postgres:17
     restart: always
     volumes:
       - nocodb_postgres_data:/var/lib/postgresql
