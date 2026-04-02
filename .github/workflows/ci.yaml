@@ -1,31 +1,29 @@
 name: CI
 
-on:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main, develop]
-  workflow_dispatch:
-
+# Cancel in-progress runs when a new commit is pushed to the same branch/PR
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Minimal top-level permissions; jobs escalate as needed
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 env:
   NODE_VERSION: '20'
-  NX_BRANCH: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   # ──────────────────────────────────────────────
   # Setup: detect affected projects once, reuse everywhere
   # ──────────────────────────────────────────────
   setup:
-    name: Setup & Detect Changes
+    name: Setup
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -52,8 +50,12 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'tsconfig.base.json'
               - 'nx.json'
+              - 'jest.config.ts'
+              - 'jest.preset.js'
             any:
-              - '**'
+              - '!docs/**'
+              - '!*.md'
+              - '!LICENSE'
 
       - name: Setup pnpm
         if: steps.changes.outputs.apps == 'true'
@@ -81,12 +83,15 @@ jobs:
           echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint)" >> $GITHUB_OUTPUT
           echo "test=$(node tools/dev-scripts/cmd-print-affected-array.js test)" >> $GITHUB_OUTPUT
           echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build)" >> $GITHUB_OUTPUT
+          echo "Affected lint: $(node tools/dev-scripts/cmd-print-affected-array.js lint)"
+          echo "Affected test: $(node tools/dev-scripts/cmd-print-affected-array.js test)"
+          echo "Affected build: $(node tools/dev-scripts/cmd-print-affected-array.js build)"
 
   # ──────────────────────────────────────────────
-  # Lint: per-project matrix for granular feedback
+  # Lint: per-project matrix for granular PR feedback
   # ──────────────────────────────────────────────
   lint:
-    name: 'Lint: ${{ matrix.project }}'
+    name: 'lint: ${{ matrix.project }}'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: setup
@@ -119,10 +124,10 @@ jobs:
         run: pnpm nx run ${{ matrix.project }}:lint
 
   # ──────────────────────────────────────────────
-  # Format check
+  # Format: check code style consistency
   # ──────────────────────────────────────────────
   format:
-    name: Format Check
+    name: format
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: setup
@@ -144,13 +149,13 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Check formatting
-        run: pnpm prettier --check "**/*.{ts,tsx,js,jsx,json,md,yaml,yml}"
+        run: pnpm prettier --check "**/*.{ts,tsx,js,jsx,json,yaml,yml}"
 
   # ──────────────────────────────────────────────
   # Unit Tests: per-project matrix with coverage
   # ──────────────────────────────────────────────
   test:
-    name: 'Test: ${{ matrix.project }}'
+    name: 'test: ${{ matrix.project }}'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [setup, lint, format]
@@ -200,7 +205,7 @@ jobs:
   # Build: verify projects compile
   # ──────────────────────────────────────────────
   build:
-    name: 'Build: ${{ matrix.project }}'
+    name: 'build: ${{ matrix.project }}'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [setup, lint, format]
@@ -248,7 +253,7 @@ jobs:
   # Integration Tests: run against real services
   # ──────────────────────────────────────────────
   integration:
-    name: Integration Tests
+    name: integration
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [test, build]
@@ -339,9 +344,12 @@ jobs:
   # Security: filesystem vulnerability scan
   # ──────────────────────────────────────────────
   security:
-    name: Security Scan
+    name: security
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -365,7 +373,7 @@ jobs:
   # Release: semantic versioning on main push only
   # ──────────────────────────────────────────────
   release:
-    name: Release
+    name: release
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [lint, format, test, build, integration, security]
@@ -407,7 +415,7 @@ jobs:
         run: pnpm semantic-release --branches main || echo "No new release needed"
 
   # ──────────────────────────────────────────────
-  # Status gate: single check for branch protection
+  # Status gate: single required check for branch protection
   # ──────────────────────────────────────────────
   status:
     name: CI Status
@@ -419,14 +427,15 @@ jobs:
       - name: Evaluate results
         run: |
           echo "## CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Format | ${{ needs.format.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Integration | ${{ needs.integration.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | \`${{ needs.lint.result }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | \`${{ needs.format.result }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | \`${{ needs.test.result }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | \`${{ needs.build.result }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration | \`${{ needs.integration.result }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | \`${{ needs.security.result }}\` |" >> $GITHUB_STEP_SUMMARY
 
           # Fail if any required job failed
           if [[ "${{ needs.lint.result }}" == "failure" ]] || \

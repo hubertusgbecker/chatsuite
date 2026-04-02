@@ -1,0 +1,78 @@
+name: Manage stale issues and PRs
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Run weekly on Mondays at 3:00 AM UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: stale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Timing
+          days-before-stale: 60
+          days-before-close: 14
+          days-before-pr-stale: 45
+          days-before-pr-close: 14
+
+          # Labels
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+          remove-stale-when-updated: true
+          remove-issue-stale-when-updated: true
+          remove-pr-stale-when-updated: true
+
+          # Messages
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has not had activity for 60 days.
+
+            To keep this issue open:
+            - Add a comment explaining why it is still relevant
+            - Add the `pinned` label for important long-term issues
+            - Reference it in a PR if you are working on a fix
+
+            It will be automatically closed in 14 days if no further activity occurs.
+
+          stale-pr-message: |
+            This PR has been automatically marked as stale because it has not had activity for 45 days.
+
+            To keep this PR open:
+            - Rebase against the latest main branch
+            - Address any review feedback or merge conflicts
+            - Add a comment explaining the current status
+            - Add the `work-in-progress` label if still actively in progress
+
+            It will be automatically closed in 14 days if no further activity occurs.
+
+          close-issue-message: |
+            This issue was automatically closed because it was stale for 14 days with no activity.
+
+            If this issue is still relevant:
+            - Reopen it if you have permissions
+            - Create a fresh issue with updated information
+
+          close-pr-message: |
+            This PR was automatically closed because it was stale for 14 days with no activity.
+
+            If you would like to continue this work:
+            - Reopen this PR and rebase against main
+            - Create a fresh PR with updated changes
+
+          # Exemptions
+          exempt-issue-labels: 'pinned,security,bug,enhancement,good-first-issue,help-wanted,documentation'
+          exempt-pr-labels: 'pinned,work-in-progress,wip,security,dependencies'
+          exempt-milestones: true
+          exempt-all-assignees: true
+
+          # Settings
+          operations-per-run: 100
+          ascending: true
