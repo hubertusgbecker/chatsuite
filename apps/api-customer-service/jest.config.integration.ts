@@ -6,12 +6,17 @@ export default {
   testMatch: ['**/tests/integration/**/*.spec.ts'],
   globals: {},
   transform: {
-    '^.+\\.[tj]s$': [
-      'ts-jest',
-      {
-        tsconfig: '<rootDir>/tsconfig.spec.json',
+    '^.+\\.[tj]s$': ['@swc/jest', {
+      jsc: {
+        parser: {
+          syntax: 'typescript',
+          decorators: true,
+        },
+        transform: {
+          decoratorMetadata: true,
+        },
       },
-    ],
+    }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/api-customer-service-integration',

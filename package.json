@@ -82,6 +82,7 @@
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.21",
     "@swc/helpers": "0.5.20",
+    "@swc/jest": "^0.2.39",
     "@tailwindcss/postcss": "4.2.2",
     "@testing-library/react": "16.3.2",
     "@types/jest": "30.0.0",
