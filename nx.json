@@ -31,15 +31,15 @@
   "generators": {
     "@nx/react": {
       "application": {
-        "style": "styled-components",
+        "style": "css",
         "linter": "eslint",
         "babel": true
       },
       "component": {
-        "style": "styled-components"
+        "style": "css"
       },
       "library": {
-        "style": "styled-components",
+        "style": "css",
         "linter": "eslint"
       }
     }

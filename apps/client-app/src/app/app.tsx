@@ -1,14 +1,9 @@
 import { Link, Route, Routes } from 'react-router';
-import styled from 'styled-components';
 import NxWelcome from './nx-welcome';
-
-const StyledApp = styled.div`
-  // Your style here
-`;
 
 export function App() {
   return (
-    <StyledApp>
+    <div>
       <NxWelcome title="client-app" />
 
       {/* START: routes */}
@@ -49,7 +44,7 @@ export function App() {
         />
       </Routes>
       {/* END: routes */}
-    </StyledApp>
+    </div>
   );
 }
 
