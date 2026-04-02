@@ -1,0 +1,313 @@
+name: pre-build
+permissions:
+  contents: read
+  actions: write
+# Events configuration
+on:
+  # Execute it on pushing to next branches
+  push:
+    branches:
+      - main
+      - release
+  # Execute it on opening any pull request to main or release
+  pull_request:
+
+env:
+  # @INFO: If independent builds are enabled, only affected projects are going to be deployed.
+  IS_INDEPENDENT_BUILD_ENABLED: 'true'
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
+  NX_BRANCH: ${{ github.head_ref || github.ref_name }}
+  # Force SWC to use WASM fallback if native bindings fail
+  SWC_FORCE_WASM: '1'
+  # Ensure native modules can be built
+  SKIP_BINARY_DOWNLOAD_FOR_CI: '1'
+  # Prevent Chromium download for Puppeteer if used
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+
+jobs:
+  # Get branch info
+  branch-info:
+    runs-on: ubuntu-latest
+    steps:
+      # Get current branch name
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+      # Get base branch name to compare with. Base branch on a PR, "main" branch on pushing.
+      - name: Get base branch name
+        id: get-base-branch-name
+        run: |
+          if [[ "${{github.event.pull_request.base.ref}}" != "" ]]; then
+            echo "branch=${{github.event.pull_request.base.ref}}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=main" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      # Export the branch names as output to be able to use it in other jobs
+      base-branch-name: ${{ steps.get-base-branch-name.outputs.branch }}
+      branch-name: ${{ steps.branch-name.outputs.current_branch }}
+  get-affected:
+    needs: [branch-info]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Check out the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      # Install Pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      # Install Node.js
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+      # Install workspace dependencies with frozen lockfile for faster install
+      - name: Install dependencies
+        run: |
+          # Use production flag for faster install and skip optional dependencies that might cause issues
+          pnpm install --frozen-lockfile --prefer-offline --prod=false --ignore-scripts
+          # Run scripts after initial install to avoid hanging on problematic postinstall scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
+      # Configure Nx to be able to detect changes between branches when we are in a PR
+      - name: Derive shas for Nx
+        id: set-shas
+        uses: nrwl/nx-set-shas@v3
+        with:
+          main-branch-name: ${{needs.branch-info.outputs.base-branch-name}}
+      # Set the affected arrays
+      - name: Get affected
+        id: get-projects-arrays
+        # main and release branches will run all the tests once workflow is run
+        run: |
+          if [[ "${{github.event.pull_request.base.ref}}" == "" ]]; then
+            echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint)" >> $GITHUB_OUTPUT
+            echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test)" >> $GITHUB_OUTPUT
+            # Running on origin/release or origin/main branch
+            if [[ $IS_INDEPENDENT_BUILD_ENABLED == "true" ]]; then
+              echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build)" >> $GITHUB_OUTPUT
+            else
+              echo "build=$(node tools/dev-scripts/cmd-print-affected-array.js build --all)" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Running on PR
+            echo "test-unit=$(node tools/dev-scripts/cmd-print-affected-array.js test origin/${{needs.branch-info.outputs.base-branch-name}})" >> $GITHUB_OUTPUT
+            echo "lint=$(node tools/dev-scripts/cmd-print-affected-array.js lint origin/${{needs.branch-info.outputs.base-branch-name}})" >> $GITHUB_OUTPUT
+            echo "build=[]" >> $GITHUB_OUTPUT
+          fi
+      - name: Print affected
+        run: |
+          echo "Test-Unit (Affected): ${{steps.get-projects-arrays.outputs.test-unit}}"
+          echo "Lint (Affected): ${{steps.get-projects-arrays.outputs.lint}}"
+          echo "Build (Affected): ${{steps.get-projects-arrays.outputs.build}}"
+          echo "Test-Unit length: $(echo '${{steps.get-projects-arrays.outputs.test-unit}}' | jq '. | length')"
+          echo "Lint length: $(echo '${{steps.get-projects-arrays.outputs.lint}}' | jq '. | length')"
+          echo "Raw test-unit output: '${{steps.get-projects-arrays.outputs.test-unit}}'"
+          echo "Raw lint output: '${{steps.get-projects-arrays.outputs.lint}}'"
+    outputs:
+      test-unit: ${{ steps.get-projects-arrays.outputs.test-unit }}
+      lint: ${{ steps.get-projects-arrays.outputs.lint }}
+      build: ${{ steps.get-projects-arrays.outputs.build }}
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [get-affected]
+    # Skip the job if there are not affected projects containing lint
+    if: ${{ needs.get-affected.outputs.lint != '[]' && needs.get-affected.outputs.lint != '' && needs.get-affected.outputs.lint != 'null' && contains(needs.get-affected.outputs.lint, '"') }}
+    strategy:
+      # Run in parallel
+      max-parallel: 4
+      # One job for each different project and node version
+      matrix:
+        node: ['20.x']
+        projectName: ${{fromJson(needs.get-affected.outputs.lint)}}
+    env:
+      NODE: ${{ matrix.node }}
+    steps:
+      # Checkout and setup environment
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
+      # Run test:unit script in the affected project
+      - name: Lint
+        run: pnpm nx run ${{ matrix.projectName }}:lint
+  test-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [get-affected]
+    # Skip the job if there are not affected projects containing unit tests
+    if: ${{ needs.get-affected.outputs.test-unit != '[]' && needs.get-affected.outputs.test-unit != '' && needs.get-affected.outputs.test-unit != 'null' && contains(needs.get-affected.outputs.test-unit, '"') }}
+    strategy:
+      # Run in parallel
+      max-parallel: 4
+      # One job for each different project and node version
+      matrix:
+        node: ['20.x']
+        projectName: ${{fromJson(needs.get-affected.outputs.test-unit)}}
+    env:
+      NODE: ${{ matrix.node }}
+    steps:
+      # Checkout and setup environment
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+          pnpm rebuild --store-path=~/.pnpm-store || echo "Rebuild failed, continuing with WASM fallbacks..."
+      # Run test:unit script in the affected project
+      - name: Test unit
+        run: pnpm nx run ${{ matrix.projectName }}:test
+  pre-build-finished:
+    runs-on: ubuntu-latest
+    needs: [test-unit, lint, get-affected]
+    if: |
+      always() &&
+      (needs.get-affected.result == 'success') &&
+      (needs.test-unit.result == 'success' || needs.test-unit.result == 'skipped') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped')
+    steps:
+      - name: Trace
+        run: echo "All jobs finished"
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [pre-build-finished, branch-info]
+    if: |
+      always() &&
+      (needs.pre-build-finished.result == 'success') &&
+      (github.event.pull_request.base.ref == '') &&
+      (needs.branch-info.outputs.branch-name == 'main')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+      - name: Configure pnpm for CI
+        run: |
+          echo "Setting up pnpm CI optimizations..."
+          pnpm config set store-dir ~/.pnpm-store
+          pnpm config set fetch-retries 3
+          pnpm config set fetch-retry-factor 2
+          pnpm config set fetch-timeout 120000
+          pnpm config set network-timeout 120000
+          pnpm config set registry https://registry.npmjs.org/
+          echo "pnpm configuration:"
+          pnpm config list
+      - name: Install dev dependencies
+        timeout-minutes: 10
+        env:
+          SWC_FORCE_WASM: true
+          SKIP_POSTINSTALL: true
+          CI: true
+        run: |
+          echo "Starting dependency installation at $(date)"
+          # Install without scripts first for speed
+          pnpm install --dev --frozen-lockfile --prefer-offline --ignore-scripts
+          echo "Dependencies installed, running selective postinstall scripts..."
+          # Only run essential postinstall scripts with timeout protection
+          timeout 180s pnpm rebuild --store-dir=~/.pnpm-store 2>/dev/null || echo "Rebuild timed out or failed, continuing with WASM fallbacks..."
+          # Run essential postinstall for semantic-release only
+          timeout 60s pnpm run --filter semantic-release postinstall 2>/dev/null || echo "semantic-release postinstall skipped"
+          echo "Dependency installation completed at $(date)"
+      - name: Trigger semantic-release
+        timeout-minutes: 10
+        id: trigger-semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SWC_FORCE_WASM: true
+          CI: true
+        run: |
+          echo "Starting semantic-release at $(date)"
+          echo "GITHUB_TOKEN length: ${#GITHUB_TOKEN}"
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "ERROR: GITHUB_TOKEN is empty, cannot proceed with semantic-release"
+            exit 1
+          fi
+          # Check if we can authenticate with GitHub
+          if ! timeout 30s git ls-remote --heads https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}.git main >/dev/null 2>&1; then
+            echo "WARNING: Cannot authenticate with GitHub, skipping semantic-release"
+            echo "tag=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Run dry-run first with timeout
+          echo "Running semantic-release dry-run..."
+          timeout 240s pnpm semantic-release --dry-run --branches main --no-ci || echo "Dry-run timed out, continuing..."
+          test -e .VERSION || (echo $(git describe --abbrev=0 --tags | tr -d v) > .VERSION && touch .NORELEASE)
+          echo "tag=$(cat .VERSION)" >> $GITHUB_OUTPUT
+          echo "Running actual semantic-release at $(date)"
+          timeout 300s pnpm semantic-release || echo "Semantic-release timed out or failed"
+          echo "Semantic-release completed at $(date)"
+    outputs:
+      tag: ${{ steps.trigger-semantic-release.outputs.tag }}
+  dispatch-build:
+    runs-on: ubuntu-latest
+    needs: [branch-info, get-affected, pre-build-finished, tag]
+    # Only dispatch if:
+    # - Any project build is affected by the latest changes.
+    # - The branch is main or release.
+    if: |
+      always() &&
+      (needs.pre-build-finished.result == 'success') &&
+      (needs.tag.result == 'success' || needs.tag.result == 'skipped') &&
+      fromJson(needs.get-affected.outputs.build)[0] &&
+      (github.event.pull_request.base.ref == '') &&
+      contains(fromJson('["main"]'), needs.branch-info.outputs.branch-name)
+    env:
+      BUILD_REQUIRED_APPS: ${{needs.get-affected.outputs.build}}
+      BRANCH_NAME: ${{needs.branch-info.outputs.branch-name}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: Print dispatch variables
+        run: |
+          echo "BRANCH_NAME=$BRANCH_NAME"
+          echo "BUILD_REQUIRED_APPS=$BUILD_REQUIRED_APPS"
+          echo "TAG=${{needs.tag.outputs.tag}}"
+      - name: Dispatch build
+        run: |
+          echo "Dispatching build event..."
+          # Dispatch the workflow without running `gh auth login` (avoid CLI storing credentials).
+          # Prefer a PAT in secrets.DISPATCH_PAT, otherwise use the runner token available in GH_TOKEN.
+          if [ -n "${{ secrets.DISPATCH_PAT }}" ]; then
+            echo "Using DISPATCH_PAT from secrets"
+            GH_TOKEN="${{ secrets.DISPATCH_PAT }}" gh workflow run build.yml -f apps="$BUILD_REQUIRED_APPS" --ref "$BRANCH_NAME"
+          else
+            echo "Using runner GH_TOKEN"
+            GH_TOKEN="$GH_TOKEN" gh workflow run build.yml -f apps="$BUILD_REQUIRED_APPS" --ref "$BRANCH_NAME"
+          fi
