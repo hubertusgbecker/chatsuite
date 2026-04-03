@@ -27,7 +27,7 @@ const run = () => {
     })
     .catch(() => {
       console.error(
-        '[ChatSuite] Please run <npm run setup> to install node modules.',
+        '[ChatSuite] Please run <pnpm install> to install node modules.',
       );
       process.exit(1);
     });

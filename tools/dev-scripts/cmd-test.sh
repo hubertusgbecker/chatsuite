@@ -21,14 +21,14 @@ test_service() {
     echo -n "Testing $service_name... "
     if response=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null); then
         if [ "$response" = "$expected_status" ]; then
-            echo "✓ OK (Status $response)"
+            echo "OK (Status $response)"
             return 0
         else
-            echo "✗ FAIL (Status $response, expected $expected_status)"
+            echo "FAIL (Status $response, expected $expected_status)"
             return 1
         fi
     else
-        echo "✗ FAIL (Connection failed)"
+        echo "FAIL (Connection failed)"
         return 1
     fi
 }
@@ -40,10 +40,10 @@ test_health_endpoint() {
 
     echo -n "Testing $service_name health... "
     if response=$(curl -s "$url" 2>/dev/null); then
-        echo "✓ OK ($response)"
+        echo "OK ($response)"
         return 0
     else
-        echo "✗ FAIL (Health check failed)"
+        echo "FAIL (Health check failed)"
         return 1
     fi
 }
@@ -54,29 +54,31 @@ echo ""
 
 # Core AI Services
 test_health_endpoint "LibreChat API" "http://localhost:3080/health"
-test_health_endpoint "MetaMCP" "http://localhost:12008/health"
 
 # Productivity Tools
 test_service "NocoDB" "http://localhost:8080" "200"
 test_service "n8n" "http://localhost:5678" "200"
 test_service "MindsDB" "http://localhost:47334" "200"
+test_service "MCPHub" "http://localhost:3000" "200"
+test_service "MinIO API" "http://localhost:9000" "200"
+test_service "MinIO Console" "http://localhost:9001" "200"
 
 # Development Services
 test_service "Client App" "http://localhost:4200" "200"
-test_service "API Service" "http://localhost:3333/api" "404"  # 404 is expected for base API route
+test_service "API Service" "http://localhost:3333/api" "200"
 
 echo ""
 
 # Step 2: Verify MCP integration
 echo "Step 2: Verifying MCP integration..."
-if docker logs librechat 2>&1 | grep -q "MCP servers initialized successfully"; then
-    echo "✓ MCP integration is working!"
+if docker logs chatsuite_librechat 2>&1 | grep -q "MCP servers initialized successfully"; then
+    echo "OK: MCP integration is working"
     echo "  Available tools:"
-    docker logs librechat 2>&1 | grep "Available tools:" | tail -1 | sed 's/^/    /'
+    docker logs chatsuite_librechat 2>&1 | grep "Available tools:" | tail -1 | sed 's/^/    /'
 else
-    echo "✗ MCP integration may have issues"
+    echo "WARN: MCP integration may have issues"
     echo "  Recent logs:"
-    docker logs librechat --tail 5 | sed 's/^/    /'
+    docker logs chatsuite_librechat --tail 5 | sed 's/^/    /'
 fi
 
 echo ""
@@ -85,17 +87,19 @@ echo ""
 echo "Step 3: Complete system status..."
 echo ""
 echo "=== System Status Summary ==="
-echo "✓ All service health checks completed"
-echo "✓ MCP integration verified"
-echo "✓ System is ready for use"
+echo "OK: All service health checks completed"
+echo "OK: MCP integration verified"
+echo "OK: System is ready for use"
 echo ""
 echo "Available services:"
 echo "  - LibreChat (AI Chat): http://localhost:3080"
-echo "  - MetaMCP (Protocol Hub): http://localhost:12008"
+echo "  - MCPHub (Protocol Hub): http://localhost:3000"
 echo "  - NocoDB (Database UI): http://localhost:8080"
 echo "  - n8n (Workflow Automation): http://localhost:5678"
 echo "  - MindsDB (AI Database): http://localhost:47334"
-echo "  - Client App (React Demo): http://localhost:4200"
-echo "  - API Service (NestJS Demo): http://localhost:3333"
+echo "  - MCP Email (Email Processing): http://localhost:9557"
+echo "  - MinIO (Object Storage): http://localhost:9000"
+echo "  - Client App (React): http://localhost:4200"
+echo "  - API Service (NestJS): http://localhost:3333"
 echo ""
 echo "=== Testing Complete! ==="

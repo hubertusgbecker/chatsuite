@@ -23,7 +23,7 @@ wait_for_service() {
     echo "Waiting for $service_name to be ready..."
     while [ $attempt -le $max_attempts ]; do
         if eval "$health_check" >/dev/null 2>&1; then
-            echo "✓ $service_name is ready!"
+            echo "OK: $service_name is ready"
             return 0
         fi
         echo "  Attempt $attempt/$max_attempts: $service_name not ready yet..."
@@ -31,7 +31,7 @@ wait_for_service() {
         attempt=$((attempt + 1))
     done
 
-    echo "✗ ERROR: $service_name failed to become ready after $max_attempts attempts"
+    echo "ERROR: $service_name failed to become ready after $max_attempts attempts"
     return 1
 }
 
@@ -44,8 +44,7 @@ docker compose up -d
 # Step 2: Wait for core services
 echo ""
 echo "Step 2: Waiting for core services to initialize..."
-wait_for_service "PostgreSQL" "docker exec postgres pg_isready -U admin"
-wait_for_service "MetaMCP" "curl -f http://localhost:12008/health"
+wait_for_service "PostgreSQL" "docker exec chatsuite_postgres pg_isready -U admin"
 wait_for_service "LibreChat API" "curl -f http://localhost:3080/health"
 
 # Step 3: Wait for MCP integration
@@ -54,10 +53,10 @@ echo "Step 3: Waiting for MCP integration..."
 sleep 15
 
 echo ""
-echo "=== Rebuild Complete! ==="
-echo "✓ All services rebuilt and started"
-echo "✓ Core services are ready"
-echo "✓ System ready for testing"
+echo "=== Rebuild Complete ==="
+echo "OK: All services rebuilt and started"
+echo "OK: Core services are ready"
+echo "OK: System ready for testing"
 echo ""
 echo "Next steps:"
 echo "  - Run 'pnpm test' to verify all services"

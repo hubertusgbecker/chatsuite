@@ -45,21 +45,6 @@ const pruneImages = () => {
     .finally(() => console.log('[ChatSuite] Image removal completed.'));
 };
 
-const _stopDockerCompose = () => {
-  return execPromise('docker-compose -f ./docker-compose.workspace.yaml down')
-    .then((response) => {
-      if (response?.stderr?.length) {
-        console.log(response?.stderr);
-      }
-    })
-    .catch((e) => {
-      console.error(
-        '[ChatSuite] An error occurred while executing docker compose down.',
-        e,
-      );
-    });
-};
-
 const prune = () => {
   return pruneContainers().then(() => pruneImages());
 };

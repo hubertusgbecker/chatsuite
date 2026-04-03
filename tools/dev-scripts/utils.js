@@ -2,8 +2,8 @@ const util = require('node:util');
 const childProcess = require('node:child_process');
 const execPromise = util.promisify(childProcess.exec);
 
-// Local registry is disabled after considering the complexity of security issues occurring inside K8 layer while accessing pulling docker images
-const PROJECTS_EXCLUDED = ['api-worker', 'client-app-e2e'];
+// Projects to exclude from CI build/push operations
+const PROJECTS_EXCLUDED = [];
 const DOCKER_REGISTRY_NAME = 'registry';
 const DOCKER_REGISTRY_PORT = 5020;
 const DOCKER_REGISTRY_VERSION = 2;

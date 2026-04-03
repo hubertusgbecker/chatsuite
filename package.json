@@ -54,6 +54,8 @@
     "env:test": "bash ./tools/dev-scripts/cmd-test-env-config.sh",
     "rebuild": "bash ./tools/dev-scripts/cmd-rebuild.sh",
     "test": "bash ./tools/dev-scripts/cmd-test.sh",
+    "fix-permissions": "bash ./tools/dev-scripts/cmd-fix-data-permissions.sh",
+    "fix-permissions:check": "bash ./tools/dev-scripts/cmd-fix-data-permissions.sh --check",
     "lint": "pnpm biome check apps/",
     "lint:all": "pnpm biome check apps/",
     "format": "pnpm biome check --write apps/",
