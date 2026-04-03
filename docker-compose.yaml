@@ -260,15 +260,17 @@ services:
   vectordb:
     container_name: chatsuite_vectordb
     image: ankane/pgvector:latest
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
     environment:
-      POSTGRES_DB: chatsuite
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${VECTORDB_DB:-chatsuite}
+      POSTGRES_USER: ${VECTORDB_USER:-admin}
+      POSTGRES_PASSWORD: ${VECTORDB_PASSWORD:-admin}
     restart: always
     volumes:
       - ./data/vectordb:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U admin -d chatsuite']
+      test: ['CMD-SHELL', 'pg_isready -U ${VECTORDB_USER:-admin} -d ${VECTORDB_DB:-chatsuite}']
       interval: 10s
       timeout: 5s
       retries: 5

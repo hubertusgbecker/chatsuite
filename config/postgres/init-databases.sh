@@ -50,16 +50,6 @@ echo "PostgreSQL is ready!"
 echo "=== Setting up main application database ==="
 create_database_if_not_exists "chatsuite"
 
-# Create MetaMCP database and user
-echo "=== Setting up MetaMCP database ==="
-create_user_if_not_exists "metamcp_user" "m3t4mcp_pass"
-create_database_if_not_exists "metamcp_db" "metamcp_user"
-
-# Grant necessary permissions to MetaMCP user
-echo "Granting permissions to metamcp_user..."
-psql -U "$POSTGRES_USER" -c "GRANT ALL PRIVILEGES ON DATABASE \"metamcp_db\" TO \"metamcp_user\";"
-psql -U "$POSTGRES_USER" -d "metamcp_db" -c "GRANT ALL ON SCHEMA public TO \"metamcp_user\";"
-
 # List all databases for verification
 echo "=== Database setup complete! ==="
 echo "Available databases:"
