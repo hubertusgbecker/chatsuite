@@ -48,6 +48,12 @@ import {
   setupTestNocodb,
   verifyNocodbConnection,
 } from '../helpers/test-nocodb';
+import {
+  cleanupTestPaperclip,
+  listPaperclipCompanies,
+  setupTestPaperclip,
+  verifyPaperclipConnection,
+} from '../helpers/test-paperclip';
 import { closeTestServer, createTestServer, getHttpServer } from '../helpers/test-server';
 
 /**
@@ -67,6 +73,7 @@ describe('API Customer Service Integration', () => {
     await setupTestMindsDB();
     await setupTestMCPHub();
     await setupTestMCPEmail();
+    await setupTestPaperclip();
 
     await createTestServer();
     httpServer = getHttpServer();
@@ -85,6 +92,7 @@ describe('API Customer Service Integration', () => {
     await cleanupTestMindsDB();
     await cleanupTestMCPHub();
     await cleanupTestMCPEmail();
+    await cleanupTestPaperclip();
   });
 
   // ---------------------------------------------------------------
@@ -575,6 +583,22 @@ describe('API Customer Service Integration', () => {
       expect(endpoint.status).toBe(200);
       expect(endpoint.isSSE).toBe(true);
       expect(endpoint.contentType).toContain('text/event-stream');
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // Paperclip Integration
+  // ---------------------------------------------------------------
+
+  describe('Paperclip Integration', () => {
+    it('should connect and report health', async () => {
+      const connected = await verifyPaperclipConnection();
+      expect(connected).toBe(true);
+    });
+
+    it('should list companies as an array', async () => {
+      const companies = await listPaperclipCompanies();
+      expect(Array.isArray(companies)).toBe(true);
     });
   });
 });

@@ -498,6 +498,42 @@ services:
     networks:
       - gateway
 
+  # Paperclip - AI Agent Orchestration
+  paperclip:
+    image: ghcr.io/paperclipai/paperclip:latest
+    container_name: chatsuite_paperclip
+    restart: always
+    ports:
+      - '3100:3100'
+    env_file:
+      - ./config/env/.env.${NX_APP_ENV:-dev}
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3100
+      - PAPERCLIP_HOME=/paperclip
+      - PAPERCLIP_INSTANCE_ID=${PAPERCLIP_INSTANCE_ID:-default}
+      - PAPERCLIP_DEPLOYMENT_MODE=${PAPERCLIP_DEPLOYMENT_MODE:-authenticated}
+      - PAPERCLIP_DEPLOYMENT_EXPOSURE=${PAPERCLIP_DEPLOYMENT_EXPOSURE:-private}
+      - PAPERCLIP_PUBLIC_URL=${PAPERCLIP_PUBLIC_URL:-https://localhost:10443/paperclip}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin}@postgres:5432/paperclip
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - ./data/paperclip:/paperclip
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gateway
+      - database_pg
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3100/api/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
 networks:
   gateway: {} # Public-facing services (nginx, apps, APIs)
   database_pg: {} # PostgreSQL access (api, pgadmin, n8n)

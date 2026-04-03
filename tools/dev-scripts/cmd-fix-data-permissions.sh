@@ -34,6 +34,7 @@ DATA_DIRS=(
   "n8n"
   "nocodb"
   "nocodb/postgres"
+  "paperclip"
   "pgadmin"
   "postgres"
   "vectordb"

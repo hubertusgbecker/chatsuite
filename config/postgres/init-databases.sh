@@ -50,6 +50,10 @@ echo "PostgreSQL is ready!"
 echo "=== Setting up main application database ==="
 create_database_if_not_exists "chatsuite"
 
+# Create Paperclip database (AI agent orchestration)
+echo "=== Setting up Paperclip database ==="
+create_database_if_not_exists "paperclip"
+
 # List all databases for verification
 echo "=== Database setup complete! ==="
 echo "Available databases:"

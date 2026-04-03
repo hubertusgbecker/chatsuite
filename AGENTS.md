@@ -147,7 +147,7 @@ chatsuite/
 ├── tools/dev-scripts/             # Automation scripts (cmd-* prefix)
 ├── docs/                          # Documentation
 ├── tmp/                           # Temporary files only
-├── docker-compose.yaml            # 16 service definitions
+├── docker-compose.yaml            # 17 service definitions
 ├── docker-compose.base.yaml       # Shared service base (nx-base)
 ├── biome.json                     # Linter/formatter config
 ├── nx.json                        # Nx workspace config
@@ -255,6 +255,7 @@ tools/dev-scripts/cmd-migrate-n8n-sqlite-to-postgres.py  # n8n DB migration (Pyt
 | MindsDB HTTP         | 47334        | /mindsdb/           |
 | MinIO API            | 9000         | /minio-api/         |
 | MinIO Console        | 9001         | /minio/             |
+| Paperclip            | 3100         | /paperclip/         |
 | PostgreSQL           | 54320        | --                  |
 | MongoDB              | 27018        | --                  |
 | Nginx (HTTPS)        | 10443        | --                  |
@@ -264,7 +265,7 @@ tools/dev-scripts/cmd-migrate-n8n-sqlite-to-postgres.py  # n8n DB migration (Pyt
 | File / Directory                    | Purpose                                  |
 | ----------------------------------- | ---------------------------------------- |
 | `AGENTS.md`                         | Authoritative development reference      |
-| `docker-compose.yaml`               | All 16 service definitions               |
+| `docker-compose.yaml`               | All 17 service definitions               |
 | `docker-compose.base.yaml`          | Shared base service config (nx-base)     |
 | `config/nginx/default.dev.conf`     | Central reverse proxy routing            |
 | `config/env/env.{dev,qa,host}`      | Environment variable templates           |
@@ -376,7 +377,7 @@ pnpm nx:test:affected                      # Only affected
 - **Config**: `vitest.config.integration.ts` per project
 - **Timeout**: 30 seconds per test
 - **Caching**: Disabled (`cache: false` in nx.json)
-- **Status**: 24/24 tests passing across 8 services
+- **Status**: 24/24 tests passing across 9 services
 
 ```bash
 pnpm nx integration api-customer-service   # One project
@@ -384,7 +385,7 @@ pnpm nx:integration                        # All projects (serial, --parallel=1)
 pnpm nx:integration:affected               # Only affected
 ```
 
-**Service coverage**: PostgreSQL (54320), MongoDB (27018), MinIO (9000), n8n (5678), NocoDB (8080), MindsDB (47334), MCPHub (3000), MCP Email (9557).
+**Service coverage**: PostgreSQL (54320), MongoDB (27018), MinIO (9000), n8n (5678), NocoDB (8080), MindsDB (47334), MCPHub (3000), MCP Email (9557), Paperclip (3100).
 
 **Test helpers** in `tests/integration/helpers/`:
 
@@ -398,6 +399,7 @@ pnpm nx:integration:affected               # Only affected
 | `test-mindsdb.ts`   | `setupTestMindsDB()`, `executeMindsDBQuery()`, `listMindsDBDatabases()` |
 | `test-mcphub.ts`    | `setupTestMCPHub()`, `verifyMCPHubConnection()`, `listMCPServers()` |
 | `test-mcp-email.ts` | `setupTestMCPEmail()`, `verifyMCPEmailConnection()`, `checkMCPEmailSSEEndpoint()` |
+| `test-paperclip.ts` | `setupTestPaperclip()`, `verifyPaperclipConnection()`, `listPaperclipCompanies()` |
 | `test-server.ts`    | `setupTestServer()`, `closeTestServer()`, `getTestServer()`        |
 | `factories.ts`      | `UserFactory.create()`, `ConversationFactory.create()` (uses @faker-js) |
 
@@ -427,7 +429,7 @@ pnpm e2e:client                            # Client rendering tests
 
 ## Architecture
 
-### Docker Services (16 containers, 4 networks)
+### Docker Services (17 containers, 4 networks)
 
 | Service              | Image / Build                         | Port  | Networks                    |
 | -------------------- | ------------------------------------- | ----- | --------------------------- |
@@ -447,6 +449,7 @@ pnpm e2e:client                            # Client rendering tests
 | mcphub               | `config/mcphub/Dockerfile.custom`     | 3000  | gateway                     |
 | mcp-email-server     | `zerolib/mcp-email:latest`            | 9557  | gateway                     |
 | minio                | `minio/minio:latest`                  | 9000  | gateway                     |
+| paperclip            | `ghcr.io/paperclipai/paperclip:latest`| 3100  | gateway, database_pg        |
 
 **Networks**: `gateway` (main service mesh), `database_pg` (PostgreSQL access), `nocodb_network` (NocoDB isolation), `librechat_internal` (LibreChat ecosystem).
 
@@ -457,10 +460,10 @@ pnpm e2e:client                            # Client rendering tests
 All services accessible via HTTPS on port 10443:
 
 - SSL termination with self-signed certs in `config/certificates/`
-- WebSocket support on all routes (LibreChat, n8n, MCPHub)
+- WebSocket support on all routes (LibreChat, n8n, MCPHub, Paperclip)
 - Dynamic DNS via `resolver 127.0.0.11` (Docker embedded DNS)
 - SSE stream buffering disabled for MCPHub
-- Path-based routing: `/` (client), `/api/` (API), `/librechat/`, `/n8n/`, etc.
+- Path-based routing: `/` (client), `/api/` (API), `/librechat/`, `/n8n/`, `/paperclip/`, etc.
 
 ### Database Architecture
 
