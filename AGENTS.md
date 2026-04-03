@@ -1,206 +1,138 @@
-# AGENTS.md
+# AGENTS.md Version 3
 
 <guidelines>
 ChatSuite is a comprehensive AI collaboration platform that orchestrates multiple AI services, workflow automation tools, and database systems into a unified ecosystem. It uses Docker-based microservices architecture with NestJS APIs, React frontends, and an Nx monorepo structure to enable seamless collaboration between AI systems, automation workflows, and human users.
 
-This document serves as the authoritative reference for all development, service architecture, and automation standards within the ChatSuite ecosystem. Whether you're a developer, DevOps engineer, or AI agent, this guide ensures consistent, high-quality implementations across the platform.
+This document is the authoritative reference and single source of truth for all coding standards, project structure, and development practices within the ChatSuite ecosystem.
 
 **Mission**: Enable seamless collaboration between AI systems, automation workflows, and human users through intelligent service orchestration and unified data access.
 </guidelines>
 
 ---
 
-## Table of Contents
-
-1. [Development Rules](#development-rules)
-2. [Project Overview](#project-overview)
-3. [Repository Structure](#repository-structure)
-4. [Quick Reference](#quick-reference--essential-commands)
-5. [Getting Started](#getting-started)
-6. [Development Workflow](#development-workflow)
-7. [Testing Strategy](#testing-strategy)
-8. [Code Quality Standards](#code-quality-standards)
-9. [Architecture & Services](#architecture--services)
-10. [Security & Compliance](#security--compliance)
-11. [Deployment & Operations](#deployment--operations)
-12. [Troubleshooting](#troubleshooting)
-
----
-
 ## Development Rules
 
-**Critical guidelines that must be followed at all times:**
+Critical guidelines that must be followed at all times.
 
 ### Package Management
 
-- **Always use `pnpm`** - Never use npm or yarn
+- **Always use `pnpm`** -- never use npm or yarn
+- **Always use `uv`** for Python -- never use pip, poetry, or conda
+- Never create random example files to test features; use inline code in terminal
 
-  ```bash
-  pnpm install              # Install dependencies
-  pnpm add package-name     # Add package
-  pnpm start                # Launch platform
-  ```
+```bash
+# Node.js
+pnpm install              # Install dependencies
+pnpm add <package>        # Add package
 
-- **Never use `pip`, `poetry`, or `conda`** - Always use `uv` for Python
-  ```bash
-  uv venv --python 3.11
-  source .venv/bin/activate
-  uv sync
-  ```
+# Python
+uv venv --python 3.11
+source .venv/bin/activate
+uv sync
+```
 
-### Type-Safe Coding
+### Type Safety
 
-- Use **TypeScript strict mode** for all code
-- Use **Pydantic v2 models** for all Python internal schemas, task inputs/outputs, and tools I/O
-- All public functions MUST have type annotations
+- TypeScript strict mode for all code
+- Pydantic v2 models for all Python schemas, task inputs/outputs, and tools I/O
+- All public functions must have type annotations
+- No `any` types without justification
+- Explicit return types for all functions
 - Use interfaces and types for data structures
 
 ```typescript
-// ✅ GOOD - Type-safe function with documentation
-export async function processData(param1: string, param2: number, config: Record<string, any>): Promise<DataResult | null> {
-  /**
-   * Processes data with specified parameters.
-   *
-   * @param param1 - Input data string
-   * @param param2 - Processing threshold
-   * @param config - Configuration object
-   * @returns Processed data or null if processing fails
-   * @throws {ValidationError} When param1 is invalid
-   */
-  // Implementation
+// Correct
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
+
+async function getUser(id: string): Promise<UserData | null> {
+  // ...
 }
 ```
 
-### Pre-Commit Requirements
+### Pre-Commit and Quality Gates
 
-- **ALWAYS run pre-commit checks** before making PRs
+- Always run `pnpm lint` and `pnpm nx:test` before making PRs
+- Git hooks (Husky) automatically enforce: Biome lint, affected unit tests, conventional commit messages
+- All commits must pass quality gates
 
-  ```bash
-  pnpm lint        # Run linters
-  pnpm nx:test     # Run tests
-  pnpm nx:build    # Verify builds
-  ```
+### Documentation
 
-- Git hooks automatically enforce quality standards
-- All commits must pass linting and security checks
-
-### Documentation Standards
-
-- Use TSDoc comments for all public APIs
-- Include `@param`, `@returns`, `@throws` sections
+- TSDoc comments for all public APIs with `@param`, `@returns`, `@throws`
 - Update README.md and AGENTS.md for significant changes
-- Use descriptive variable and function names
 - Document all environment variables in templates
 
-### Environment Configuration
+### Security
 
-- **NEVER commit `.env.*` files** - These contain secrets
-- Always copy from templates (`env.dev`, `env.host`, `env.qa`)
-- Use environment-specific configurations:
-  ```bash
-  pnpm env:set:dev   # Development environment
-  pnpm env:set:qa    # QA environment
-  pnpm env:set:host  # Production environment
-  ```
-
-### Security Rules
-
-- **NEVER commit secrets or API keys**
+- Never commit secrets, API keys, or `.env.*` files
 - Use environment variables for all sensitive data
-- Validate all user inputs
+- Validate all user inputs; sanitize all outputs
+- Parameterized queries only -- no string concatenation in SQL
+- Follow OWASP Top 10 guidelines
 - Log errors without exposing sensitive data
-- Follow OWASP security guidelines
 
-### Test-Driven Development (TDD)
+### Test-Driven Development
 
-- **ALWAYS write tests before implementation code**
-- Follow the Red-Green-Refactor cycle:
-  1. **Red**: Write a failing test that defines desired behavior
-  2. **Green**: Write minimal code to make the test pass
+- Always write tests before implementation code
+- Follow Red-Green-Refactor:
+  1. **Red**: Write a failing test defining desired behavior
+  2. **Green**: Write minimal code to pass the test
   3. **Refactor**: Improve code quality while keeping tests green
-- Start with integration tests for new features
-- Add unit tests for complex business logic
-- Use tests as living documentation
-- Never skip tests "to save time" - they save time in the long run
+- Test behavior, not implementation
+- Use descriptive test names that explain what should happen
+- Never skip tests to save time
 
 ### Incremental Development
 
-- **Break all work into small, achievable steps**
-- Each step should be completable in 15-30 minutes
+- Break all work into small steps (15-30 minutes each)
 - Commit after each working increment
-- Deploy small changes frequently rather than large batches
-- Example breakdown:
-  - ❌ BAD: "Implement user authentication system"
-  - ✅ GOOD:
-    1. Create user model with tests (15 min)
-    2. Add password hashing with tests (20 min)
-    3. Implement login endpoint with tests (25 min)
-    4. Add JWT generation with tests (20 min)
-    5. Create auth middleware with tests (15 min)
 - If a task feels too big, break it down further
 - Focus on one failing test at a time
-- Validate each increment before moving forward
 
 ### Code Organization
 
-- Never create random example files to test features
-- If testing is needed, use inline code in terminal
-- Place all development scripts in `tools/dev-scripts/` with `cmd-` prefix
-- Extract reusable code into appropriate library categories
-
-### Docker-First Development
-
-- All services run in Docker containers
-- Use docker-compose for service orchestration
-- Never run services directly on host (except local development)
-- Always check service logs when troubleshooting
+- Place development scripts in `tools/dev-scripts/` with `cmd-` prefix
+- Extract reusable code into appropriate library under `libs/`
+- All services run in Docker via docker-compose
+- Never run services directly on host (except local Nx dev server)
 
 ---
 
 ## Project Overview
 
-**Project Name**: ChatSuite  
-**Owner**: Dr. Hubertus Becker  
-**Repository**: <https://github.com/hubertusgbecker/chatsuite>  
-**License**: MIT  
-**Tech Stack**: Docker, NestJS, React, Nx Monorepo, TypeScript, Python  
-**Package Managers**: pnpm (Node.js), uv (Python)
+| Field           | Value                                                     |
+| --------------- | --------------------------------------------------------- |
+| Project         | ChatSuite                                                 |
+| Owner           | Dr. Hubertus Becker                                       |
+| Repository      | https://github.com/hubertusgbecker/chatsuite              |
+| License         | MIT                                                       |
+| Node.js         | >=24.0.0 (`.nvmrc`: 24)                                  |
+| Package Manager | pnpm 10.26.2                                              |
+| Monorepo        | Nx 22.6.4                                                 |
+| Backend         | NestJS 11 + Express 5, TypeScript 6                       |
+| Frontend        | React 19, TypeScript 6                                    |
+| Bundler         | Vite 8 + SWC                                              |
+| Linter/Formatter| Biome 2.4                                                 |
+| Test Runner     | Vitest 4.1                                                |
+| Python          | 3.11+ with `uv`                                           |
 
 ### Platform Components
 
-ChatSuite integrates multiple AI and productivity tools:
-
-- **LibreChat** - Multi-model AI chat interface
-- **n8n** - Visual workflow automation
-- **MindsDB** - AI-powered database platform
-- **NocoDB** - Intuitive database interface
-- **MinIO** - S3-compatible object storage
-- **MCPHub** - Model Context Protocol orchestration
-- **MCP Email** - Intelligent email processing
-- **React Client** - Modern web interface
-- **NestJS API** - Scalable backend services
-
-### AI Agent Communication Principles
-
-You are an AI agent working with the ChatSuite codebase. Your responses should be:
-
-- **Accurate and factual** - Answer with facts only, don't speculate or hallucinate
-- **Clear and concise** - Use step-by-step reasoning with actionable insights
-- **Test-driven** - Always write tests before implementation code
-- **Incremental** - Break work into small, achievable steps (15-30 min each)
-- **Type-safe** - Follow TypeScript and Pydantic conventions
-- **Security-conscious** - Never expose or hardcode secrets
-- **Documentation-driven** - Use TSDoc and clear comments
-- **Plain ASCII** - No emoji, emoticons, or Unicode symbols except in code, math, URLs, file paths
-
-**Development Approach:**
-
-- When implementing features, always propose a breakdown into 5-10 small incremental steps
-- Each step should include: test first, implementation, commit
-- Prioritize small working increments over large batches
-- Use TDD cycle (Red-Green-Refactor) for all new code
-
-**This AGENTS.md file is the authoritative reference and single source of truth for all coding standards, project structure, and development practices.**
+| Component           | Purpose                           |
+| ------------------- | --------------------------------- |
+| LibreChat           | Multi-model AI chat interface     |
+| n8n                 | Visual workflow automation        |
+| MindsDB             | AI-powered database platform      |
+| NocoDB              | Database spreadsheet interface    |
+| MinIO               | S3-compatible object storage      |
+| MCPHub              | Model Context Protocol hub        |
+| MCP Email           | Intelligent email processing      |
+| React Client App    | Web frontend                      |
+| NestJS API          | Scalable backend services         |
+| Nginx               | Reverse proxy + SSL termination   |
 
 ---
 
@@ -208,845 +140,372 @@ You are an AI agent working with the ChatSuite codebase. Your responses should b
 
 ```
 chatsuite/
-├── apps/                          # Deployable applications
+├── apps/
 │   ├── api-customer-service/     # NestJS backend API
 │   └── client-app/               # React frontend application
-├── libs/                          # Shared libraries (future expansion)
-│   ├── core/                     # Core business logic
-│   ├── data/                     # Data access and models
-│   ├── features/                 # Complete shareable features
-│   ├── ui/                       # Reusable UI components
-│   └── utils/                    # Utility functions
-├── config/                        # Centralized configuration
-│   ├── env/                      # Environment templates
-│   ├── librechat/               # LibreChat configuration
-│   ├── mindsdb/                 # MindsDB configuration
-│   ├── nginx/                   # Nginx proxy configuration
-│   ├── mcp-email-server/        # MCP Email Server config
-│   ├── mcphub/                  # MCPHub configuration
-│   ├── nocodb/                  # NocoDB configuration
-│   ├── n8n/                     # n8n configuration
-│   ├── minio/                   # MinIO configuration
-│   ├── postgres/                # PostgreSQL configuration
-│   └── pnpm/                    # pnpm settings
-├── data/                          # Persistent data volumes
-│   ├── librechat/               # LibreChat data
-│   ├── mindsdb/                 # MindsDB models and cache
-│   ├── minio/                   # Object storage data
-│   ├── nocodb/                  # NocoDB database
-│   └── postgres/                # PostgreSQL data
-├── schema/                        # Database schemas & migrations
-│   ├── consumer/                # Consumer database
-│   ├── customer/                # Customer database
-│   └── orchestrator/            # Orchestrator database
-├── tools/                         # Development tools
-│   └── dev-scripts/             # Build and automation scripts
+├── libs/
+│   └── core/                     # Shared NestJS core library
+├── config/
+│   ├── env/                      # Environment templates (env.dev, env.qa, env.host)
+│   ├── nginx/                    # Reverse proxy configuration
+│   ├── postgres/                 # PostgreSQL init scripts
+│   ├── librechat/                # LibreChat + MongoDB + VectorDB config
+│   ├── mcphub/                   # MCPHub configuration
+│   ├── mcp-email-server/         # MCP Email config
+│   ├── mcp-browser-use-server/   # MCP Browser Use config (preparation)
+│   ├── mindsdb/                  # MindsDB configuration
+│   ├── minio/                    # MinIO object storage config
+│   ├── n8n/                      # n8n workflow config
+│   ├── nocodb/                   # NocoDB config
+│   └── pgadmin/                  # PgAdmin config
+├── schema/
+│   ├── consumer/                 # Consumer Prisma schema
+│   ├── customer/                 # Customer Prisma schema
+│   └── orchestrator/             # Orchestrator Prisma schema
+├── data/                          # Persistent data (bind mounts, gitignored)
+├── tools/dev-scripts/             # Build and automation scripts (cmd-* prefix)
 ├── docs/                          # Documentation
 ├── tmp/                           # Temporary build artifacts
-├── docker-compose.yaml           # Service orchestration
-├── nx.json                       # Nx workspace configuration
-├── package.json                  # Node.js dependencies
-└── pnpm-workspace.yaml           # pnpm workspace config
+├── docker-compose.yaml            # Service orchestration (16 containers)
+├── nx.json                        # Nx workspace configuration
+├── biome.json                     # Biome linter/formatter config
+├── package.json                   # Root dependencies and scripts
+└── pnpm-workspace.yaml            # pnpm workspace config
 ```
 
-### Directory Standards
+### Directory Conventions
 
-- **`apps/`** - All new applications created using Nx generators
-- **`config/`** - All configuration and Docker assets
-- **`data/`** - All persistent data mapped to subdirectories
-- **`docs/`** - All documentation
-- **`libs/`** - All reusable code extracted as libraries
-- **`schema/`** - All database changes with proper migrations
-- **`tools/dev-scripts/`** - All development scripts with `cmd-` prefix
-- **`tmp/`** - Temporary files only, never production code
+| Directory             | Rule                                                  |
+| --------------------- | ----------------------------------------------------- |
+| `apps/`               | Deployable applications, created via Nx generators    |
+| `libs/`               | Shared code extracted as Nx library projects          |
+| `config/`             | All Docker and service configuration                  |
+| `data/`               | Persistent data volumes (bind mounts, gitignored)     |
+| `schema/`             | Database schemas with Prisma migrations               |
+| `tools/dev-scripts/`  | All dev scripts with `cmd-` prefix                    |
+| `docs/`               | Project documentation                                 |
+| `tmp/`                | Temporary files only, never production code           |
 
 ---
 
-## Quick Reference & Essential Commands
-
-### Critical Files & Locations
-
-| File/Directory                         | Purpose                                               |
-| -------------------------------------- | ----------------------------------------------------- |
-| `AGENTS.md`                            | Authoritative reference for all development standards |
-| `repomix-output.xml`                   | Machine-readable codebase summary                     |
-| `tools/dev-scripts/`                   | All development automation                            |
-| `config/nginx/default.dev.conf`        | Central nginx proxy configuration                     |
-| `config/env/`                          | Environment templates and runtime configuration       |
-| `docs/integration-testing-strategy.md` | Comprehensive testing strategy                        |
-| `.husky/`                              | Git hooks for automated quality checks                |
-| `.github/workflows/`                   | CI/CD pipeline definitions                            |
+## Quick Reference
 
 ### Essential Commands
 
 ```bash
-# Platform Operations
-pnpm start                  # Launch all services
-pnpm stop                   # Graceful shutdown
-pnpm rebuild               # Complete system rebuild
-pnpm test                  # Health checks and verification
+# Platform Lifecycle
+pnpm start                       # Launch all Docker services
+pnpm stop                        # Graceful shutdown
+pnpm rebuild                     # Full rebuild (stop + build + start)
+pnpm test                        # Health checks and verification
 
-# Environment Management
-pnpm env:show              # Display current environment
-pnpm env:set:dev           # Switch to development
-pnpm env:set:qa            # Switch to QA
-pnpm env:set:host          # Switch to production
-pnpm env:verify            # Verify security configuration
+# Environment
+pnpm env:show                    # Display current environment
+pnpm env:set:dev                 # Switch to development
+pnpm env:set:qa                  # Switch to QA
+pnpm env:set:host                # Switch to production
+pnpm env:verify                  # Verify security configuration
 
 # Development
-pnpm lint                  # Run linters
-pnpm format                # Format code with Prettier
-pnpm format:check          # Check code formatting
-pnpm nx:test               # Run all unit tests
-pnpm nx:test:affected      # Test only changed code
-pnpm nx:integration        # Run all integration tests
-pnpm nx:integration:affected # Run affected integration tests
-pnpm nx:build              # Build all projects
+pnpm lint                        # Biome lint check
+pnpm format                      # Biome format + fix
+pnpm nx:test                     # Run all unit tests (Vitest)
+pnpm nx:test:affected            # Test only changed code
+pnpm nx:integration              # Run all integration tests
+pnpm nx:integration:affected     # Run affected integration tests
+pnpm nx:build                    # Build all projects
 
-# Nx Operations
-pnpm nx g @nx/react:lib my-library          # Generate React library
-pnpm nx g @nx/nest:app my-api               # Generate NestJS app
-pnpm nx build my-app                         # Build specific app
-pnpm nx run-many --target=integration --all  # Run all integration tests
-pnpm nx affected --target=test               # Run affected unit tests
-pnpm nx affected --target=integration        # Run affected integration tests
+# Nx
+pnpm nx g @nx/react:lib my-lib   # Generate React library
+pnpm nx g @nx/nest:app my-api    # Generate NestJS app
+pnpm nx graph                    # Dependency graph
+pnpm nx affected --target=test   # Test affected projects
+```
+
+### Helper Scripts
+
+```bash
+tools/dev-scripts/cmd-rebuild.sh              # Full platform rebuild
+tools/dev-scripts/cmd-test.sh                 # Run platform health checks
+tools/dev-scripts/cmd-verify-security.sh      # Security configuration audit
+tools/dev-scripts/cmd-fix-data-permissions.sh # Fix bind mount permissions
+tools/dev-scripts/cmd-write-env.sh            # Write environment variable to .env
+tools/dev-scripts/cmd-resolve-env.js          # Resolve current NX_APP_ENV
+tools/dev-scripts/cmd-check-dependencies.js   # Verify Node/pnpm/Docker versions
+tools/dev-scripts/cmd-check-node-modules.js   # Verify node_modules integrity
+tools/dev-scripts/cmd-clean-node-modules.sh   # Remove all node_modules
+tools/dev-scripts/cmd-prune.js                # Docker system prune + cleanup
 ```
 
 ### Service Ports
 
-| Service              | Direct Port | Proxy Route (10443) | Status       |
-| -------------------- | ----------- | ------------------- | ------------ |
-| Client App           | 4200        | /app/               | HTTP + HTTPS |
-| API Customer Service | 3333        | /api/customer/      | HTTP + HTTPS |
-| LibreChat            | 3080        | /librechat/         | HTTP + HTTPS |
-| PgAdmin              | (internal)  | /pgadmin/           | HTTPS Only   |
-| N8N                  | 5678        | /n8n/               | HTTP + HTTPS |
-| NocoDB               | 8080        | /nocodb/            | HTTP + HTTPS |
-| MCPHub               | 3000        | /mcphub/            | HTTP + HTTPS |
-| MCP Email            | 9557        | /mcp-email/         | HTTP + HTTPS |
-| MindsDB HTTP         | 47334       | /mindsdb/           | HTTP + HTTPS |
-| MinIO API            | 9000        | /minio-api/         | HTTP + HTTPS |
-| MinIO Console        | 9001        | /minio/             | HTTP + HTTPS |
-| Nginx Proxy          | 10443       | (All services)      | HTTPS Only   |
+| Service              | Direct Port | Nginx Route (10443) |
+| -------------------- | ----------- | ------------------- |
+| Client App           | 4200        | /app/               |
+| API Customer Service | 3333        | /api/customer/      |
+| LibreChat            | 3080        | /librechat/         |
+| PgAdmin              | (internal)  | /pgadmin/           |
+| n8n                  | 5678        | /n8n/               |
+| NocoDB               | 8080        | /nocodb/            |
+| MCPHub               | 3000        | /mcphub/            |
+| MCP Email            | 9557        | /mcp-email/         |
+| MindsDB HTTP         | 47334       | /mindsdb/           |
+| MinIO API            | 9000        | /minio-api/         |
+| MinIO Console        | 9001        | /minio/             |
+| Nginx (HTTPS)        | 10443       | --                  |
+
+### Critical Files
+
+| File / Directory                    | Purpose                                  |
+| ----------------------------------- | ---------------------------------------- |
+| `AGENTS.md`                         | Authoritative development reference      |
+| `docker-compose.yaml`               | All 16 service definitions               |
+| `config/nginx/default.dev.conf`     | Central reverse proxy routing            |
+| `config/env/env.{dev,qa,host}`      | Environment variable templates           |
+| `config/postgres/init-databases.sh` | PostgreSQL bootstrap script              |
+| `.github/workflows/ci.yaml`         | CI/CD pipeline (7 jobs)                  |
+| `biome.json`                        | Linter and formatter configuration       |
+| `nx.json`                           | Nx workspace + caching configuration     |
 
 ---
 
 ## Getting Started
 
-### 1. Prerequisites
+### Prerequisites
 
-- **Docker** & **Docker Compose** installed
-- **Node.js 18+** and **pnpm** installed
-- **Python 3.11+** and **uv** installed
-- **Git** configured with SSH keys
+- Docker and Docker Compose
+- Node.js 24+ and pnpm 10+ (`corepack enable && corepack prepare pnpm@latest --activate`)
+- Python 3.11+ and uv (`brew install uv` or `curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- Git configured with SSH keys
 
-### 2. Initial Setup
+### Setup
 
 ```bash
-# Clone repository
 git clone git@github.com:hubertusgbecker/chatsuite.git
 cd chatsuite
-
-# Install pnpm (if not already installed)
-npm install -g pnpm
-
-# Install Python uv (if not already installed)
-pip install uv
-
-# Install dependencies
 pnpm install
 
-# Setup environment configuration
+# Create runtime config from templates
 cp config/env/env.dev config/env/.env.dev
-cp config/env/env.host config/env/.env.host
 cp config/env/env.qa config/env/.env.qa
+cp config/env/env.host config/env/.env.host
+# Edit .env.* files with actual credentials -- NEVER commit these
 
-# Update .env.* files with actual credentials
-# NEVER commit .env.* files to git
-```
-
-### 3. Environment Configuration
-
-Each environment has its own config file:
-
-- **`config/env/.env.dev`** - Development (localhost, not in git)
-- **`config/env/.env.qa`** - QA/Testing (not in git)
-- **`config/env/.env.host`** - Production (not in git)
-
-Templates (version-controlled):
-
-- **`config/env/env.dev`** - Development template
-- **`config/env/env.qa`** - QA template
-- **`config/env/env.host`** - Production template
-
-The active environment is controlled by root `.env`:
-
-```bash
-# chatsuite/.env
-NX_APP_ENV=dev  # or qa, host
-```
-
-### 4. Launch Platform
-
-```bash
-# Set environment
+# Set environment and launch
 pnpm env:set:dev
-
-# Launch all services
 pnpm start
-
-# Verify all services healthy
-pnpm test
-
-# Access platform
+pnpm test                # Verify all services healthy
 open https://localhost:10443
 ```
 
-### 5. Development Workflow (Test-Driven & Incremental)
+### Environment Configuration
 
-```bash
-# Create new feature branch
-git checkout -b feature/my-feature
+| File                       | Scope         | In Git? |
+| -------------------------- | ------------- | ------- |
+| `config/env/env.dev`       | Dev template  | Yes     |
+| `config/env/env.qa`        | QA template   | Yes     |
+| `config/env/env.host`      | Prod template | Yes     |
+| `config/env/.env.dev`      | Dev runtime   | No      |
+| `config/env/.env.qa`       | QA runtime    | No      |
+| `config/env/.env.host`     | Prod runtime  | No      |
+| `.env` (root)              | Active env    | No      |
 
-# STEP 1: Write failing test first (RED)
-pnpm nx test my-app --watch  # Watch mode for TDD
-# Write test that fails, defining desired behavior
-
-# STEP 2: Implement minimal code (GREEN)
-# Write just enough code to make test pass
-pnpm nx test my-app  # Verify test passes
-
-# STEP 3: Refactor if needed
-# Improve code quality while keeping tests green
-pnpm lint
-pnpm format
-
-# STEP 4: Commit this small increment
-git add .
-git commit -m "test: add test for feature X"
-git commit -m "feat: implement feature X (step 1/5)"
-
-# STEP 5: Repeat for next increment
-# Continue small steps until feature complete
-
-# STEP 6: Run full test suite
-pnpm nx:test
-pnpm nx:integration
-pnpm nx:build
-
-# Push and create PR
-git push origin feature/my-feature
-```
-
-**Key Principles:**
-
-- Write test → Make it pass → Refactor → Commit
-- Each commit should be a working increment
-- Run tests continuously during development
-- Break large features into 5-10 small commits
-- Never commit broken tests
+The root `.env` contains `NX_APP_ENV=dev|qa|host` which selects the active environment file.
 
 ---
 
 ## Development Workflow
 
-### Pre-Commit Workflow
+### Git Hooks (Husky)
 
-All commits automatically run:
-
-1. **ESLint** - Code quality and security checks
-2. **Prettier** - Code formatting
-3. **TypeScript** - Type checking
-4. **Tests** - Unit and integration tests
-5. **Security Scans** - KICS and Trivy scans
-
-```bash
-# Manual pre-commit check
-./bin/lint.sh      # Run all linting
-./bin/test.sh      # Run core tests
-```
-
-### Git Hooks
-
-Configured via Husky:
-
-- **pre-commit**: Linting, formatting, security checks
-- **commit-msg**: Commit message validation (conventional commits)
-- **pre-push**: Full test suite execution
+| Hook          | Checks                                                          |
+| ------------- | --------------------------------------------------------------- |
+| `pre-commit`  | Biome lint, unit tests on affected projects                     |
+| `commit-msg`  | Conventional commit format validation                           |
+| `pre-push`    | Full unit tests, affected integration tests, security verify    |
 
 ### Branching Strategy
 
-- **`main`** - Production-ready code
-- **`feature/*`** - New features
-- **`fix/*`** - Bug fixes
-- **`docs/*`** - Documentation updates
-- **`refactor/*`** - Code refactoring
+| Branch         | Purpose                 |
+| -------------- | ----------------------- |
+| `main`         | Production-ready code   |
+| `feature/*`    | New features            |
+| `fix/*`        | Bug fixes               |
+| `docs/*`       | Documentation updates   |
+| `refactor/*`   | Code refactoring        |
 
 ### Commit Convention
 
-Follow Conventional Commits:
-
-```bash
-feat: add new feature            # New feature
-fix: resolve bug                 # Bug fix
-docs: update documentation       # Documentation
-refactor: restructure code       # Refactoring
-test: add tests                  # Testing
-chore: update dependencies       # Maintenance
-perf: improve performance        # Performance
-ci: update CI/CD                # CI/CD changes
+```
+feat: add new feature            fix: resolve bug
+docs: update documentation       refactor: restructure code
+test: add tests                  chore: update dependencies
+perf: improve performance        ci: update CI/CD
 ```
 
 ### Pull Request Process
 
-1. Create feature branch
-2. Implement changes with tests
-3. Run `pnpm lint` and `pnpm nx:test`
+1. Create feature branch from `main`
+2. Implement with TDD (test first, implement, refactor)
+3. Run `pnpm lint && pnpm nx:test`
 4. Push and create PR
-5. Address review comments
-6. Squash and merge
+5. CI pipeline validates automatically
+6. Squash and merge after review
 
 ---
 
 ## Testing Strategy
 
-### Test Types
+### Unit Tests
 
-ChatSuite implements comprehensive testing at multiple levels:
+- **Location**: `src/**/*.spec.ts` inside each project
+- **Runner**: Vitest 4.1
+- **Coverage**: >80% target for business logic
+- **Config**: `jest.config.ts` per project (Vitest with Jest compat)
 
-#### 1. Unit Tests
-
-- **Location**: `src/**/*.spec.ts`
-- **Tool**: Jest
-- **Coverage Target**: >80%
-- **Purpose**: Test individual functions and components
-
-```typescript
-// Example unit test
-describe('DataProcessor', () => {
-  it('should process data correctly', async () => {
-    const processor = new DataProcessor();
-    const result = await processor.process('input');
-    expect(result).toBeDefined();
-    expect(result.status).toBe('success');
-  });
-});
+```bash
+pnpm nx test api-customer-service          # Run tests for one project
+pnpm nx:test                               # Run all unit tests
+pnpm nx:test:affected                      # Run only affected
 ```
 
-#### 2. Integration Tests
-
-**Complete implementation available - see below for full details.**
+### Integration Tests
 
 - **Location**: `tests/integration/` inside each project
-- **Tool**: Jest with Docker containers
-- **Purpose**: Test service interactions without mocking
-- **Configuration**: Separate Jest config (`jest.config.integration.ts`)
-- **Test Database**: Docker Compose test services (separate ports)
-
-```typescript
-// Example integration test
-describe('API Integration', () => {
-  beforeAll(async () => {
-    await setupTestDatabase();
-    await createTestServer();
-  });
-
-  afterEach(async () => {
-    await cleanupTestDatabase();
-  });
-
-  it('should create user and store in database', async () => {
-    const response = await request(httpServer).post('/api/users').send({ name: 'Test User', email: 'test@test.com' }).expect(201);
-
-    expect(response.body.id).toBeDefined();
-
-    // Verify database persistence
-    const user = await executeQuery('SELECT * FROM users WHERE email = $1', ['test@test.com']);
-    expect(user.rows).toHaveLength(1);
-  });
-});
-```
-
-#### 3. End-to-End Tests
-
-- **Location**: `apps/*/e2e/`
-- **Tool**: Cypress or Playwright
-- **Purpose**: Test complete user workflows
-
-```typescript
-// Example e2e test
-describe('User Registration Flow', () => {
-  it('should register new user successfully', () => {
-    cy.visit('/register');
-    cy.get('[data-testid="name-input"]').type('John Doe');
-    cy.get('[data-testid="email-input"]').type('john@example.com');
-    cy.get('[data-testid="submit-button"]').click();
-    cy.url().should('include', '/dashboard');
-  });
-});
-```
-
-### Integration Test Implementation
-
-ChatSuite has a complete integration testing infrastructure implemented for all services.
-
-**Current Status: 24/24 tests passing** covering all major docker-compose services.
-
-#### Directory Structure
-
-```
-apps/api-customer-service/
-├── src/
-│   └── app/
-│       ├── app.controller.ts
-│       ├── app.controller.spec.ts    # Unit test
-│       └── app.service.ts
-├── tests/
-│   └── integration/
-│       ├── api/
-│       │   └── app.integration.spec.ts  # 24 integration tests
-│       ├── helpers/
-│       │   ├── test-db.ts           # PostgreSQL utilities
-│       │   ├── test-mongodb.ts      # MongoDB utilities
-│       │   ├── test-minio.ts        # MinIO S3 utilities
-│       │   ├── test-n8n.ts          # n8n workflow utilities
-│       │   ├── test-nocodb.ts       # NocoDB database UI utilities
-│       │   ├── test-mindsdb.ts      # MindsDB AI database utilities
-│       │   ├── test-mcphub.ts       # MCPHub protocol utilities
-│       │   ├── test-mcp-email.ts    # MCP Email SSE utilities
-│       │   ├── test-server.ts       # Server setup utilities
-│       │   └── factories.ts         # Test data factories
-│       ├── setup.ts                 # Global setup with auto env loading
-│       ├── teardown.ts              # Global teardown
-│       └── jest.setup.ts            # Jest configuration
-├── jest.config.ts                    # Unit test config
-└── jest.config.integration.ts        # Integration test config
-```
-
-#### Test Helpers
-
-**PostgreSQL Helper** (`tests/integration/helpers/test-db.ts`):
-
-- `setupTestDatabase()`: Initialize PostgreSQL connection
-- `cleanupTestDatabase()`: Truncate all tables between tests
-- `closeTestDatabase()`: Close connection
-- `executeQuery()`: Execute raw SQL queries
-
-**MongoDB Helper** (`tests/integration/helpers/test-mongodb.ts`):
-
-- `setupTestMongoDB()`: Initialize MongoDB connection
-- `cleanupTestMongoDB()`: Drop test collections
-- `createTestCollection()`: Create test collection
-- `verifyMongoConnection()`: Health check
-
-**MinIO Helper** (`tests/integration/helpers/test-minio.ts`):
-
-- `setupTestMinIO()`: Initialize S3 client
-- `createTestBucket()`: Create test bucket
-- `uploadTestFile()`: Upload file to bucket
-- `downloadTestFile()`: Download file from bucket
-- `cleanupTestMinIO()`: Delete test buckets/objects
-
-**n8n Helper** (`tests/integration/helpers/test-n8n.ts`):
-
-- `setupTestN8n()`: Initialize n8n API client (optional API key)
-- `createTestWorkflow()`: Create workflow
-- `getTestWorkflow()`: Retrieve workflow
-- `cleanupTestN8n()`: Clean test workflows
-
-**NocoDB Helper** (`tests/integration/helpers/test-nocodb.ts`):
-
-- `setupTestNocodb()`: Initialize NocoDB client (optional auth token)
-- `createTestBase()`: Create database base
-- `getTestBase()`: Retrieve base
-- `cleanupTestNocodb()`: Clean test bases
-
-**MindsDB Helper** (`tests/integration/helpers/test-mindsdb.ts`):
-
-- `setupTestMindsDB()`: Initialize MindsDB HTTP client
-- `executeMindsDBQuery()`: Execute SQL queries
-- `listMindsDBDatabases()`: List databases
-- `cleanupTestMindsDB()`: Drop test databases
-
-**MCPHub Helper** (`tests/integration/helpers/test-mcphub.ts`):
-
-- `setupTestMCPHub()`: Initialize MCPHub client
-- `verifyMCPHubConnection()`: Health check (accepts 200/503)
-- `listMCPServers()`: List configured MCP servers
-- `cleanupTestMCPHub()`: Minimal cleanup (protocol server)
-
-**MCP Email Helper** (`tests/integration/helpers/test-mcp-email.ts`):
-
-- `setupTestMCPEmail()`: Initialize SSE client with timeout
-- `verifyMCPEmailConnection()`: Check SSE endpoint
-- `checkMCPEmailSSEEndpoint()`: Validate SSE stream
-- `cleanupTestMCPEmail()`: Minimal cleanup (protocol server)
-
-**Test Server Helper** (`tests/integration/helpers/test-server.ts`):
-
-- `createTestServer()`: Initialize NestJS test application
-- `closeTestServer()`: Shutdown test server
-- `getHttpServer()`: Get HTTP server for supertest
-- `getService()`: Access service instances from DI container
-
-**Test Data Factories** (`tests/integration/helpers/factories.ts`):
-
-- `UserFactory`: Generate realistic user test data
-- `ConversationFactory`: Generate conversation test data
-- `MessageFactory`: Generate message test data
-- `TestDataHelper`: Utility functions (unique emails, passwords, retry logic)
-
-#### Running Integration Tests
+- **Runner**: Vitest with real Docker services (no mocks)
+- **Config**: `jest.config.integration.ts` per project
+- **Status**: 24/24 tests passing across 8 services
 
 ```bash
-# Run all integration tests (24 tests)
-pnpm nx:integration
-
-# Run integration tests for affected projects only
-pnpm nx:integration:affected
-
-# Run integration tests for specific project
-pnpm nx integration api-customer-service
-
-# Run with coverage
-pnpm nx integration api-customer-service --coverage
+pnpm nx integration api-customer-service   # One project
+pnpm nx:integration                        # All projects (serial)
+pnpm nx:integration:affected               # Only affected
 ```
 
-#### Test Environment
+**Service coverage**: PostgreSQL (54320), MongoDB (27018), MinIO (9000), n8n (5678), NocoDB (8080), MindsDB (47334), MCPHub (3000), MCP Email (9557).
 
-**Automatic Environment Loading:**
+Test helpers in `tests/integration/helpers/` provide setup, cleanup, and factory utilities for each service. Tests automatically load environment from `config/env/.env.${NX_APP_ENV}` and map Docker hostnames to localhost.
 
-- Tests automatically load from `config/env/.env.${NX_APP_ENV}`
-- No manual environment variable passing required
-- Automatic hostname mapping: Docker services → localhost ports
+### E2E Tests
 
-**Service Integration Coverage:**
-
-- ✅ PostgreSQL (port 54320) - Database integration
-- ✅ MongoDB (port 27018) - Document store integration
-- ✅ MinIO (port 9000) - S3 storage integration
-- ✅ n8n (port 5678) - Workflow automation (optional API key)
-- ✅ NocoDB (port 8080) - Database UI (optional auth token)
-- ✅ MindsDB (port 47334) - AI database integration
-- ✅ MCPHub (port 3000) - MCP protocol orchestration
-- ✅ MCP Email (port 9557) - Email SSE protocol
-
-**Authentication Handling:**
-
-- Optional services (n8n, NocoDB) skip tests gracefully when credentials not configured
-- Clear setup instructions provided in console output
-- No test failures from missing optional configuration
-
-**Environment Configuration** (`config/env/.env.dev`):
+- **Location**: `e2e/` at project root
+- **Runner**: Vitest + supertest
+- **Config**: `e2e/vitest.config.ts`
 
 ```bash
-# Automatically loaded by integration tests
-NX_APP_ENV=dev
-POSTGRES_HOST=localhost
-POSTGRES_PORT=54320
-MONGO_HOST=localhost
-MONGO_PORT=27018
-# ... other service configurations
+pnpm e2e                                   # Run all e2e tests
+pnpm e2e:api                               # API e2e only
+pnpm e2e:client                            # Client e2e only
 ```
 
-#### Automated Quality Gates
+### CI/CD Pipeline
 
-**Pre-commit Hooks** (`.husky/pre-commit`):
+Defined in `.github/workflows/ci.yaml` with 7 jobs: lint, type check, unit tests, integration tests, build, security scan, coverage. Runs on every PR and push to main. Coverage reports uploaded to Codecov.
 
-- ✅ Run linters (ESLint, Prettier)
-- ✅ Run unit tests on affected projects
-- ℹ️ Run integration tests (advisory, not blocking)
-
-**Pre-push Hooks** (`.husky/pre-push`):
-
-- ✅ Run all unit tests
-- ✅ Run integration tests on affected projects
-- ✅ Verify security configuration
-
-**CI/CD Pipeline** (`.github/workflows/`):
-
-- `integration-tests.yaml`: Dedicated integration test workflow
-- `ci.yaml`: Complete CI/CD pipeline with all checks
-- Runs on every PR and push to main/develop
-- Posts coverage reports to PRs
-- Uploads results to Codecov
-
-### Integration Test Requirements
-
-Follow these rules for effective integration testing:
-
-1. **Test Environment Setup**
-   - Use `docker-compose.test.yaml` to start test services
-   - Ensure databases are migrated and seeded before tests
-   - Clean up state between test runs using `cleanupTestDatabase()`
-
-2. **Test Location**
-   - Place integration tests under `tests/integration/` inside each project
-   - Keep tests close to the project they verify
-   - Use descriptive test file names ending with `.integration.spec.ts`
-
-3. **Execution**
-   - Define `integration` target in `project.json`
-   - Execute with: `pnpm nx integration <project-name>`
-   - Run on every PR using Nx affected commands
-
-4. **Cross-Service Scenarios**
-   - Cover interactions between APIs, workers, and databases
-   - Validate shared libraries integrate correctly
-   - Test authentication flows end-to-end
-   - Verify data consistency across services
-
-5. **Continuous Integration**
-   - Integration tests run automatically on every pull request
-   - Pipeline fails when any integration test fails
-   - Coverage reports generated and posted to PRs
-   - Test execution time tracked and monitored
-
-6. **Coverage Requirement**
-   - Every service must have at least one integration test
-   - Target >80% coverage for business logic
-   - Document test scenarios in project README
-
-### Test Best Practices
-
-- **ALWAYS write tests first** (TDD is mandatory, not optional)
-  - Start every feature with a failing test
-  - Let tests guide your implementation
-  - Tests document expected behavior
-- **Test behavior, not implementation**
-- **Use descriptive test names** that explain what should happen
-- **Keep tests independent** with proper cleanup
-- **Mock external dependencies** in unit tests
-- **Use real services** in integration tests
-- **Clean up resources** after tests using `afterEach` hooks
-- **Document complex test scenarios** with comments
-- **Use test data factories** for realistic, varied data
-- **Handle async operations** properly with proper timeouts
-- **Follow incremental test development**:
-  1. Write simplest test case first
-  2. Add edge cases incrementally
-  3. Test error paths separately
-  4. Build complexity gradually
+Additional workflows:
+- `kics-security-scan.yml`: Infrastructure-as-Code security scanning
+- `stale.yaml`: Automatic stale issue/PR management
 
 ---
 
-## Code Quality Standards
+## Architecture
 
-### Linting & Formatting
+### Docker Services (16 containers, 4 networks)
 
-- **ESLint** - Enterprise-grade linting
-  - Security plugins (@microsoft/eslint-plugin-sdl, eslint-plugin-security)
-  - TypeScript strict checking
-  - React best practices
-  - Accessibility checks (eslint-plugin-jsx-a11y)
+| Service              | Image                     | Networks                    |
+| -------------------- | ------------------------- | --------------------------- |
+| nginx                | custom build              | gateway                     |
+| postgres             | postgres:17               | gateway, database_pg        |
+| pgadmin              | dpage/pgadmin4            | gateway, database_pg        |
+| api-customer-service | custom build              | gateway, database_pg        |
+| client-app           | custom build              | gateway                     |
+| librechat            | custom build              | gateway, librechat_internal |
+| mongodb              | mongo:latest              | gateway, librechat_internal |
+| meilisearch          | meilisearch:v1.12.3       | librechat_internal          |
+| vectordb             | ankane/pgvector:latest    | librechat_internal          |
+| mindsdb              | mindsdb/mindsdb:latest    | gateway, database_pg        |
+| n8n                  | n8nio/n8n:latest          | gateway, database_pg        |
+| nocodb-postgres      | postgres:17               | nocodb_network              |
+| nocodb               | nocodb/nocodb:latest      | gateway, nocodb_network     |
+| mcphub               | custom build              | gateway                     |
+| mcp-email-server     | zerolib/mcp-email         | gateway                     |
+| minio                | minio/minio:latest        | gateway                     |
 
-- **Prettier** - Consistent code formatting
-  - 100-character line width
-  - Single quotes, trailing commas
-  - Automatic formatting on save
-
-### Type Safety
-
-- **TypeScript Strict Mode** enabled
-- **No `any` types** without justification
-- **Explicit return types** for all functions
-- **Interface-first design** for data structures
-
-```typescript
-// ✅ GOOD
-interface UserData {
-  id: string;
-  name: string;
-  email: string;
-}
-
-function getUser(id: string): Promise<UserData | null> {
-  // Implementation
-}
-
-// ❌ BAD
-function getUser(id) {
-  // Implementation
-}
-```
-
-### Security Standards
-
-- **Input validation** on all entry points
-- **Output sanitization** for all user-facing data
-- **Parameterized queries** to prevent SQL injection
-- **Content Security Policy** headers
-- **Rate limiting** on all APIs
-- **TLS 1.2+** for all communications
-
-### Performance Standards
-
-- **Bundle size optimization** - Code splitting, tree shaking
-- **Database indexing** - Query optimization
-- **Caching strategies** - Redis, in-memory caching
-- **Connection pooling** - Database connections
-- **API pagination** - Cursor-based pagination
-
----
-
-## Architecture & Services
-
-### Microservices Architecture
-
-ChatSuite follows domain-driven microservices architecture:
-
-- **Service Boundaries**: Domain contexts with clear separation
-- **Communication**: REST APIs via nginx proxy
-- **Data Storage**: PostgreSQL, MongoDB, Redis
-- **File Storage**: MinIO S3-compatible storage
-- **Authentication**: JWT-based with refresh tokens
-
-### Core Services
-
-| Service              | Purpose                | Technology          | Port      |
-| -------------------- | ---------------------- | ------------------- | --------- |
-| Client App           | Web frontend           | React, TypeScript   | 4200      |
-| API Customer Service | Backend API            | NestJS, TypeScript  | 3333      |
-| LibreChat            | AI chat interface      | Node.js, MongoDB    | 3080      |
-| n8n                  | Workflow automation    | Node.js, PostgreSQL | 5678      |
-| MindsDB              | AI database            | Python, PostgreSQL  | 47334     |
-| NocoDB               | Database GUI           | Node.js, PostgreSQL | 8080      |
-| MCPHub               | Protocol orchestration | Node.js             | 3000      |
-| MCP Email            | Email processing       | Python              | 9557      |
-| MinIO                | Object storage         | Go                  | 9000/9001 |
-| Nginx                | Reverse proxy          | Nginx               | 10443     |
+**Networks**: `gateway` (main service mesh), `database_pg` (PostgreSQL access), `nocodb_network` (NocoDB isolation), `librechat_internal` (LibreChat ecosystem).
 
 ### Nginx Reverse Proxy
 
-All services accessible via unified nginx proxy (port 10443):
+All services accessible via HTTPS on port 10443:
 
-- **SSL Termination**: HTTPS for all external traffic
-- **WebSocket Support**: Full HTTP/1.1 upgrade headers
-- **Dynamic DNS Resolution**: Prevents startup failures
-- **Health Checks**: Automatic service health monitoring
-- **Path-based routing**: All services under unified domain
+- SSL termination with certificates in `config/certificates/`
+- WebSocket support for all routes
+- Dynamic DNS resolution (prevents startup ordering failures)
+- Path-based routing to all services
 
 ### Database Architecture
 
-- **PostgreSQL**: Primary relational database
-  - NocoDB data
-  - n8n workflows
-  - Application data
-- **MongoDB**: Document storage
-  - LibreChat conversations
-  - User preferences
+| Database   | Engine            | Purpose                              |
+| ---------- | ----------------- | ------------------------------------ |
+| PostgreSQL | postgres:17       | Application data, n8n, MindsDB       |
+| MongoDB    | mongo:latest      | LibreChat conversations              |
+| VectorDB   | pgvector:latest   | Embeddings, semantic search          |
+| NocoDB PG  | postgres:17       | NocoDB isolated database             |
+| MinIO      | minio:latest      | S3-compatible object/file storage    |
 
-- **VectorDB**: Embeddings and semantic search
-  - pgvector extension
-  - LibreChat semantic search
+### Prisma Schemas
 
-### Code Sharing Strategy
+Three Prisma schemas in `schema/`:
 
-Libraries organized by category:
+- `consumer/` -- Consumer-facing data models
+- `customer/` -- Customer/business data models
+- `orchestrator/` -- Workflow orchestration models
 
-1. **UI Components** (`libs/ui/*`)
-   - Reusable UI components
-   - Design system implementation
-   - Zero business logic
-   - Atomic design principles
+### Code Sharing
 
-2. **Features** (`libs/features/*`)
-   - Complete reusable features
-   - Business logic + UI
-   - Encapsulated state management
-   - Self-contained modules
+Libraries under `libs/` as Nx projects:
 
-3. **Core Libraries** (`libs/core/*`)
-   - Business logic
-   - Domain models
-   - Pure TypeScript
-   - Framework-agnostic
+- **`libs/core`** -- Shared NestJS modules: health checks, global exception filter, validation pipes, Prisma service, common decorators
 
-4. **Data Libraries** (`libs/data/*`)
-   - API clients
-   - Database connectors
-   - Data transformation
-   - Caching utilities
-
-5. **Utility Libraries** (`libs/utils/*`)
-   - Pure functions
-   - Helper utilities
-   - Type guards
-   - Framework-agnostic
+Future library categories as needed: `ui/`, `features/`, `data/`, `utils/`.
 
 ---
 
-## Security & Compliance
+## Security
 
-### Authentication & Authorization
-
-- **JWT-based authentication** with short-lived access tokens
-- **Refresh token rotation** for security
-- **Role-based access control** (RBAC)
-- **Principle of least privilege**
-- **HttpOnly cookies** (never localStorage)
-
-### Data Protection
-
-- **Field-level encryption** for sensitive data
-- **Input sanitization** for all user inputs
-- **Strong password hashing** (Argon2)
-- **Data retention policies**
-- **GDPR compliance** features
-
-### Security Scanning
-
-- **KICS** - Infrastructure-as-Code security
-- **Trivy** - Docker image vulnerability scanning
-- **ESLint Security Plugins** - Code security analysis
-- **Automated scans** on every PR
-
-### Compliance Standards
-
-- **GDPR**: Data minimization, right to be forgotten
-- **SOC2**: Logging, access control, audit trails
-- **OWASP**: Top 10 security best practices
-
-### API Security Best Practices
-
-- Rate limiting to prevent abuse
-- TLS 1.2+ for all communications
-- Proper CORS configuration
-- CSRF protection for browser-based clients
-- Parameterized queries to prevent injection attacks
+- Never commit secrets or `.env.*` files
+- All sensitive config via environment variables
+- Input validation on all API entry points
+- Output sanitization for user-facing data
+- Parameterized queries only (Prisma handles this)
+- TLS for all external traffic (nginx SSL termination)
+- HttpOnly cookies for authentication tokens
+- CORS properly configured per environment
+- KICS scans for infrastructure-as-code vulnerabilities
+- Biome security lint rules enabled
 
 ---
 
-## Deployment & Operations
+## Deployment
 
-### Docker Deployment
+### Production (Synology DiskStation)
 
 ```bash
-# Production deployment
+# SSH to DiskStation
+ssh root@synology
+cd /volume1/docker/chatsuite
+
+# Deploy
 pnpm env:set:host
 pnpm rebuild
 pnpm test
 
-# Verify all services healthy
+# Verify
 docker ps -a | grep chatsuite
-
-# Check logs
-docker logs chatsuite_nginx
-docker logs chatsuite_api-customer-service
 ```
-
-### Environment Management
-
-All sensitive data in `.env.*` files:
-
-- Database credentials
-- API keys
-- JWT secrets
-- Service URLs
 
 ### Health Checks
 
-Built into docker-compose for all services:
+All services have Docker healthchecks defined in `docker-compose.yaml`:
 
 ```yaml
 healthcheck:
@@ -1057,156 +516,47 @@ healthcheck:
   start_period: 40s
 ```
 
-### Monitoring & Logging
-
-- **Service logs**: `docker logs <container_name>`
-- **Aggregated logs**: (Future: ELK stack)
-- **Health checks**: Built into docker-compose
-- **Performance metrics**: (Future: Prometheus/Grafana)
-
-### Backup Strategy
-
-- **Database backups**: Daily automated backups
-- **Volume snapshots**: Docker volume backups
-- **Configuration backups**: Version-controlled templates
-- **Recovery procedures**: Documented in ops guide
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### Service Won't Start
+### Troubleshooting
 
 ```bash
-# Check container status
-docker ps -a | grep chatsuite
-
-# Check logs
+# Service logs
 docker logs chatsuite_<service_name>
-
-# Restart service
-docker restart chatsuite_<service_name>
-
-# Rebuild if necessary
-pnpm rebuild
-```
-
-#### Environment Variables Not Loading
-
-```bash
-# Verify environment file exists
-ls -la config/env/.env.*
-
-# Check active environment
-pnpm env:show
-
-# Recreate container to reload env
-docker stop chatsuite_<service_name>
-docker rm chatsuite_<service_name>
-docker-compose up -d <service_name>
-```
-
-#### Nginx Proxy Errors
-
-```bash
-# Check nginx config syntax
-docker exec chatsuite_nginx nginx -t
-
-# Reload nginx
-docker exec chatsuite_nginx nginx -s reload
-
-# Check nginx logs
 docker logs chatsuite_nginx --tail 100
 
-# Test service connectivity
-curl -k https://localhost:10443/health
-```
-
-#### Database Connection Issues
-
-```bash
-# Check PostgreSQL status
-docker logs chatsuite_postgres
-
-# Verify connection from container
-docker exec chatsuite_api-customer-service pg_isready -h postgres -p 5432
-
-# Check environment variables
-docker exec chatsuite_api-customer-service env | grep POSTGRES
-
-# Test direct connection
-docker exec -it chatsuite_postgres psql -U admin -d chatsuite
-```
-
-#### Port Conflicts
-
-```bash
-# Check if port is in use
-lsof -i :10443
-netstat -an | grep 10443
-
-# Stop conflicting service or change port in docker-compose.yaml
-```
-
-### Debug Workflows
-
-#### Enable Debug Logging
-
-```bash
-# Set debug level in .env file
-BROWSER_USE_LOGGING_LEVEL=debug
-
-# Restart services
-pnpm rebuild
-```
-
-#### Inspect Container State
-
-```bash
-# Enter running container
+# Container shell
 docker exec -it chatsuite_<service_name> /bin/sh
 
-# Check process list
-docker top chatsuite_<service_name>
+# Nginx config test
+docker exec chatsuite_nginx nginx -t
 
-# View container resource usage
-docker stats chatsuite_<service_name>
+# Database connection
+docker exec -it chatsuite_postgres psql -U admin -d chatsuite
+
+# Port conflicts
+lsof -i :10443
+
+# Environment check
+pnpm env:show
+ls -la config/env/.env.*
 ```
-
-### Getting Help
-
-1. Check [GitHub Issues](https://github.com/hubertusgbecker/chatsuite/issues)
-2. Review service-specific README files in `config/` directories
-3. Check Docker logs for detailed error messages
-4. Verify environment configuration matches templates
-5. Search closed issues for similar problems
-6. Open new issue with:
-   - Error messages and logs
-   - Steps to reproduce
-   - Environment details (OS, Docker version)
-   - Expected vs actual behavior
 
 ---
 
-## Nx Workspace Guidelines
+## Nx Workspace
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
-### General Guidelines for Working with Nx
+### Working with Nx
 
-- When running tasks (build, lint, test, e2e), always prefer `nx` commands over direct tooling
+- Always use `nx` commands over direct tooling for build, lint, test, e2e
 - Use `nx_workspace` tool to understand workspace architecture
 - Use `nx_project_details` tool to analyze specific projects
 - Use `nx_docs` tool for configuration questions (never assume)
-- Run affected commands to optimize CI: `nx affected:test`, `nx affected:build`
-
-### Nx Commands Reference
+- Use affected commands to optimize CI: `nx affected --target=test`
 
 ```bash
-# Generate new apps/libs
+# Generate
 nx g @nx/react:lib my-library
 nx g @nx/nest:app my-api
 
@@ -1215,16 +565,16 @@ nx build my-app
 nx test my-library
 nx lint my-app
 
-# Affected commands (CI optimization)
-nx affected:test
-nx affected:build
-nx affected:lint
+# Affected (CI optimization)
+nx affected --target=test
+nx affected --target=build
+nx affected --target=lint
 
-# Run multiple targets
+# Multiple targets
 nx run-many --target=test --all
 nx run-many --target=integration --all
 
-# Dependency graph
+# Visualize
 nx graph
 ```
 
@@ -1232,54 +582,23 @@ nx graph
 
 ---
 
-## Change Management
-
-### Process for Updating AGENTS.md
-
-1. Propose changes via pull request
-2. Review by maintainer or lead developer required
-3. Document all breaking changes
-4. Update service READMEs as needed
-5. Keep file synchronized with architectural changes
-
-### Versioning
-
-- Follow [Semantic Versioning](https://semver.org/)
-- Update CHANGELOG.md for each release
-- Tag releases in git
-- Create GitHub releases with release notes
-
----
-
 ## Glossary
 
-| Term                     | Definition                                                          |
-| ------------------------ | ------------------------------------------------------------------- |
-| **Service**              | API or backend component exposed via HTTP/HTTPS                     |
-| **Feature**              | Reusable business logic spanning multiple components                |
-| **Library**              | Shared code (core, features, ui, utils, data)                       |
-| **Unified Route**        | Endpoint exposed via nginx proxy on port 10443                      |
-| **Integration Test**     | Test covering service interactions without mocks                    |
-| **Nx Workspace**         | Monorepo structure with apps and libraries                          |
-| **Docker Compose**       | Multi-container orchestration tool                                  |
-| **Environment Template** | Version-controlled config file (env.dev, env.host, env.qa)          |
-| **Runtime Config**       | Actual configuration file (.env.dev, .env.host, .env.qa) not in git |
-| **MCP**                  | Model Context Protocol for AI agent communication                   |
-| **TSDoc**                | TypeScript documentation standard                                   |
-| **RBAC**                 | Role-Based Access Control                                           |
+| Term                 | Definition                                                       |
+| -------------------- | ---------------------------------------------------------------- |
+| Service              | Docker container exposed via HTTP/HTTPS                          |
+| Library              | Shared Nx project under `libs/`                                  |
+| Unified Route        | Path on nginx proxy (port 10443)                                 |
+| Integration Test     | Test against real Docker services without mocks                  |
+| Environment Template | Git-tracked config template (`env.dev`, `env.qa`, `env.host`)    |
+| Runtime Config       | Actual `.env.*` file with secrets, never committed               |
+| MCP                  | Model Context Protocol for AI agent communication                |
+| Bind Mount           | Docker volume mapped to `./data/` directory on host              |
+| TSDoc                | TypeScript documentation standard                                |
+| RBAC                 | Role-Based Access Control                                        |
 
 ---
 
-## Final Notes
-
-- This document is the **authoritative reference** for all ChatSuite development
-- All communication, reasoning, and code standards are contained within AGENTS.md
-- For automation and navigation, use `repomix-output.xml` as the codebase map
-- If you find gaps or improvements, submit a pull request
-- Follow the development rules religiously - they exist for platform stability and security
-
----
-
-**Last Updated**: 2025-12-28  
-**Version**: 2.0  
+**Last Updated**: 2026-04-03
+**Version**: 3.0
 **Document Owner**: Dr. Hubertus Becker
