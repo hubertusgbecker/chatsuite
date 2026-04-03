@@ -43,7 +43,7 @@ services:
       - '54320:5432'
     restart: always
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - ./data/postgres:/var/lib/postgresql
       - ./config/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
@@ -67,7 +67,7 @@ services:
     ports:
       - '8081:80'
     volumes:
-      - pgadmin_data:/var/lib/pgadmin/
+      - ./data/pgadmin:/var/lib/pgadmin/
       - type: bind
         source: ./config/pgadmin/docker-entrypoint-pgadmin.sh
         target: /usr/local/bin/docker-entrypoint-pgadmin.sh
@@ -266,7 +266,7 @@ services:
       POSTGRES_PASSWORD: admin
     restart: always
     volumes:
-      - vectordb_postgres_data:/var/lib/postgresql/data
+      - ./data/vectordb:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U admin -d chatsuite']
       interval: 10s
@@ -361,7 +361,7 @@ services:
     image: postgres:17
     restart: always
     volumes:
-      - nocodb_postgres_data:/var/lib/postgresql
+      - ./data/nocodb/postgres:/var/lib/postgresql
       - ./config/nocodb/docker-entrypoint-nocodb-postgres.sh:/docker-entrypoint-initdb.d/docker-entrypoint-nocodb-postgres.sh:ro
     environment:
       POSTGRES_USER: ${NOCODB_POSTGRES_USER:-nocodb_admin}
@@ -502,8 +502,3 @@ networks:
   nocodb_network: {} # NocoDB + its dedicated postgres
   librechat_internal: {} # LibreChat, MongoDB, Meilisearch, Vectordb
 
-volumes:
-  vectordb_postgres_data:
-  postgres_data:
-  nocodb_postgres_data:
-  pgadmin_data:

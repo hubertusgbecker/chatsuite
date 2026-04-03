@@ -102,6 +102,9 @@ data/pgadmin/**
 data/postgres/**
 !data/postgres/**/.gitkeep
 
+data/vectordb/**
+!data/vectordb/**/.gitkeep
+
 
 # Certificates
 **/certificates/*
