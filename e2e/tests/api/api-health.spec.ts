@@ -2,8 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { configureApp } from '@chatsuite/core';
 import { AppModule } from '../../../apps/api-customer-service/src/app/app.module';
-import { configureApp } from '../../../apps/api-customer-service/src/main';
 
 /**
  * API Customer Service E2E Tests.

@@ -1,7 +1,7 @@
+import { configureApp } from '@chatsuite/core';
 import { HttpStatus } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { configureApp } from '../main';
 import { AppModule } from './app.module';
 
 describe('API Customer Service (e2e)', () => {

@@ -16,10 +16,12 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
+      "@chatsuite/core": ["./libs/core/src/index.ts"],
       "@chatsuite/core/*": ["./libs/core/src/*"],
       "@chatsuite/ui/*": ["./libs/ui/src/*"],
       "@chatsuite/features/*": ["./libs/features/src/*"],
       "@chatsuite/data/*": ["./libs/data/src/*"],
+      "@chatsuite/utils": ["./libs/utils/src/index.ts"],
       "@chatsuite/utils/*": ["./libs/utils/src/*"]
     },
     "strict": true,

@@ -1,7 +1,7 @@
+import { configureApp } from '@chatsuite/core';
 import type { INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../../src/app/app.module';
-import { configureApp } from '../../../src/main';
 
 let app: INestApplication | null = null;
 let moduleRef: TestingModule | null = null;

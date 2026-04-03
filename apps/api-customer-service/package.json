@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
+  "dependencies": {
+    "@chatsuite/core": "workspace:*"
+  },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
     "mongodb": "^6.21.0"

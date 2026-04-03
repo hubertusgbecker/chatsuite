@@ -1,6 +1,6 @@
 import { type ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import type { Mock } from 'vitest';
-import { BusinessException, ErrorCode, ValidationException } from './exceptions';
+import { BusinessException, ErrorCode, ValidationException } from '../exceptions';
 import { GlobalExceptionFilter } from './global-exception.filter';
 
 describe('GlobalExceptionFilter', () => {

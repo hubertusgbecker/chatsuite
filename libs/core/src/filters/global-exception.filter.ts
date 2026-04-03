@@ -7,9 +7,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import type { ErrorResponseBody } from './exceptions';
-import { BusinessException, ErrorCode } from './exceptions';
-import { CORRELATION_ID_HEADER } from './middleware/correlation-id.middleware';
+import type { ErrorResponseBody } from '../exceptions';
+import { BusinessException, ErrorCode } from '../exceptions';
+import { CORRELATION_ID_HEADER } from '../middleware/correlation-id.middleware';
 
 /**
  * Global exception filter that catches all unhandled exceptions

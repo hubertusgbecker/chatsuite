@@ -1,0 +1,31 @@
+{
+  "name": "core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/core/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:core"],
+  "targets": {
+    "compile": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "outputPath": "libs/core/dist",
+        "main": "libs/core/src/index.ts",
+        "tsConfig": "libs/core/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm biome check libs/core"
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/core"],
+      "options": {
+        "config": "libs/core/vitest.config.ts"
+      }
+    }
+  }
+}

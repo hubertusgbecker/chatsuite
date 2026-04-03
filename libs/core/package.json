@@ -1,0 +1,11 @@
+{
+  "name": "@chatsuite/core",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/src/index.js"
+    }
+  }
+}

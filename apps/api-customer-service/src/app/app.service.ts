@@ -1,5 +1,5 @@
+import type { WelcomeResponseDto } from '@chatsuite/core';
 import { Injectable } from '@nestjs/common';
-import type { WelcomeResponseDto } from './dto';
 
 @Injectable()
 export class AppService {
