@@ -11,6 +11,7 @@ RUN npm install -g pnpm
 WORKDIR '/usr/src/root'
 COPY ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./.npmrc ./versions.json ./
 COPY ./apps/client-app/package.json ./apps/client-app/
+COPY ./libs/core/package.json ./libs/core/
 
 RUN pnpm config set store-dir ./.pnpm-store
 RUN pnpm install --no-frozen-lockfile
