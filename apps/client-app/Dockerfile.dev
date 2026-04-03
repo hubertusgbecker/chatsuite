@@ -16,6 +16,9 @@ COPY ./libs/core/package.json ./libs/core/
 RUN pnpm config set store-dir ./.pnpm-store
 RUN pnpm install --no-frozen-lockfile
 
+# Ensure workspace symlink exists (pnpm may skip it in Docker)
+RUN mkdir -p node_modules/@chatsuite && ln -sf ../../libs/core node_modules/@chatsuite/core
+
 COPY . .
 RUN node ./tools/dev-scripts/cmd-pre-pnpm-install.js client-app
 CMD ["pnpm", "docker:client-app"]

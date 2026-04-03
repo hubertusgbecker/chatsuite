@@ -15,8 +15,10 @@ COPY ./apps/api-customer-service/package.json ./apps/api-customer-service/
 COPY ./libs/core/package.json ./libs/core/
 
 RUN pnpm config set store-dir ./.pnpm-store
-# AFTER  (portable everywhere, just slower on repeat builds)
 RUN pnpm install --no-frozen-lockfile
+
+# Ensure workspace symlink exists (pnpm may skip it in Docker)
+RUN mkdir -p node_modules/@chatsuite && ln -sf ../../libs/core node_modules/@chatsuite/core
 
 COPY . .
 RUN node ./tools/dev-scripts/cmd-pre-pnpm-install.js api-customer-service
