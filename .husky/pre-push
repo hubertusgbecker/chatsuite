@@ -15,7 +15,7 @@ run_with_timeout() {
   wait $PID 2>/dev/null
   STATUS=$?
   kill $TIMER_PID 2>/dev/null
-  wait $TIMER_PID 2>/dev/null
+  wait $TIMER_PID 2>/dev/null || true
   return $STATUS
 }
 
