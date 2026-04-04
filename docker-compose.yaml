@@ -517,6 +517,10 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin}@postgres:5432/paperclip
     volumes:
       - ./data/paperclip:/paperclip
+      - type: tmpfs
+        target: /paperclip/.cache
+        tmpfs:
+          mode: 01777
     depends_on:
       postgres:
         condition: service_healthy
@@ -529,6 +533,8 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+    extra_hosts:
+      - 'synology.local:192.168.178.3'
 
 networks:
   gateway: {} # Public-facing services (nginx, apps, APIs)

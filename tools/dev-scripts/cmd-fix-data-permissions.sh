@@ -35,6 +35,8 @@ DATA_DIRS=(
   "nocodb"
   "nocodb/postgres"
   "paperclip"
+  "paperclip/.cache/opencode"
+  "paperclip/.config/opencode"
   "pgadmin"
   "postgres"
   "vectordb"

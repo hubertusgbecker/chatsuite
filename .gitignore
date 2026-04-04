@@ -99,6 +99,9 @@ data/nocodb/**
 data/pgadmin/**
 !data/pgadmin/**/.gitkeep
 
+data/paperclip/**
+!data/paperclip/.gitkeep
+
 data/postgres/**
 !data/postgres/**/.gitkeep
 
