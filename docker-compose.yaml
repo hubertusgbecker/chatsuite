@@ -507,6 +507,13 @@ services:
       - '3100:3100'
     env_file:
       - ./config/env/.env.${NX_APP_ENV:-dev}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /paperclip/.cache/opencode
+        chown -R node:node /paperclip/.cache
+        exec docker-entrypoint.sh node --import ./server/node_modules/tsx/dist/loader.mjs server/dist/index.js
     environment:
       - HOST=0.0.0.0
       - PORT=3100
@@ -519,8 +526,6 @@ services:
       - ./data/paperclip:/paperclip
       - type: tmpfs
         target: /paperclip/.cache
-        tmpfs:
-          mode: 01777
     depends_on:
       postgres:
         condition: service_healthy
