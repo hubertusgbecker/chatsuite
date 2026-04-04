@@ -514,7 +514,6 @@ services:
       - PAPERCLIP_INSTANCE_ID=${PAPERCLIP_INSTANCE_ID:-default}
       - PAPERCLIP_DEPLOYMENT_MODE=${PAPERCLIP_DEPLOYMENT_MODE:-authenticated}
       - PAPERCLIP_DEPLOYMENT_EXPOSURE=${PAPERCLIP_DEPLOYMENT_EXPOSURE:-private}
-      - PAPERCLIP_PUBLIC_URL=${PAPERCLIP_PUBLIC_URL:-https://localhost:10443/paperclip}
       - DATABASE_URL=postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin}@postgres:5432/paperclip
     volumes:
       - ./data/paperclip:/paperclip
