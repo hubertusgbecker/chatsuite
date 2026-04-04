@@ -224,7 +224,7 @@ ChatSuite is built on modern, enterprise-grade architecture:
 
 ### Service Architecture
 
-```
+```text
 ChatSuite AI Productivity Platform
 ├── Nginx Proxy (SSL Termination & Routing)
 ├── LibreChat (Multi-Model AI Chat)
@@ -294,10 +294,13 @@ Find the perfect place to start by following these steps:
 1. **Install NVM (Node Version Manager):**
    - [NVM Installation Guide](https://github.com/nvm-sh/nvm#installing-and-updating)
    - In the project root, run:
+
      ```bash
      nvm use
      ```
+
      If this fails, check the required Node version in `.nvmrc` and run:
+
      ```bash
      nvm install $(cat .nvmrc)
      nvm use
@@ -306,18 +309,21 @@ Find the perfect place to start by following these steps:
 2. **Install Docker:**
    - [Docker Installation Guide](https://docs.docker.com/engine/install/)
    - Verify installation:
+
      ```bash
      docker --version && docker-compose --version
      ```
 
 3. **Install pnpm:**
    - This repo uses pnpm for efficient dependency management.
+
      ```bash
      npm install -g pnpm
      ```
 
 4. **Generate .env files:**
    - Copy all files in `config/env/` and prefix each with a dot (`.`) to make them hidden and git-ignored:
+
      ```bash
      cp config/env/env.dev config/env/.env.dev
      cp config/env/env.host config/env/.env.host
@@ -326,6 +332,7 @@ Find the perfect place to start by following these steps:
 
 5. **SSL Setup (Recommended for HTTPS):**
    - Install [mkcert](https://github.com/FiloSottile/mkcert) (easiest via Homebrew):
+
      ```bash
      brew install mkcert
      mkcert -install
@@ -335,9 +342,11 @@ Find the perfect place to start by following these steps:
 
 6. **MCPHub Configuration (Required):**
    - Copy the example MCP settings to create your configuration:
+
      ```bash
      cp config/mcphub/mcp_settings.json.example config/mcphub/mcp_settings.json
      ```
+
    - This file is not tracked in version control, similar to `.env` files
    - The example provides pre-configured MCP servers (time, fetch, email, browser-use)
    - Customize as needed based on your available MCP servers
@@ -349,9 +358,11 @@ Find the perfect place to start by following these steps:
    ```
 
 8. **Start the platform:**
+
    ```bash
    pnpm start
    ```
+
    Wait for all Docker containers to be up, then navigate to `http://localhost:3080` for LibreChat (or use the unified proxy at `https://localhost:10443/`), or `http://localhost:4200` for the main dashboard.
 
 You're ready to go! The platform will automatically start all services with proper dependencies.

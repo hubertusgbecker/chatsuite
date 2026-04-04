@@ -80,7 +80,7 @@ pnpm nx integration api-customer-service
 
 You should see:
 
-```
+```text
 ✅ Test n8n connected
 ✓ should connect to n8n service (35 ms)
 ✓ should create and retrieve workflows in n8n (20 ms)
@@ -88,7 +88,7 @@ You should see:
 
 Instead of:
 
-```
+```text
 ⚠️  N8N_API_KEY not configured - n8n tests will be skipped
 ℹ️  Skipped: N8N_API_KEY not configured
 ```

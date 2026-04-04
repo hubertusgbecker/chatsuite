@@ -4,7 +4,7 @@ All service configuration, Docker entrypoints, and environment templates for the
 
 ## Directory Structure
 
-```
+```text
 config/
 ├── certificates/            SSL/TLS certificates
 ├── env/                     Environment configuration (dev, qa, host)

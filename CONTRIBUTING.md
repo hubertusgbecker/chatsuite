@@ -35,9 +35,11 @@ GitHub issue with the `code-of-conduct` label or email the maintainers at
 
 1. Fork the repository
 2. Clone your fork:
+
    ```bash
    git clone https://github.com/your-username/chatsuite.git
    ```
+
 3. Create a new branch: `git checkout -b feature/your-feature-name`
 4. Make your changes
 5. Push to your fork: `git push origin feature/your-feature-name`
@@ -46,9 +48,11 @@ GitHub issue with the `code-of-conduct` label or email the maintainers at
 ### Direct repository workflow (for contributors)
 
 1. Clone the repository directly:
+
    ```bash
    git clone https://github.com/hubertusgbecker/chatsuite.git
    ```
+
 2. Create a new branch: `git checkout -b feature/your-feature-name`
 3. Make your changes
 4. Push to the repository: `git push origin feature/your-feature-name`
@@ -189,12 +193,14 @@ Result: Hard to review, likely has bugs, difficult to debug
 7. **Add tests** for new functionality (tests come FIRST, not after)
 8. **Update documentation** as needed
 9. **Run local checks** before submitting:
+
    ```bash
    pnpm lint
    pnpm nx:test
    pnpm nx:integration
    pnpm nx:build
    ```
+
 10. **Submit a pull request** with clear description
 11. **Respond to code review feedback**
 
@@ -205,10 +211,13 @@ Result: Hard to review, likely has bugs, difficult to debug
 1. **Install NVM (Node Version Manager):**
    - [NVM Installation Guide](https://github.com/nvm-sh/nvm#installing-and-updating)
    - In the project root, run:
+
      ```bash
      nvm use
      ```
+
      If this fails, check the required Node version in `.nvmrc` and run:
+
      ```bash
      nvm install $(cat .nvmrc)
      nvm use
@@ -217,12 +226,14 @@ Result: Hard to review, likely has bugs, difficult to debug
 2. **Install Docker:**
    - [Docker Installation Guide](https://docs.docker.com/engine/install/)
    - Verify installation:
+
      ```bash
      docker --version && docker-compose --version
      ```
 
 3. **Install pnpm:**
    - This repo uses pnpm for efficient dependency management:
+
      ```bash
      npm install -g pnpm
      ```
@@ -259,6 +270,7 @@ Result: Hard to review, likely has bugs, difficult to debug
    ```
 
 5. **Start the platform:**
+
    ```bash
    pnpm start
    ```

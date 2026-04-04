@@ -64,13 +64,26 @@ Enforced automatically via Biome. Key settings from `biome.json`:
 
 Test files (`*.spec.ts`, `*.test.ts`) have relaxed rules: `noExplicitAny` off, `noConsole` off.
 
+### Markdown Linting (markdownlint-cli2)
+
+All `.md` files are linted via `markdownlint-cli2` (config: `.markdownlint-cli2.jsonc`).
+
+Key rules enforced:
+
+- `MD031` -- Fenced code blocks surrounded by blank lines
+- `MD032` -- Lists surrounded by blank lines
+- `MD040` -- Fenced code blocks must have a language specified
+- `MD024` -- No duplicate sibling headings
+
+Disabled rules: `MD013` (line length), `MD033` (inline HTML), `MD034` (bare URLs), `MD060` (table alignment), `MD041` (first-line heading), `MD036` (emphasis as heading).
+
 ---
 
 ## Commit Convention
 
 Enforced by Husky `commit-msg` hook with this regex:
 
-```
+```text
 ^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\([a-zA-Z0-9_-]+\))?: .{1,72}
 ```
 
@@ -110,7 +123,7 @@ Scope is optional: `feat(api): add health endpoint` or `fix: resolve login bug`.
 
 ## Repository Structure
 
-```
+```text
 chatsuite/
 ├── apps/
 │   ├── api-customer-service/      # NestJS backend API (port 3333)
@@ -173,7 +186,7 @@ chatsuite/
 
 ### TypeScript Path Aliases (`tsconfig.base.json`)
 
-```
+```text
 @chatsuite/core       → libs/core/src/index.ts       (exists)
 @chatsuite/core/*     → libs/core/src/*               (exists)
 @chatsuite/ui/*       → libs/ui/src/*                  (reserved)
@@ -203,7 +216,9 @@ pnpm env:set:host                # Switch to production
 pnpm env:verify                  # Verify security configuration
 
 # Development
-pnpm lint                        # Biome lint check (apps/ only)
+pnpm lint                        # Biome lint + markdownlint (apps/ + all .md)
+pnpm lint:all                    # Full lint (all dirs + all .md)
+pnpm lint:md                     # Markdown lint only
 pnpm format                      # Biome format + fix
 pnpm nx:test                     # Run all unit tests (Vitest)
 pnpm nx:test:affected            # Test only changed code
@@ -273,6 +288,7 @@ tools/dev-scripts/cmd-migrate-n8n-sqlite-to-postgres.py  # n8n DB migration (Pyt
 | `config/postgres/init-databases.sh` | PostgreSQL bootstrap script              |
 | `.github/workflows/ci.yaml`         | CI/CD pipeline (7 jobs)                  |
 | `biome.json`                        | Linter and formatter configuration       |
+| `.markdownlint-cli2.jsonc`          | Markdown linter configuration            |
 | `nx.json`                           | Nx workspace + caching configuration     |
 | `tsconfig.base.json`                | Shared TS config + path aliases          |
 | `versions.json`                     | Application version tracking             |
@@ -481,6 +497,7 @@ All services accessible via HTTPS on port 10443:
 Three Prisma schemas in `schema/`, each with its own PostgreSQL datasource:
 
 **`schema/consumer/`** -- Consumer-facing data:
+
 - `User` (id, email, name, role: CUSTOMER|ADMIN, conversations[], timestamps)
 - `Conversation` (id, title, userId FK, messages[], timestamps)
 - `Message` (id, conversationId FK, role: USER|ASSISTANT|SYSTEM, content, createdAt)
@@ -488,6 +505,7 @@ Three Prisma schemas in `schema/`, each with its own PostgreSQL datasource:
 **`schema/customer/`** -- Customer/business data (Prisma generator + datasource configured).
 
 **`schema/orchestrator/`** -- Workflow orchestration:
+
 - `Workflow` (id, name, description, status: DRAFT|ACTIVE|PAUSED|ARCHIVED, tasks[], timestamps)
 - `Task` (id, workflowId FK, name, type: HTTP_REQUEST|DATABASE_QUERY|AI_PROMPT|NOTIFICATION|TRANSFORM, config: JsonB, order, status: PENDING|RUNNING|COMPLETED|FAILED, timestamps)
 

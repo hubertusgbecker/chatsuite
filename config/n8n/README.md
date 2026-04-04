@@ -65,6 +65,7 @@ docker compose up -d n8n
 ## Permissions
 
 The entrypoint script handles all permission scenarios automatically:
+
 - Creates required subdirectories (workflows, credentials, logs, nodes)
 - Fixes ownership on bind-mounted `./data/n8n/`
 - Configures SSL certificates if available
