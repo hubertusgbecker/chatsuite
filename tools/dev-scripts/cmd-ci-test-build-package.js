@@ -9,8 +9,7 @@ const processArguments = process.argv.slice(2);
 const OCI_REPOSITORY_URL = processArguments[0];
 const DOCKER_HUB_USERNAME = processArguments[1];
 
-const getProjectVersionsJsonPath = () =>
-  path.resolve(__dirname, `../../versions.json`);
+const getProjectVersionsJsonPath = () => path.resolve(__dirname, `../../versions.json`);
 const getProjectVersionsJson = () => {
   const json = fs.readFileSync(getProjectVersionsJsonPath());
   return JSON.parse(json);
@@ -23,10 +22,7 @@ const getLatestTagVersion = async () => {
         console.log(response?.stderr);
       } else {
         const latestTagVersion = response.stdout;
-        if (
-          latestTagVersion.length &&
-          latestTagVersion.split('.').length === 3
-        ) {
+        if (latestTagVersion.length && latestTagVersion.split('.').length === 3) {
           return latestTagVersion;
         }
         return '0.0.0';
@@ -73,16 +69,11 @@ const tagAndPushProjectDockerImages = async () => {
       if (response?.stderr?.length) {
         console.log(response?.stderr);
       } else {
-        console.log(
-          `[ChatSuite] Project images are tagged and pushed successfully.`,
-        );
+        console.log(`[ChatSuite] Project images are tagged and pushed successfully.`);
       }
     })
     .catch((e) => {
-      console.error(
-        '[ChatSuite] An error occurred while tagging and pushing project images.',
-        e,
-      );
+      console.error('[ChatSuite] An error occurred while tagging and pushing project images.', e);
       process.exit(1);
     });
 };
@@ -109,10 +100,7 @@ const buildProjects = async () => {
       }
     })
     .catch((e) => {
-      console.error(
-        '[ChatSuite] An error occurred while building the projects.',
-        e,
-      );
+      console.error('[ChatSuite] An error occurred while building the projects.', e);
       process.exit(1);
     });
 };
@@ -127,9 +115,7 @@ const tagAndPushProjectHelmChart = async (chartName, chartPath, version) => {
           `helm package --dependency-update --version ${version} --app-version ${version} ${chartPath}`,
         ),
       )
-      .then(() =>
-        runCmd(`helm push ${zippedFile} oci://${OCI_REPOSITORY_URL}/helm`),
-      )
+      .then(() => runCmd(`helm push ${zippedFile} oci://${OCI_REPOSITORY_URL}/helm`))
       .then(() =>
         runCmd(
           `helm show all "oci://${OCI_REPOSITORY_URL}/helm/${chartName}" --version ${version}`,
@@ -138,10 +124,7 @@ const tagAndPushProjectHelmChart = async (chartName, chartPath, version) => {
       .then((response) => console.log(response.stdout))
       .then(() => runCmd(`rm -f ./${zippedFile}`))
       .catch((e) => {
-        console.error(
-          `[ChatSuite] An error occurred while packaging the chart ${chartName}`,
-          e,
-        );
+        console.error(`[ChatSuite] An error occurred while packaging the chart ${chartName}`, e);
         process.exit(1);
       });
   }
@@ -150,9 +133,7 @@ const tagAndPushProjectHelmChart = async (chartName, chartPath, version) => {
 
 const tagAndPushProjectHelmCharts = async () => {
   if (!OCI_REPOSITORY_URL) {
-    return Promise.reject(
-      '[ChatSuite][Error] Please pass the OCI repository url as an argument.',
-    );
+    return Promise.reject('[ChatSuite][Error] Please pass the OCI repository url as an argument.');
   }
   const projects = getProjectVersionsJson();
   const latestTagVersion = await getLatestTagVersion();
@@ -201,14 +182,8 @@ const runJob = async (startLog, cmdAsyncCallback) => {
 const run = async () => {
   try {
     await runJob('[ChatSuite] Job->buildProjects()', buildProjects);
-    await runJob(
-      '[ChatSuite] Job->tagAndPushProjectDockerImages()',
-      tagAndPushProjectDockerImages,
-    );
-    await runJob(
-      '[ChatSuite] Job->tagAndPushProjectHelmCharts()',
-      tagAndPushProjectHelmCharts,
-    );
+    await runJob('[ChatSuite] Job->tagAndPushProjectDockerImages()', tagAndPushProjectDockerImages);
+    await runJob('[ChatSuite] Job->tagAndPushProjectHelmCharts()', tagAndPushProjectHelmCharts);
     process.exit(0);
   } catch (e) {
     console.log(e);

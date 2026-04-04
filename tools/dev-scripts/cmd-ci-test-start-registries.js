@@ -19,10 +19,7 @@ const listRunningContainers = async () => {
       }
     })
     .catch((e) => {
-      console.error(
-        '[ChatSuite] An error occurred while listing running containers.',
-        e,
-      );
+      console.error('[ChatSuite] An error occurred while listing running containers.', e);
       process.exit(1);
     });
 };
@@ -41,9 +38,7 @@ const isDockerLocalRegistryRunning = async () => {
 const startDockerLocalRegistry = async () => {
   const isRegistryRunning = await isDockerLocalRegistryRunning();
   const logSuccess = () => {
-    console.log(
-      `[ChatSuite] Docker registry running on port ${DOCKER_REGISTRY_PORT}.`,
-    );
+    console.log(`[ChatSuite] Docker registry running on port ${DOCKER_REGISTRY_PORT}.`);
     const logMessageForTail =
       '[ChatSuite] To tail the container logs you can run:\n => docker logs -f registry';
     console.log(logMessageForTail);
@@ -57,16 +52,13 @@ const startDockerLocalRegistry = async () => {
   console.log(
     `[ChatSuite] Creating local docker registry with name-> ${DOCKER_REGISTRY_NAME} on port ${DOCKER_REGISTRY_PORT}`,
   );
-  const removeExistingRegistry = execPromise(
-    `docker container rm -f ${DOCKER_REGISTRY_NAME}`,
-  ).then((response) => {
-    if (
-      response?.stderr?.length &&
-      !response.stderr.includes('No such container')
-    ) {
-      console.log(response?.stderr);
-    }
-  });
+  const removeExistingRegistry = execPromise(`docker container rm -f ${DOCKER_REGISTRY_NAME}`).then(
+    (response) => {
+      if (response?.stderr?.length && !response.stderr.includes('No such container')) {
+        console.log(response?.stderr);
+      }
+    },
+  );
   return removeExistingRegistry.then(() => {
     // const certificatePath = path.resolve(__dirname, '../../config/certificates')
     // @INFO: Uncomment the line and replace it with the runCmd if https is necessary
@@ -82,10 +74,7 @@ const startDockerLocalRegistry = async () => {
         }
       })
       .catch((e) => {
-        console.error(
-          '[ChatSuite] An error occurred while creating a local registry.',
-          e,
-        );
+        console.error('[ChatSuite] An error occurred while creating a local registry.', e);
         process.exit(1);
       });
   });
@@ -101,10 +90,7 @@ const runJob = async (startLog, cmdAsyncCallback) => {
 
 const run = async () => {
   try {
-    await runJob(
-      '[ChatSuite] Job->startDockerLocalRegistry()',
-      startDockerLocalRegistry,
-    );
+    await runJob('[ChatSuite] Job->startDockerLocalRegistry()', startDockerLocalRegistry);
     await runJob('[ChatSuite] Job->startOCIRepository', startOCIRepository);
     process.exit(0);
   } catch (e) {

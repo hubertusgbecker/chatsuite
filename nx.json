@@ -43,10 +43,7 @@
   },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "sharedGlobals": [
-      "{workspaceRoot}/pnpm-workspace.yaml",
-      "{workspaceRoot}/pnpm-lock.yaml"
-    ],
+    "sharedGlobals": ["{workspaceRoot}/pnpm-workspace.yaml", "{workspaceRoot}/pnpm-lock.yaml"],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",

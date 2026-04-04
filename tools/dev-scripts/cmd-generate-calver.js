@@ -7,8 +7,7 @@ const processArguments = process.argv.slice(2);
 const PROJECT_NAME = processArguments[0];
 const CALVER_FORMAT = 'YYYY.0M.0D.MINOR';
 
-const getVersionsJsonPath = () =>
-  path.resolve(__dirname, `../../versions.json`);
+const getVersionsJsonPath = () => path.resolve(__dirname, `../../versions.json`);
 
 const getVersionsJson = () => {
   const json = fs.readFileSync(getVersionsJsonPath());

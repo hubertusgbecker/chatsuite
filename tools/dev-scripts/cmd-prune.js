@@ -4,10 +4,7 @@ const execPromise = util.promisify(require('node:child_process').exec);
 const pruneContainers = () => {
   return execPromise('docker container prune -f')
     .catch((e) => {
-      console.error(
-        '[ChatSuite] An error occurred while pruning docker containers.',
-        e,
-      );
+      console.error('[ChatSuite] An error occurred while pruning docker containers.', e);
     })
     .finally(() => console.log('[ChatSuite] Container prune completed.'));
 };
@@ -28,11 +25,7 @@ const pruneImages = () => {
         if (imageId?.length) {
           imageIdExecs.push(
             execPromise(`docker image rm ${imageId} -f`)
-              .then(() =>
-                console.log(
-                  `[ChatSuite] Docker image with id:${imageId} removed.`,
-                ),
-              )
+              .then(() => console.log(`[ChatSuite] Docker image with id:${imageId} removed.`))
               .catch(),
           );
         }
@@ -55,10 +48,7 @@ const handleSuccess = () => {
 };
 
 const handleError = (error) => {
-  console.error(
-    '[ChatSuite] An error occurred while pruning docker assets.',
-    error,
-  );
+  console.error('[ChatSuite] An error occurred while pruning docker assets.', error);
   process.exit(1);
 };
 

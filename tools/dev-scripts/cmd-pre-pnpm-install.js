@@ -2,8 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const getVersionsPath = () => path.resolve(__dirname, '../../versions.json');
-const getProjectPath = (projectName) =>
-  path.resolve(__dirname, `../../apps/${projectName}`);
+const getProjectPath = (projectName) => path.resolve(__dirname, `../../apps/${projectName}`);
 
 const getVersionsJson = () => {
   const json = fs.readFileSync(getVersionsPath());

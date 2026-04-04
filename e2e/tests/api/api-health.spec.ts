@@ -1,8 +1,8 @@
+import { configureApp } from '@chatsuite/core';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { configureApp } from '@chatsuite/core';
 import { AppModule } from '../../../apps/api-customer-service/src/app/app.module';
 
 /**
@@ -72,9 +72,7 @@ describe('API Error Handling', () => {
 
   it('client-provided correlation ID is echoed back', async () => {
     const customId = 'e2e-test-correlation-12345';
-    const response = await request(httpServer)
-      .get('/api/health')
-      .set('x-correlation-id', customId);
+    const response = await request(httpServer).get('/api/health').set('x-correlation-id', customId);
 
     expect(response.headers['x-correlation-id']).toBe(customId);
   });

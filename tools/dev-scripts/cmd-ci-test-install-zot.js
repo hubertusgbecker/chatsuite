@@ -16,11 +16,9 @@ const installZot = async () => {
 };
 
 const getOCINodePortUrl = async () => {
-  return runCmd(path.resolve(__dirname, './cmd-get-oci-nodeport-url.sh')).then(
-    (response) => {
-      return response.stdout;
-    },
-  );
+  return runCmd(path.resolve(__dirname, './cmd-get-oci-nodeport-url.sh')).then((response) => {
+    return response.stdout;
+  });
 };
 
 const run = async () => {

@@ -62,7 +62,7 @@ function pnpmRun(...args) {
   });
 }
 
-function commaSeparatedListToArray(str) {
+function _commaSeparatedListToArray(str) {
   return str
     .trim()
     .split(',')
@@ -70,7 +70,7 @@ function commaSeparatedListToArray(str) {
     .filter((element) => !!element.length);
 }
 
-function getAffectedCommandResult(str) {
+function _getAffectedCommandResult(str) {
   const outputLines = str.trim().split(/\r?\n/);
   if (outputLines.length > 2) {
     return outputLines.slice(-1)[0];
@@ -107,9 +107,7 @@ async function affectedProjectsContainingTask(taskName, baseBranch) {
     .map((line) => line.trim());
 
   // Return intersection of affected projects and projects with target
-  return affectedProjects.filter((project) =>
-    projectsWithTarget.includes(project),
-  );
+  return affectedProjects.filter((project) => projectsWithTarget.includes(project));
 }
 
 async function allProjectsContainingTask(taskName) {

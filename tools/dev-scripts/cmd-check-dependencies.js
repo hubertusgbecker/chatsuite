@@ -32,15 +32,9 @@ const checkDocker = () =>
     .catch((output) => ({ docker: false, dockerError: output.stderr }));
 
 const checkEnvFiles = () => {
-  const hostEnvExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/env/.env.host'),
-  );
-  const qaEnvExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/env/.env.qa'),
-  );
-  const devEnvExists = fs.existsSync(
-    path.resolve(__dirname, '../../config/env/.env.dev'),
-  );
+  const hostEnvExists = fs.existsSync(path.resolve(__dirname, '../../config/env/.env.host'));
+  const qaEnvExists = fs.existsSync(path.resolve(__dirname, '../../config/env/.env.qa'));
+  const devEnvExists = fs.existsSync(path.resolve(__dirname, '../../config/env/.env.dev'));
   const rootEnvExists = fs.existsSync(path.resolve(__dirname, '../../.env'));
   if (!hostEnvExists || !qaEnvExists || !devEnvExists || !rootEnvExists) {
     if (!hostEnvExists) {
@@ -49,9 +43,7 @@ const checkEnvFiles = () => {
       );
     }
     if (!qaEnvExists) {
-      console.error(
-        '[ChatSuite][Error] Please put .env.qa file inside your ./config/env/ folder.',
-      );
+      console.error('[ChatSuite][Error] Please put .env.qa file inside your ./config/env/ folder.');
     }
     if (!devEnvExists) {
       console.error(
@@ -59,9 +51,7 @@ const checkEnvFiles = () => {
       );
     }
     if (!rootEnvExists) {
-      console.error(
-        '[ChatSuite][Error] Please put a .env file in the root of your project.',
-      );
+      console.error('[ChatSuite][Error] Please put a .env file in the root of your project.');
     }
     console.error(
       '[ChatSuite][Info] You can copy the template .env.[env] file from ./config/env folder for each environment.',
@@ -106,9 +96,7 @@ const printNodeVersionError = (data) => {
 };
 
 const printDockerError = () => {
-  console.error(
-    '[ChatSuite][Error] Please install docker to run the project correctly.',
-  );
+  console.error('[ChatSuite][Error] Please install docker to run the project correctly.');
 };
 
 const checkDependencies = () => {
@@ -135,9 +123,7 @@ const checkDependencies = () => {
   }
 
   Promise.all(request).then((response) => {
-    const data = response.reduce((acc, partial) => {
-      return { ...acc, ...partial };
-    }, {});
+    const data = Object.assign({}, ...response);
 
     // Only Docker
     if (isOnlyDocker) {
@@ -149,13 +135,12 @@ const checkDependencies = () => {
 
     // Only Node
     const isNodeVersionCompatible = (() => {
-      if (!data?.node || !data?.nodeVersion || !data?.nvmNodeVersion)
-        return false;
+      if (!data?.node || !data?.nodeVersion || !data?.nvmNodeVersion) return false;
       const nvm = data.nvmNodeVersion.trim().replace(/^v/, '');
       const node = data.nodeVersion.trim().replace(/^v/, '');
       // If .nvmrc is a bare major version (e.g. '24'), allow any matching major
       if (/^\d+$/.test(nvm)) {
-        return node.startsWith(nvm + '.');
+        return node.startsWith(`${nvm}.`);
       }
       // Otherwise require exact match
       return node === nvm;

@@ -12,8 +12,8 @@
  * Returns the resolved NX_APP_ENV value, with optional fallback.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Find project root (where package.json exists)
 function findProjectRoot(currentDir = __dirname) {
@@ -25,9 +25,7 @@ function findProjectRoot(currentDir = __dirname) {
 
   const parentDir = path.dirname(currentDir);
   if (parentDir === currentDir) {
-    throw new Error(
-      'Could not find package.json - are you in the project directory?',
-    );
+    throw new Error('Could not find package.json - are you in the project directory?');
   }
 
   return findProjectRoot(parentDir);

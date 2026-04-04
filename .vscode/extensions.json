@@ -1,7 +1,3 @@
 {
-  "recommendations": [
-    "nrwl.angular-console",
-    "biomejs.biome",
-    "vitest.explorer"
-  ]
+  "recommendations": ["nrwl.angular-console", "biomejs.biome", "vitest.explorer"]
 }

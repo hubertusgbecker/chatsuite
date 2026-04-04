@@ -27,13 +27,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Run integration tests on affected projects
+# Run integration tests on affected projects (non-blocking — Docker may not be running locally)
 echo "🔄 Running integration tests on all affected projects..."
+set +e
 run_with_timeout pnpm nx affected --target=integration --base=origin/main --parallel=1
-if [ $? -ne 0 ]; then
-  echo "⚠️  Integration tests failed."
-  echo "❌ Please fix integration tests before pushing."
-  exit 1
+INTEGRATION_STATUS=$?
+set -e
+if [ $INTEGRATION_STATUS -ne 0 ]; then
+  echo "⚠️  Integration tests failed (Docker services may not be running locally)."
+  echo "ℹ️  Integration tests will be validated in CI. Continuing push..."
 fi
 
 # Verify security

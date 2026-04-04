@@ -70,19 +70,16 @@ describe('Client App Assets', () => {
     const html = await indexResponse.text();
 
     // Extract JS/CSS URLs from the HTML
-    const assetUrls = [
-      ...html.matchAll(/(?:src|href)="(\/[^"]+\.(?:js|css))"/g),
-    ].map((m) => m[1]);
+    const assetUrls = [...html.matchAll(/(?:src|href)="(\/[^"]+\.(?:js|css))"/g)].map((m) => m[1]);
 
     for (const url of assetUrls) {
       // Skip optional config files
       if (url.includes('appConfig')) continue;
 
       const assetResponse = await fetchClient(url);
-      expect(
-        assetResponse.status,
-        `Expected 200 for ${url}, got ${assetResponse.status}`,
-      ).toBe(200);
+      expect(assetResponse.status, `Expected 200 for ${url}, got ${assetResponse.status}`).toBe(
+        200,
+      );
     }
   });
 });
