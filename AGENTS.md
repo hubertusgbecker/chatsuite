@@ -24,6 +24,7 @@ This document is the authoritative reference and single source of truth for all 
 - Never create random example files to test features; use inline code in terminal.
 - Place dev scripts in `tools/dev-scripts/` with `cmd-` prefix.
 - All services run in Docker via docker-compose. Never run directly on host (except Nx dev server).
+- Never use `--no-verify` on git push or git commit. Always let hooks run (lint, test, env:verify).
 - Always run `pnpm lint` and `pnpm nx:test` before making PRs.
 
 ```bash
