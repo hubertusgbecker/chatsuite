@@ -513,6 +513,8 @@ services:
       - |
         mkdir -p /paperclip/.cache/opencode
         chown -R node:node /paperclip/.cache
+        chown -R node:node /paperclip/instances/default/workspaces/ 2>/dev/null || true
+        chown -R node:node /paperclip/instances/default/companies/ 2>/dev/null || true
         exec docker-entrypoint.sh node --import ./server/node_modules/tsx/dist/loader.mjs server/dist/index.js
     environment:
       - HOST=0.0.0.0
