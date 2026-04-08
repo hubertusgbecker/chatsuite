@@ -17,6 +17,7 @@ permissions:
 
 env:
   NODE_VERSION: '24'
+  NX_NO_CLOUD: 'true'
 
 jobs:
   # ──────────────────────────────────────────────
